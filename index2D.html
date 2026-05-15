@@ -1,0 +1,469 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>cosmosXmachina | Software su misura, AI e automazioni</title>
+    <meta name="description" content="cosmosXmachina crea software su misura, automazioni AI, dashboard, integrazioni, siti operativi e prodotti digitali per PMI, studi professionali, e-commerce e attività locali.">
+    <meta name="theme-color" content="#0b1026">
+    <meta property="og:title" content="cosmosXmachina | Custom software and AI automation">
+    <meta property="og:description" content="Bilingual software engineering, custom business tools, dashboards, APIs, AI assistants and digital products from Treviso.">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="assets/cosmos-hero.png">
+    <style>
+      :root {
+        color-scheme: dark;
+        --dark-blue: #0b1026;
+        --dark-purple: #190a31;
+        --dark-violet: #25104f;
+        --indigo: #3f4fd8;
+        --violet: #6742d6;
+        --purple: #7a34d8;
+        --blue: #3f86e8;
+        --cyan: #70e4ff;
+        --text: #f4f1ff;
+        --muted: #c9c3ef;
+        --faint: #948dbb;
+        --panel: rgba(13, 12, 38, .76);
+        --line: rgba(218, 212, 255, .16);
+        --shadow: 0 24px 90px rgba(0, 0, 0, .45);
+        --radius: 8px;
+        --max: 1180px;
+        --ease: cubic-bezier(.2, .8, .2, 1);
+      }
+
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body {
+        margin: 0;
+        color: var(--text);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        line-height: 1.6;
+        background:
+          radial-gradient(circle at 12% 10%, rgba(141, 92, 255, .28), transparent 32%),
+          radial-gradient(circle at 88% 30%, rgba(94, 169, 255, .18), transparent 30%),
+          linear-gradient(135deg, var(--dark-blue), var(--dark-purple) 48%, #10081f);
+      }
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -3;
+        pointer-events: none;
+        opacity: .28;
+        background:
+          radial-gradient(circle at center, transparent 0 30px, rgba(141, 92, 255, .18) 31px, transparent 32px),
+          linear-gradient(rgba(112, 228, 255, .08) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(179, 103, 255, .08) 1px, transparent 1px);
+        background-size: 88px 88px;
+        mask-image: linear-gradient(to bottom, transparent, #000 14%, #000 78%, transparent);
+      }
+      a { color: inherit; text-decoration: none; }
+      button, input, select, textarea { font: inherit; }
+      :focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; }
+
+      .wrap { width: min(var(--max), calc(100% - 32px)); margin-inline: auto; }
+      .grid { display: grid; gap: 18px; }
+      .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .grid-5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+      .section, .hero {
+        position: relative;
+        overflow: hidden;
+        isolation: isolate;
+        border-bottom: 1px solid var(--line);
+      }
+      .section { padding: 92px 0; }
+      .section::before, .hero::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: -3;
+        background:
+          linear-gradient(90deg, rgba(11, 16, 38, .76), rgba(25, 10, 49, .54) 48%, rgba(15, 8, 31, .56)),
+          linear-gradient(0deg, rgba(11, 16, 38, .82), rgba(11, 16, 38, .18) 42%, rgba(25, 10, 49, .22)),
+          var(--bg-img) center / cover no-repeat;
+        transition: opacity .3s var(--ease);
+      }
+      .section::after, .hero::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: -2;
+        pointer-events: none;
+        opacity: .3;
+        background:
+          radial-gradient(circle at 20% 28%, rgba(141, 92, 255, .28), transparent 28%),
+          radial-gradient(circle at 82% 22%, rgba(94, 169, 255, .18), transparent 26%),
+          repeating-conic-gradient(from 45deg at 50% 50%, transparent 0deg 13deg, rgba(112, 228, 255, .08) 13deg 14deg, transparent 14deg 30deg);
+        mix-blend-mode: screen;
+      }
+      @supports (background-attachment: fixed) {
+        @media (min-width: 900px) { .section::before, .hero::before { background-attachment: scroll, scroll, fixed; } }
+      }
+
+      .site-header {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        border-bottom: 1px solid var(--line);
+        background: rgba(11, 16, 38, .82);
+        backdrop-filter: blur(18px);
+      }
+      .nav { min-height: 72px; display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+      .brand { display: inline-flex; align-items: center; gap: 10px; min-width: max-content; font-weight: 900; }
+      .brand-mark {
+        position: relative;
+        width: 36px;
+        aspect-ratio: 1;
+        border: 1px solid rgba(179, 103, 255, .72);
+        border-radius: 50%;
+        background: conic-gradient(from 36deg, var(--violet), var(--blue), var(--purple), var(--violet));
+        box-shadow: 0 0 34px rgba(141, 92, 255, .35);
+      }
+      .brand-mark::before, .brand-mark::after {
+        content: "";
+        position: absolute;
+        inset: 7px;
+        border: 1px solid rgba(11, 16, 38, .88);
+        transform: rotate(45deg);
+      }
+      .brand-mark::after { inset: 13px; border-radius: 50%; background: var(--dark-blue); transform: none; }
+      .brand-name span { color: var(--purple); }
+      .nav-links { display: flex; align-items: center; justify-content: flex-end; gap: 6px; flex-wrap: wrap; }
+      .nav-links a, .lang button {
+        border: 1px solid transparent;
+        border-radius: 999px;
+        color: var(--muted);
+        padding: 8px 11px;
+        font-size: .9rem;
+      }
+      .nav-links a:hover, .lang button:hover { border-color: var(--line); color: var(--text); }
+      .lang { display: inline-flex; gap: 4px; padding: 3px; border: 1px solid var(--line); border-radius: 999px; background: rgba(255, 255, 255, .04); }
+      .lang button { cursor: pointer; background: transparent; }
+      .lang button[aria-pressed="true"] { color: var(--text); background: linear-gradient(135deg, var(--violet), var(--blue)); }
+
+      .hero { --bg-img: url("assets/cosmos-hero.png"); min-height: calc(100svh - 72px); display: grid; align-items: center; }
+      #problems { --bg-img: url("assets/section-problems.png"); }
+      #services { --bg-img: url("assets/section-services.png"); }
+      #entry { --bg-img: url("assets/section-entry.png"); }
+      #process { --bg-img: url("assets/section-process.png"); }
+      #stack { --bg-img: url("assets/section-stack.png"); }
+      #faq { --bg-img: url("assets/section-faq.png"); }
+      #contact { --bg-img: url("assets/section-contact.png"); }
+
+      .hero-inner { padding: 86px 0 48px; display: grid; gap: 34px; }
+      .hero-copy { max-width: 780px; display: grid; gap: 20px; }
+      .hero h1, .section-head h2 {
+        margin: 0;
+        line-height: 1.02;
+        letter-spacing: 0;
+        background: linear-gradient(115deg, var(--text) 0%, #9bbcff 34%, var(--purple) 70%, var(--violet) 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+      .hero h1 { max-width: 11ch; font-size: clamp(2.8rem, 8.5vw, 7.6rem); }
+      .hero p, .section-head p { margin: 0; color: var(--muted); font-size: clamp(1.04rem, 2vw, 1.22rem); }
+      .hero p { max-width: 680px; }
+      .section-head { display: grid; gap: 12px; max-width: 790px; margin-bottom: 30px; }
+      .section-head h2 { font-size: clamp(2rem, 5vw, 4.2rem); }
+      .eyebrow {
+        color: var(--cyan);
+        font-size: .78rem;
+        font-weight: 850;
+        letter-spacing: 0;
+        text-transform: uppercase;
+      }
+      .hero-brandline {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        width: fit-content;
+        padding: 8px 12px;
+        border: 1px solid rgba(112, 228, 255, .32);
+        border-radius: 999px;
+        color: var(--cyan);
+        background: rgba(12, 21, 52, .7);
+      }
+      .hero-brandline::before { content: ""; width: 9px; aspect-ratio: 1; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 18px var(--cyan); }
+      .actions { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 48px;
+        padding: 12px 18px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        color: var(--text);
+        background: rgba(255, 255, 255, .06);
+        transition: transform .22s var(--ease), border-color .22s var(--ease), background .22s var(--ease);
+      }
+      .btn:hover { transform: translateY(-2px); border-color: rgba(179, 103, 255, .7); background: rgba(141, 92, 255, .14); }
+      .btn.primary { border-color: transparent; background: linear-gradient(135deg, var(--violet), var(--purple), var(--blue)); font-weight: 850; }
+
+      .runes { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; max-width: 940px; }
+      .rune, .card, details, .contact-card {
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: linear-gradient(145deg, rgba(15, 15, 48, .82), rgba(31, 12, 65, .66));
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(14px);
+      }
+      .rune { min-height: 112px; padding: 16px; }
+      .rune strong { display: block; color: var(--blue); font-size: 1.12rem; }
+      .rune span, .card p, .card li, details p, details li { color: var(--muted); }
+      .rune span { display: block; margin-top: 4px; font-size: .92rem; }
+      .card, details, .contact-card { padding: 20px; }
+      .card h3, details h3, .contact-card h3 { margin: 0 0 8px; line-height: 1.18; }
+      .card p, details p { margin: 0; }
+      .number {
+        display: inline-grid;
+        place-items: center;
+        width: 34px;
+        aspect-ratio: 1;
+        margin-bottom: 14px;
+        border: 1px solid rgba(179, 103, 255, .58);
+        color: var(--purple);
+        border-radius: 50%;
+      }
+      .service-card { display: grid; gap: 14px; }
+      .service-card summary {
+        cursor: pointer;
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 12px;
+        align-items: center;
+        list-style: none;
+      }
+      .service-card summary::-webkit-details-marker { display: none; }
+      .service-card summary::after { content: "+"; color: var(--cyan); font-size: 1.4rem; }
+      .service-card[open] summary::after { content: "-"; }
+      .service-body { display: grid; gap: 14px; padding-top: 14px; border-top: 1px solid var(--line); }
+      .tags { display: flex; flex-wrap: wrap; gap: 8px; }
+      .tag {
+        border: 1px solid rgba(112, 228, 255, .26);
+        border-radius: 999px;
+        padding: 5px 9px;
+        color: var(--cyan);
+        background: rgba(112, 228, 255, .06);
+        font-size: .83rem;
+      }
+      .process { counter-reset: step; }
+      .process .card::before {
+        counter-increment: step;
+        content: "0" counter(step);
+        display: block;
+        color: var(--purple);
+        font-weight: 900;
+        margin-bottom: 12px;
+      }
+      .stack-group ul, .trust-list, .contact-links, .faq-list { padding: 0; margin: 0; list-style: none; }
+      .stack-group li, .trust-list li, .contact-links li {
+        padding: 9px 0;
+        border-top: 1px solid var(--line);
+        color: var(--muted);
+      }
+      .contact-links { margin: 18px 0; }
+      .contact-links a { color: var(--cyan); overflow-wrap: anywhere; }
+      .faq-list details { margin-bottom: 12px; }
+      .faq-list summary { cursor: pointer; font-weight: 800; }
+      .contact-grid { grid-template-columns: .9fr 1.1fr; }
+      form { display: grid; gap: 14px; }
+      label { display: grid; gap: 6px; color: var(--muted); font-size: .94rem; }
+      input, select, textarea {
+        width: 100%;
+        color: var(--text);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: rgba(255, 255, 255, .06);
+        padding: 12px 13px;
+      }
+      textarea { min-height: 130px; resize: vertical; }
+      .form-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+      .small { color: var(--faint); font-size: .9rem; }
+      .footer { padding: 34px 0; border-top: 1px solid var(--line); color: var(--faint); }
+      .footer .wrap { display: flex; justify-content: space-between; gap: 18px; flex-wrap: wrap; }
+
+      @media (max-width: 980px) {
+        .grid-5, .grid-4, .grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .contact-grid, .grid-2 { grid-template-columns: 1fr; }
+        .nav { align-items: flex-start; padding: 14px 0; flex-direction: column; }
+        .nav-links { justify-content: flex-start; }
+      }
+      @media (max-width: 680px) {
+        .wrap { width: min(100% - 22px, var(--max)); }
+        .section { padding: 64px 0; }
+        .hero { min-height: auto; }
+        .hero-inner { padding-top: 58px; }
+        .hero h1 { font-size: clamp(2.6rem, 15vw, 4.2rem); }
+        .runes, .grid-5, .grid-4, .grid-3 { grid-template-columns: 1fr; }
+        .form-row { grid-template-columns: 1fr; }
+        .nav-links a { padding: 7px 9px; font-size: .86rem; }
+        .section::before, .hero::before { background-position: center; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        html { scroll-behavior: auto; }
+        *, *::before, *::after { transition: none !important; }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="site-header">
+      <nav class="nav wrap" aria-label="Main navigation">
+        <a class="brand" href="#home" aria-label="cosmosXmachina home">
+          <span class="brand-mark" aria-hidden="true"></span>
+          <span class="brand-name">cosmos<span>X</span>machina</span>
+        </a>
+        <div class="nav-links">
+          <a href="#home" data-i18n="nav.home">Home</a>
+          <a href="#services" data-i18n="nav.services">Servizi</a>
+          <a href="#process" data-i18n="nav.process">Metodo</a>
+          <a href="#stack" data-i18n="nav.stack">Stack</a>
+          <a href="#contact" data-i18n="nav.contact">Contatto</a>
+          <span class="lang" aria-label="Language switcher">
+            <button type="button" data-lang-switch="it" aria-pressed="true">IT</button>
+            <button type="button" data-lang-switch="en" aria-pressed="false">EN</button>
+          </span>
+        </div>
+      </nav>
+    </header>
+
+    <main id="home">
+      <section class="hero">
+        <div class="wrap hero-inner">
+          <div class="hero-copy">
+            <span class="hero-brandline" data-i18n="hero.kicker">Software atelier da Treviso al futuro operativo.</span>
+            <h1 data-i18n="hero.title">Software su misura, automazioni AI e strumenti digitali per PMI.</h1>
+            <p data-i18n="hero.text">Creo web app, gestionali, dashboard, API, assistenti AI, automazioni e-commerce e prodotti digitali per ridurre lavoro manuale e rendere i processi aziendali più chiari.</p>
+            <div class="actions">
+              <a class="btn primary" href="#contact" data-i18n="hero.primary">Richiedi un audit</a>
+              <a class="btn" href="#services" data-i18n="hero.secondary">Vedi i servizi</a>
+            </div>
+          </div>
+          <div class="runes" id="runes"></div>
+        </div>
+      </section>
+
+      <section class="section" id="problems"><div class="wrap"><div class="section-head"><span class="eyebrow" data-i18n="problems.kicker"></span><h2 data-i18n="problems.title"></h2><p data-i18n="problems.text"></p></div><div class="grid grid-3" id="problemGrid"></div></div></section>
+      <section class="section" id="services"><div class="wrap"><div class="section-head"><span class="eyebrow" data-i18n="services.kicker"></span><h2 data-i18n="services.title"></h2><p data-i18n="services.text"></p></div><div class="grid grid-2" id="servicesGrid"></div></div></section>
+      <section class="section" id="entry"><div class="wrap"><div class="section-head"><span class="eyebrow" data-i18n="entry.kicker"></span><h2 data-i18n="entry.title"></h2><p data-i18n="entry.text"></p></div><div class="grid grid-4" id="entryGrid"></div></div></section>
+      <section class="section process" id="process"><div class="wrap"><div class="section-head"><span class="eyebrow" data-i18n="process.kicker"></span><h2 data-i18n="process.title"></h2><p data-i18n="process.text"></p></div><div class="grid grid-5" id="processGrid"></div></div></section>
+      <section class="section" id="stack"><div class="wrap"><div class="section-head"><span class="eyebrow" data-i18n="stack.kicker"></span><h2 data-i18n="stack.title"></h2><p data-i18n="stack.text"></p></div><div class="grid grid-3" id="stackGrid"></div></div></section>
+      <section class="section" id="faq"><div class="wrap"><div class="section-head"><span class="eyebrow" data-i18n="faq.kicker"></span><h2 data-i18n="faq.title"></h2></div><div class="faq-list" id="faqList"></div></div></section>
+
+      <section class="section" id="contact">
+        <div class="wrap grid contact-grid">
+          <div class="contact-card">
+            <span class="eyebrow" data-i18n="contact.kicker">Contatto</span>
+            <h2 data-i18n="contact.title">Descrivi il workflow che vuoi trasformare.</h2>
+            <p data-i18n="contact.text">Scrivi il processo, il problema software o l'automazione che vuoi migliorare. Posso aiutarti a definire il perimetro e scegliere la soluzione utile più veloce.</p>
+            <ul class="contact-links">
+              <li><span data-i18n="contact.emailLabel">Email:</span> <a id="emailLink" href="mailto:davide.deon@gmail.com">davide.deon@gmail.com</a></li>
+              <li><span data-i18n="contact.linkedinLabel">LinkedIn:</span> <a id="linkedinLink" href="https://www.linkedin.com/in/vash-vacuum/">vash-vacuum</a></li>
+            </ul>
+            <ul class="trust-list" id="trustList"></ul>
+          </div>
+          <div class="contact-card">
+            <form id="projectForm">
+              <div class="form-row">
+                <label><span data-i18n="form.name">Nome</span><input name="name" autocomplete="name" required></label>
+                <label><span data-i18n="form.email">Email</span><input name="email" type="email" autocomplete="email" required></label>
+              </div>
+              <div class="form-row">
+                <label><span data-i18n="form.type">Tipo di progetto</span><select name="type" id="typeSelect"></select></label>
+                <label><span data-i18n="form.budget">Budget indicativo</span><select name="budget" id="budgetSelect"></select></label>
+              </div>
+              <label><span data-i18n="form.tools">Strumenti usati oggi</span><input name="tools" id="toolsInput"></label>
+              <label><span data-i18n="form.problem">Problema / risultato desiderato</span><textarea name="problem" id="problemInput" required></textarea></label>
+              <button class="btn primary" type="submit" data-i18n="form.submit">Prepara email di progetto</button>
+              <p class="small" data-i18n="form.note">Il sito è statico: il pulsante apre il tuo client email con il messaggio già composto.</p>
+            </form>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer"><div class="wrap"><span>cosmosXmachina</span><span data-i18n="footer.text"></span></div></footer>
+
+    <script>
+      const CONTACT_EMAIL = "davide.deon@gmail.com";
+      const LINKEDIN = {
+        it: "https://www.linkedin.com/in/vash-vacuum/",
+        en: "https://www.linkedin.com/in/vash-vacuum/?locale=en_US"
+      };
+      const copy = {
+        it: {
+          nav: { home: "Home", services: "Servizi", process: "Metodo", stack: "Stack", contact: "Contatto" },
+          hero: { kicker: "Software atelier da Treviso al futuro operativo.", title: "Software su misura, automazioni AI e strumenti digitali per PMI.", text: "Creo web app, gestionali, dashboard, API, assistenti AI, automazioni e-commerce e prodotti digitali per ridurre lavoro manuale e rendere i processi aziendali più chiari.", primary: "Richiedi un audit", secondary: "Vedi i servizi" },
+          runes: [["AI pratica", "Assistenti, RAG, triage email, documenti e workflow con revisione umana."], ["Strumenti interni", "Mini CRM, dashboard, portali, app operative e flussi su misura."], ["Integrazioni", "API, webhook, automazioni e sincronizzazioni tra software aziendali."], ["Prodotti digitali", "MVP, micro-SaaS, plugin, estensioni e strumenti scalabili."]],
+          problems: { kicker: "Problemi che trasformo", title: "Dal caos operativo a sistemi software affidabili.", text: "Il lavoro di cosmosXmachina parte dai processi reali: informazioni disperse, operazioni ripetitive, strumenti scollegati e opportunità AI senza un piano concreto.", items: [["Lavoro manuale", "Email, PDF, fogli Excel e attività amministrative che consumano ore ogni settimana."], ["Strumenti scollegati", "CRM, e-commerce, documenti, database e SaaS che non parlano tra loro."], ["Excel, email e WhatsApp come gestionale", "Informazioni critiche disperse in chat, thread e file difficili da controllare."], ["Report lenti", "Dati sparsi che richiedono esportazioni manuali prima di diventare decisioni."], ["AI senza piano", "Idee interessanti ma nessun workflow sicuro, misurabile e davvero utile."], ["Software fragile", "Sistemi esistenti da mantenere, rifinire, monitorare e far evolvere."]] },
+          services: { kicker: "Servizi", title: "Dieci porte d'ingresso per costruire il tuo sistema digitale.", text: "Ogni servizio può partire da audit, prototipo, MVP, implementazione completa o manutenzione continuativa.", items: [["Audit digitale e roadmap di automazione AI", "Analisi dei processi aziendali, individuazione delle attività manuali più costose, stima del potenziale risparmio e definizione di una roadmap operativa.", "Triage email, documenti, CRM, report, workflow interni"], ["Web app gestionali, mini CRM e strumenti interni", "Applicazioni web per gestire clienti, ordini, attività, preventivi, pratiche, appuntamenti, progetti o processi specifici.", "Mini CRM, tracker commesse, portale interno, pannello operativo"], ["Dashboard dati, KPI e report automatici", "Dashboard operative, pipeline dati e report automatici da Excel, CSV, database, gestionali, e-commerce o strumenti SaaS.", "Vendite, marketing, produzione, clienti, report settimanali"], ["Automazioni operative e integrazioni API", "Collegamento tra CRM, e-commerce, email, Google Workspace, Microsoft 365, gestionali, database e piattaforme SaaS.", "Webhook, API, n8n, Make, Zapier, script custom"], ["Assistenti AI, chatbot, knowledge base e agenti", "Assistenti AI per supporto clienti, ricerca interna, documentazione, triage email, estrazione PDF e workflow con revisione umana.", "Supporto, knowledge base, RAG, bozze email, document extraction"], ["Backend, API, database e architetture scalabili", "La parte tecnica invisibile ma fondamentale: backend, REST API, database, autenticazione, permessi, log e integrazioni robuste.", "MVP, SaaS, portali, admin panel, fondazioni custom"], ["E-commerce Shopify/WooCommerce e automazioni", "Ottimizzazione e automazione di cataloghi, descrizioni, traduzioni, SEO, supporto, ordini, resi, email e sincronizzazioni.", "Cataloghi, import/export, descrizioni AI, report ordini"], ["Siti, landing, booking, lead capture e CRM leggero", "Presenze digitali operative con sito, moduli, prenotazioni, acquisizione contatti, follow-up, recensioni e mini CRM.", "Attività locali, turismo, servizi, studi, consulenti"], ["Manutenzione, refactoring, performance e deploy", "Bug fixing, pulizia codice, nuove funzionalità, performance, sicurezza di base, hosting, backup, monitoraggio e continuità.", "Retainer, monitoring, backup, deploy, piccoli miglioramenti"], ["Micro-SaaS, plugin, estensioni, API e prodotti digitali", "Progettazione e sviluppo di prodotti software scalabili, MVP, API a pagamento, plugin, estensioni Chrome e strumenti da validare.", "MVP micro-SaaS, plugin, API, productizzazione"]] },
+          entry: { kicker: "Entry offer", title: "I percorsi più rapidi per iniziare.", text: "Pacchetti concreti per vedere valore prima di impegnarsi in un progetto più ampio.", items: [["Audit AI + prototipo", "Mappa il workflow, misura i colli di bottiglia e crea una prima automazione visibile."], ["Mini CRM / strumento interno", "Sostituisce fogli disordinati e thread con un pannello operativo su misura."], ["Dashboard e report", "Trasforma dati sparsi in indicatori, report automatici e decisioni più rapide."], ["Assistente documenti/email", "Classifica, estrae, riassume e prepara risposte con controllo umano."]] },
+          process: { kicker: "Metodo", title: "Da audit a prototipo, poi implementazione e continuità.", text: "Un processo leggero ma serio: capire il workflow, costruire qualcosa di utile, testarlo, consegnarlo e mantenerlo vivo.", items: [["Discovery e perimetro", "Chiarisco obiettivo, utenti, dati, strumenti esistenti, vincoli e valore atteso."], ["Audit o prototipo", "Creo una roadmap o un proof of value per verificare utilità e fattibilità."], ["Implementazione", "Sviluppo software, integrazioni, AI, dashboard o automazioni con cicli brevi."], ["Test e consegna", "Controllo flussi, errori, casi limite, privacy, documentazione e passaggio operativo."], ["Manutenzione", "Monitoraggio, fix, piccoli miglioramenti e nuove automazioni quando il sistema cresce."]] },
+          stack: { kicker: "Stack operativo", title: "Tecnologia solo dopo il valore.", text: "Lo stack è ampio, ma viene scelto in base al problema: velocità, affidabilità, manutenzione e ritorno operativo.", groups: [["Linguaggi", "Python, JavaScript, TypeScript, SQL, HTML, CSS"], ["Frontend", "React, Next.js, Vue, Tailwind CSS, UI responsive, dashboard e componenti"], ["Backend", "Node.js, Express, FastAPI, Django, Flask, REST API, webhook, job, auth e ruoli"], ["Database", "PostgreSQL, MySQL/MariaDB, SQLite, MongoDB, Redis, Supabase, Firebase"], ["AI/LLM", "OpenAI API, Claude, Gemini, Groq, OpenRouter, LangChain, LlamaIndex, RAG, agenti"], ["Automazione e dati", "n8n, Make, Zapier, Python custom, Pandas, NumPy, CSV/Excel, KPI report"], ["Piattaforme/devops", "Shopify, WooCommerce, WordPress, Google Workspace, Microsoft 365, Slack, Teams, Docker, GitHub, Linux, VPS"]] },
+          faq: { kicker: "FAQ", title: "Domande prima di aprire il portale.", items: [["Lavori solo su progetti AI?", "No. Lavoro sia su AI sia su software generale. L'obiettivo è scegliere lo strumento giusto per ridurre lavoro manuale e creare valore operativo."], ["Da dove si parte?", "Di solito da una breve discovery, poi da audit, prototipo o MVP a seconda di urgenza, dati disponibili e rischio tecnico."], ["Puoi lavorare con aziende locali?", "Sì. La base è Treviso, con focus naturale su Veneto, Nord Italia e clienti italiani, ma lavoro anche in inglese per progetti internazionali."], ["Come gestisci dati e AI?", "I sistemi AI possono includere revisione umana, limiti chiari, logging e attenzione a privacy, dati e responsabilità professionali."]] },
+          contact: { kicker: "Contatto", title: "Descrivi il workflow che vuoi trasformare.", text: "Scrivi il processo, il problema software o l'automazione che vuoi migliorare. Posso aiutarti a definire il perimetro e scegliere la soluzione utile più veloce.", emailLabel: "Email:", linkedinLabel: "LinkedIn:" },
+          trust: ["AI con revisione umana dove serve.", "Dati trattati con attenzione e confini chiari.", "Privacy, legale e fiscale sempre da verificare con professionisti quando necessario."],
+          form: { name: "Nome", email: "Email", type: "Tipo di progetto", budget: "Budget indicativo", tools: "Strumenti usati oggi", problem: "Problema / risultato desiderato", submit: "Prepara email di progetto", note: "Il sito è statico: il pulsante apre il tuo client email con il messaggio già composto.", subject: "Richiesta progetto cosmosXmachina", types: ["Audit automazione", "Web app / mini CRM", "Dashboard / report", "Assistente AI", "Integrazione API", "Sito / booking / CRM", "E-commerce", "Manutenzione", "MVP / prodotto digitale"], budgets: ["Da definire", "Meno di 1.500 EUR", "1.500 - 5.000 EUR", "5.000 - 10.000 EUR", "10.000+ EUR"], toolsPlaceholder: "Excel, email, CRM, Shopify, WooCommerce, Google Workspace...", problemPlaceholder: "Descrivi cosa succede oggi, cosa dovrebbe succedere e quali risultati vuoi ottenere." },
+          footer: { text: "Software, AI automation e strumenti digitali da Treviso." }
+        },
+        en: {
+          nav: { home: "Home", services: "Services", process: "Process", stack: "Stack", contact: "Contact" },
+          hero: { kicker: "A software atelier from Treviso to cleaner operations.", title: "Custom software, AI automation and digital tools for SMEs.", text: "I build web apps, internal tools, dashboards, APIs, AI assistants, e-commerce automations and digital products that reduce manual work and make business operations cleaner.", primary: "Request an audit", secondary: "View services" },
+          runes: [["Practical AI", "Assistants, RAG, email triage, documents and workflows with human review."], ["Internal tools", "Mini CRMs, dashboards, portals, operational apps and custom flows."], ["Integrations", "APIs, webhooks, automations and synchronization between business tools."], ["Digital products", "MVPs, micro-SaaS, plugins, extensions and scalable tools."]],
+          problems: { kicker: "Problems I transform", title: "From messy workflows to reliable software systems.", text: "cosmosXmachina starts from real operations: scattered information, repetitive work, disconnected tools and AI opportunities without a practical plan.", items: [["Manual work", "Emails, PDFs, spreadsheets and admin tasks that burn hours every week."], ["Disconnected tools", "CRM, e-commerce, documents, databases and SaaS tools that do not speak to each other."], ["Excel, email and WhatsApp as the operating system", "Critical information scattered across chats, threads and files."], ["Slow reporting", "Scattered data that needs manual exports before it becomes a decision."], ["AI without a plan", "Interesting ideas without a safe, measurable and useful workflow."], ["Fragile software", "Existing systems that need maintenance, refactoring, monitoring and evolution."]] },
+          services: { kicker: "Services", title: "Ten entry points for building your digital system.", text: "Every service can start from an audit, prototype, MVP, full implementation or ongoing maintenance.", items: [["Digital audit and AI automation roadmap", "Business process analysis, identification of expensive manual tasks, savings estimate and operational automation roadmap.", "Email triage, documents, CRM, reports, internal workflows"], ["Custom management web apps, mini CRMs and internal tools", "Web applications to manage clients, orders, tasks, quotes, files, appointments, projects or specific processes.", "Mini CRM, job tracker, internal portal, control panel"], ["Data dashboards, KPIs and automated reports", "Operational dashboards, data pipelines and automated reports from Excel, CSV, databases, management software, e-commerce or SaaS tools.", "Sales, marketing, production, clients, weekly reports"], ["Operational automations and API integrations", "Connections between CRM, e-commerce, email, Google Workspace, Microsoft 365, databases and SaaS platforms.", "Webhooks, APIs, n8n, Make, Zapier, custom scripts"], ["AI assistants, chatbots, knowledge bases and agents", "AI assistants for support, internal research, documentation, email triage, PDF extraction and human-reviewed workflows.", "Support, knowledge base, RAG, email drafts, document extraction"], ["Backend, APIs, databases and scalable architecture", "The invisible but essential technical layer: backend, REST APIs, databases, authentication, permissions, logs and robust integrations.", "MVP, SaaS, portals, admin panels, custom foundations"], ["Shopify/WooCommerce e-commerce and automations", "Optimization and automation for catalogues, descriptions, translations, SEO, support, orders, returns, emails and sync flows.", "Catalogues, import/export, AI descriptions, order reports"], ["Websites, landing pages, booking, lead capture and light CRM", "Operational digital presences with websites, forms, booking, contact capture, follow-up, reviews and light CRM.", "Local businesses, tourism, services, offices, consultants"], ["Maintenance, refactoring, performance and deployment", "Bug fixing, code cleanup, new features, performance, basic security, hosting, backups, monitoring and continuity.", "Retainers, monitoring, backups, deploys, small improvements"], ["Micro-SaaS, plugins, extensions, APIs and digital products", "Design and development of scalable software products, MVPs, paid APIs, plugins, Chrome extensions and tools to validate.", "Micro-SaaS MVP, plugin, API, productization"]] },
+          entry: { kicker: "Entry offers", title: "The fastest paths to start.", text: "Concrete packages to see value before committing to a larger project.", items: [["AI audit + prototype", "Map the workflow, measure bottlenecks and create a visible first automation."], ["Mini CRM / internal tool", "Replace messy spreadsheets and threads with a custom operational panel."], ["Dashboard and reports", "Turn scattered data into indicators, automatic reports and faster decisions."], ["Document/email assistant", "Classify, extract, summarize and draft replies with human control."]] },
+          process: { kicker: "Process", title: "From audit to prototype, then implementation and continuity.", text: "A lightweight but serious process: understand the workflow, build something useful, test it, hand it off and keep it alive.", items: [["Discovery and scope", "Clarify goals, users, data, existing tools, constraints and expected value."], ["Audit or prototype", "Create a roadmap or proof of value to verify usefulness and feasibility."], ["Implementation", "Build software, integrations, AI, dashboards or automations in short cycles."], ["Testing and handoff", "Check flows, errors, edge cases, privacy, documentation and operational transfer."], ["Maintenance", "Monitoring, fixes, small improvements and new automations as the system grows."]] },
+          stack: { kicker: "Operating stack", title: "Technology after business value.", text: "The stack is broad, but each project chooses tools for speed, reliability, maintainability and operational return.", groups: [["Languages", "Python, JavaScript, TypeScript, SQL, HTML, CSS"], ["Frontend", "React, Next.js, Vue, Tailwind CSS, responsive UI, dashboards and components"], ["Backend", "Node.js, Express, FastAPI, Django, Flask, REST APIs, webhooks, jobs, auth and roles"], ["Databases", "PostgreSQL, MySQL/MariaDB, SQLite, MongoDB, Redis, Supabase, Firebase"], ["AI/LLM", "OpenAI API, Claude, Gemini, Groq, OpenRouter, LangChain, LlamaIndex, RAG, agents"], ["Automation and data", "n8n, Make, Zapier, custom Python, Pandas, NumPy, CSV/Excel, KPI reports"], ["Platforms/devops", "Shopify, WooCommerce, WordPress, Google Workspace, Microsoft 365, Slack, Teams, Docker, GitHub, Linux, VPS"]] },
+          faq: { kicker: "FAQ", title: "Questions before opening the portal.", items: [["Do you only work on AI projects?", "No. I work on both AI and general software projects. The goal is choosing the right tool to reduce manual work and create operational value."], ["Where does a project start?", "Usually with a short discovery, then an audit, prototype or MVP depending on urgency, available data and technical risk."], ["Can you work with local companies?", "Yes. I am based in Treviso, with a natural focus on Veneto, Northern Italy and Italian clients, while also working in English for international projects."], ["How do you handle data and AI?", "AI systems can include human review, clear limits, logging and careful handling of privacy, data and professional responsibility."]] },
+          contact: { kicker: "Contact", title: "Describe the workflow you want to transform.", text: "Tell me about the process, software problem or automation you want to improve. I can help define the scope and choose the fastest useful solution.", emailLabel: "Email:", linkedinLabel: "LinkedIn:" },
+          trust: ["Human review where AI needs it.", "Careful data handling and clear boundaries.", "Privacy, legal and tax topics should be reviewed with qualified professionals when needed."],
+          form: { name: "Name", email: "Email", type: "Project type", budget: "Indicative budget", tools: "Tools used today", problem: "Problem / desired outcome", submit: "Prepare project email", note: "This is a static website: the button opens your email client with a pre-composed message.", subject: "cosmosXmachina project request", types: ["Automation audit", "Web app / mini CRM", "Dashboard / report", "AI assistant", "API integration", "Website / booking / CRM", "E-commerce", "Maintenance", "MVP / digital product"], budgets: ["To define", "Less than EUR 1,500", "EUR 1,500 - 5,000", "EUR 5,000 - 10,000", "EUR 10,000+"], toolsPlaceholder: "Excel, email, CRM, Shopify, WooCommerce, Google Workspace...", problemPlaceholder: "Describe what happens today, what should happen, and which outcome you want." },
+          footer: { text: "Software, AI automation and digital tools from Treviso." }
+        }
+      };
+
+      const $ = selector => document.querySelector(selector);
+      const $$ = selector => [...document.querySelectorAll(selector)];
+      const get = (path, lang) => path.split(".").reduce((value, key) => value?.[key], copy[lang]);
+      const card = (title, text) => `<article class="card"><h3>${title}</h3><p>${text}</p></article>`;
+
+      function render(lang) {
+        document.documentElement.lang = lang;
+        document.title = lang === "it" ? "cosmosXmachina | Software su misura, AI e automazioni" : "cosmosXmachina | Custom software and AI automation";
+        $$("[data-i18n]").forEach(node => { const value = get(node.dataset.i18n, lang); if (typeof value === "string") node.textContent = value; });
+        $("#runes").innerHTML = copy[lang].runes.map(([title, text]) => `<div class="rune"><strong>${title}</strong><span>${text}</span></div>`).join("");
+        $("#problemGrid").innerHTML = copy[lang].problems.items.map(([title, text]) => card(title, text)).join("");
+        $("#entryGrid").innerHTML = copy[lang].entry.items.map(([title, text]) => card(title, text)).join("");
+        $("#processGrid").innerHTML = copy[lang].process.items.map(([title, text]) => card(title, text)).join("");
+        $("#trustList").innerHTML = copy[lang].trust.map(item => `<li>${item}</li>`).join("");
+        $("#stackGrid").innerHTML = copy[lang].stack.groups.map(([title, text]) => `<article class="card stack-group"><h3>${title}</h3><ul><li>${text}</li></ul></article>`).join("");
+        $("#faqList").innerHTML = copy[lang].faq.items.map(([q, a]) => `<details><summary>${q}</summary><p>${a}</p></details>`).join("");
+        $("#servicesGrid").innerHTML = copy[lang].services.items.map(([title, text, tags], index) => `<details class="service-card"><summary><span class="number">${String(index + 1).padStart(2, "0")}</span><h3>${title}</h3></summary><div class="service-body"><p>${text}</p><div class="tags">${tags.split(", ").map(tag => `<span class="tag">${tag}</span>`).join("")}</div><a class="btn" href="#contact">${lang === "it" ? "Parliamo di questo" : "Talk about this"}</a></div></details>`).join("");
+        $("#typeSelect").innerHTML = copy[lang].form.types.map(text => `<option>${text}</option>`).join("");
+        $("#budgetSelect").innerHTML = copy[lang].form.budgets.map(text => `<option>${text}</option>`).join("");
+        $("#toolsInput").placeholder = copy[lang].form.toolsPlaceholder;
+        $("#problemInput").placeholder = copy[lang].form.problemPlaceholder;
+        $("#linkedinLink").href = LINKEDIN[lang];
+        $("#linkedinLink").textContent = lang === "it" ? "Profilo LinkedIn italiano" : "English LinkedIn profile";
+        $$("[data-lang-switch]").forEach(button => button.setAttribute("aria-pressed", button.dataset.langSwitch === lang));
+        localStorage.setItem("cosmos-lang", lang);
+      }
+
+      $("#projectForm").addEventListener("submit", event => {
+        event.preventDefault();
+        const lang = document.documentElement.lang;
+        const data = new FormData(event.currentTarget);
+        const labels = copy[lang].form;
+        const body = [`${labels.name}: ${data.get("name")}`, `${labels.email}: ${data.get("email")}`, `${labels.type}: ${data.get("type")}`, `${labels.budget}: ${data.get("budget")}`, `${labels.tools}: ${data.get("tools")}`, "", `${labels.problem}:`, data.get("problem")].join("\n");
+        location.href = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(labels.subject)}&body=${encodeURIComponent(body)}`;
+      });
+      $$("[data-lang-switch]").forEach(button => button.addEventListener("click", () => render(button.dataset.langSwitch)));
+      render(localStorage.getItem("cosmos-lang") || "it");
+    </script>
+  </body>
+</html>
