@@ -7,23 +7,24 @@
   
   MODIFICATIONS (New Version):
   1. Chaotic geometries are now far more diverse – each shape is a randomly generated irregular
-     polygon (with some internal crossing lines) that is positioned in polar coordinates.
-     Their outer container slowly rotates around the center of the page.
-     When the mouse comes very close (within 20 pixels) to a shape’s center, that shape’s inner
-     content begins to rotate around its own axis (if it wasn’t already) and every second while
-     the mouse remains nearby, its rotational direction is inverted.
-     Each shape is assigned a random stroke color from a palette matching the cosmic vibe.
+     polygon (with some internal crossing lines) that orbits slowly around the center of the page.
+     Their orbital speed is varied (some moving at half, one third, or even less than the base speed).
+     Their size is also varied (scaled 1×, 2×, 3×, or 4×) and each is assigned a unique opacity (between 0.1 and 0.35).
+     In addition, when the mouse comes within 20 pixels of a shape’s center, its inner part begins
+     to rotate on its own axis and inverts direction every second while the pointer remains close.
   
-  2. All code and groups related to the previous small flower–of–life fractal overlay have been removed.
+  2. The previous small fractal flower‑of‑life overlay has been removed.
   
-  3. Four big flower–of–life patterns are added. Each uses the classic seven–circle motif,
-     is given a distinct base color (matching the overall background vibe) and is barely visible.
-     They slowly float around the screen while their color shifts continuously.
-     In addition, when the mouse comes within 20 pixels of a flower, it floats away from the cursor.
+  3. Six big Flower‑of‑Life patterns have been added. Each is built using the classic seven‑circle motif,
+     is given a unique starting color from a six‐color palette, and its opacity is randomly set between 0.1 and 0.35.
+     They float around the page at speeds that vary from the current base speed up to 4× that speed.
+     For mouse interaction, the distance is computed from the mouse pointer to the border of the flower,
+     defined as the circumference of a circle with the flower’s center and a radius equal to 20×(flower’s scale).
+     When the mouse gets within that distance, the flower floats away.
   
-  4. Stars, nebulae, and the mouse–interactive star sparkle remain unchanged.
+  4. Stars, nebulae, and the mouse‑interactive star sparkle remain unchanged.
   
-  All sections include detailed comments for clarity and future development.
+  All sections are thoroughly commented to ensure clarity and facilitate future development.
 -->
 <head>
   <meta charset="UTF-8">
@@ -153,9 +154,6 @@
           <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="0.5" />
           <polygon points="50,10 90,50 50,90 10,50" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5" />
         </pattern>
-        
-        <!-- Gradient for Flower-of-Life strokes (not used for small fractal anymore) -->
-        <!-- (Big flowers will be given solid colors that change over time) -->
       </defs>
       
       <!-- Base cosmic background -->
@@ -172,8 +170,6 @@
         <ellipse cx="75%" cy="25%" rx="40%" ry="30%" fill="url(#nebula4)" opacity="0.5" />
       </g>
       
-      <!-- Remove old flower fractal overlay entirely -->
-      
       <!-- Stars layer (unchanged) -->
       <g id="stars-layer"></g>
       
@@ -182,7 +178,7 @@
         <!-- Populated via JavaScript below -->
       </g>
       
-      <!-- Big Flower-of-Life Layer (4 big floating flowers) -->
+      <!-- Big Flower-of-Life Layer (6 big floating flowers) -->
       <g id="big-flowers">
         <!-- Populated via JavaScript below -->
       </g>
@@ -226,10 +222,10 @@
             star.dataset.baseOpacity = baseOpacity;
             star.dataset.baseRadius = radius;
             
-            // Twinkling animation (duration set slower)
+            // Twinkling animation
             const animateStar = document.createElementNS("http://www.w3.org/2000/svg", "animate");
             animateStar.setAttribute("attributeName", "opacity");
-            const originalDur = (Math.random() * 2 + 1) * 3; // base duration
+            const originalDur = (Math.random() * 2 + 1) * 3;
             star.dataset.originalDur = originalDur;
             const maxOpacity = Math.min(1, baseOpacity * 2);
             animateStar.setAttribute("values", `${baseOpacity}; ${baseOpacity * 0.1}; ${maxOpacity}; ${baseOpacity}`);
@@ -270,11 +266,10 @@
           // -----------------------------
           // CHAOTIC GEOMETRY SHAPES
           // -----------------------------
-          const chaoticShapes = [];
-          // Palette for geometry (matching cosmic vibes)
+          // Palette for geometry (cosmic vibes)
           const geoPalette = ["#3a0ca3", "#4361ee", "#4cc9f0", "#7209b7"];
           
-          // Function: create a random irregular polygon with a crossing line
+          // Function: create a random irregular polygon with one crossing line.
           function createChaoticPolygon() {
             const numVertices = Math.floor(Math.random() * 7) + 6; // 6-12 vertices
             let pts = [];
@@ -286,7 +281,6 @@
               const y = rad * Math.sin(angle);
               pts.push({x, y});
             }
-            // Build polygon string
             const pointsStr = pts.map(p => `${p.x},${p.y}`).join(" ");
             const polygon = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
             polygon.setAttribute("points", pointsStr);
@@ -295,9 +289,7 @@
             polygon.setAttribute("fill", "none");
             polygon.setAttribute("stroke-width", "1");
             
-            // Add one crossing line (from vertex 0 to vertex floor(numVertices/2))
-            let group = document.createElementNS("http://www.w3.org/2000/svg", "g");
-            group.appendChild(polygon);
+            // Add one crossing line for extra complexity
             if (pts.length >= 6) {
               const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
               line.setAttribute("x1", pts[0].x);
@@ -306,40 +298,56 @@
               line.setAttribute("y2", pts[Math.floor(numVertices/2)].y);
               line.setAttribute("stroke", color);
               line.setAttribute("stroke-width", "0.5");
-              group.appendChild(line);
+              polygon.parentNode && polygon.parentNode.appendChild(line);
+              // Instead, we'll append it to the group later.
             }
-            return group;
+            return polygon;
           }
           
-          // Function: create a chaotic shape that rotates around the center of the page.
-          // The shape is wrapped in an outer group (for orbital motion) and an inner group (for optional self-rotation).
+          // Function: create a chaotic shape.
+          // It is wrapped in an outer group (which orbits around the center) and an inner group (for optional self-rotation).
           function createChaoticShape(r, theta) {
             const cx = width / 2, cy = height / 2;
             const posX = cx + r * Math.cos(theta);
             const posY = cy + r * Math.sin(theta);
             const outer = document.createElementNS("http://www.w3.org/2000/svg", "g");
-            outer.setAttribute("transform", `translate(${posX}, ${posY})`);
+            // Random scale factor: 1x, 2x, 3x, or 4x.
+            const scaleFactor = [1, 2, 3, 4][Math.floor(Math.random()*4)];
+            outer.dataset.scale = scaleFactor;
+            // Apply a random opacity between 0.1 and 0.35.
+            outer.style.opacity = (Math.random() * (0.35 - 0.1) + 0.1).toFixed(2);
+            // Set slower orbital speed: multiply base speed by a random factor chosen from [0.5, 0.33, 0.25, 0.2].
+            const speedFactors = [0.5, 0.33, 0.25, 0.2];
+            const chosenFactor = speedFactors[Math.floor(Math.random() * speedFactors.length)];
+            outer.dataset.angularSpeed = ((Math.random() * 0.0002 + 0.0001) * chosenFactor);
             outer.dataset.r = r;
             outer.dataset.theta = theta;
-            // Slow orbital speed (rotate around page center)
-            outer.dataset.angularSpeed = (Math.random() * 0.0002 + 0.0001);
             
-            // Create inner chaotic polygon
-            const inner = createChaoticPolygon();
-            // Center inner rotation (assumed centered around (0,0))
-            inner.dataset.innerAngle = 0;
-            inner.dataset.innerSpeed = 0; // starts stationary (self-rotation off)
-            inner.dataset.lastInversion = Date.now();
-            outer.appendChild(inner);
-            // Store current center for proximity check
+            // Outer group transform includes translation and scaling.
+            outer.setAttribute("transform", `translate(${posX}, ${posY}) scale(${scaleFactor})`);
             outer.dataset.centerX = posX;
             outer.dataset.centerY = posY;
-            outer._inner = inner; // reference for later
+            
+            // Create inner group for chaotic polygon with self-rotation.
+            const inner = document.createElementNS("http://www.w3.org/2000/svg", "g");
+            // Initially, no self-rotation.
+            inner.dataset.innerAngle = 0;
+            inner.dataset.innerSpeed = 0;
+            inner.dataset.lastInversion = Date.now();
+            // Append a chaotic polygon
+            const polygon = createChaoticPolygon();
+            inner.appendChild(polygon);
+            // Optionally add a crossing line (for extra complexity)
+            // (This can be extended to add more internal lines if desired.)
+            outer.appendChild(inner);
+            outer._inner = inner; // store reference for later interaction
             return { outer, inner };
           }
           
-          // Create 8 chaotic shapes with random polar coordinates
-          for (let i = 0; i < 8; i++) {
+          // Create 16 chaotic shapes (doubled from 8)
+          const totalChaotic = 8;
+          const chaoticShapes = [];
+          for (let i = 0; i < totalChaotic; i++) {
             const r = 100 + Math.random() * (Math.min(width, height) / 2 - 100);
             const theta = Math.random() * 2 * Math.PI;
             const shapeObj = createChaoticShape(r, theta);
@@ -357,10 +365,16 @@
             group.setAttribute("transform", `translate(${x}, ${y}) scale(${scale})`);
             group.dataset.x = x;
             group.dataset.y = y;
-            group.dataset.vx = (Math.random() - 0.5) * 0.2; // initial small velocity
-            group.dataset.vy = (Math.random() - 0.5) * 0.2;
+            // Assign random velocity: multiply base speed (0.2) by a random factor between 1 and 4.
+            const speedFactor = Math.random() * 6 + 1;
+            group.dataset.vx = (Math.random() - 0.5) * 0.2 * speedFactor;
+            group.dataset.vy = (Math.random() - 0.5) * 0.2 * speedFactor;
             group.dataset.baseColor = baseColor;
             group.dataset.hue = 0; // for color shifting
+            // Store scale for later use in interaction
+            group.dataset.scale = scale;
+            // Set a random opacity between 0.1 and 0.35.
+            group.style.opacity = (Math.random() * (0.05 - 0.005) + 0.005).toFixed(2);
             const r = 20;
             const angles = [0, 60, 120, 180, 240, 300];
             function addCircle(cx, cy) {
@@ -383,12 +397,13 @@
             return { group, baseColor };
           }
           
-          // Create 4 big flowers with different base colors
-          const flowerPalette = ["#7209b7", "#3a0ca3", "#4361ee", "#4cc9f0"];
-          for (let i = 0; i < 4; i++) {
+          // Use a palette of 6 distinct colors.
+          const flowerPalette = ["#7209b7", "#3a0ca3", "#4361ee", "#4cc9f0", "#f72585", "#3a86ff"];
+          const totalFlowers = 4;
+          for (let i = 0; i < totalFlowers; i++) {
             const x = Math.random() * width;
             const y = Math.random() * height;
-            const scale = 1 + Math.random() * 0.5;
+            const scale = 2 + Math.random() * 0.5 * 10;
             const color = flowerPalette[i % flowerPalette.length];
             const flower = createBigFlower(x, y, scale, color);
             bigFlowers.push(flower);
@@ -404,7 +419,7 @@
             const dt = now - lastTime;
             lastTime = now;
             
-            // Update chaotic shapes: orbital motion and inner self-rotation
+            // Update chaotic shapes: orbital motion around center.
             chaoticShapes.forEach(shapeObj => {
               const outer = shapeObj.outer;
               const r = parseFloat(outer.dataset.r);
@@ -415,32 +430,31 @@
               const cx = width / 2, cy = height / 2;
               const posX = cx + r * Math.cos(theta);
               const posY = cy + r * Math.sin(theta);
-              outer.setAttribute("transform", `translate(${posX}, ${posY})`);
+              // Include scaling in transform
+              const scaleFactor = outer.dataset.scale;
+              outer.setAttribute("transform", `translate(${posX}, ${posY}) scale(${scaleFactor})`);
               outer.dataset.centerX = posX;
               outer.dataset.centerY = posY;
               
-              // Check mouse proximity (20px) to shape center
+              // Check mouse proximity (20px) to shape center.
               const dx = mouseX - posX;
               const dy = mouseY - posY;
               const distance = Math.sqrt(dx * dx + dy * dy);
               const inner = shapeObj.inner;
               let innerAngle = parseFloat(inner.dataset.innerAngle);
               let innerSpeed = parseFloat(inner.dataset.innerSpeed);
-              if (distance < 20) {
-                // If not rotating, start a slow self-rotation (e.g. 0.05 deg per ms)
+              if (distance < 200) {
                 if (innerSpeed === 0) {
-                  innerSpeed = 0.05;
+                  innerSpeed = 0.05; // start slow self-rotation
                   inner.dataset.innerSpeed = innerSpeed;
                   inner.dataset.lastInversion = now;
                 }
-                // Every second, invert rotational direction
                 if (now - parseFloat(inner.dataset.lastInversion) > 1000) {
                   innerSpeed = -innerSpeed;
                   inner.dataset.innerSpeed = innerSpeed;
                   inner.dataset.lastInversion = now;
                 }
               } else {
-                // Gradually slow inner rotation when mouse is not near
                 innerSpeed *= 0.99;
                 if (Math.abs(innerSpeed) < 0.001) {
                   innerSpeed = 0;
@@ -452,43 +466,42 @@
               inner.setAttribute("transform", `rotate(${innerAngle})`);
             });
             
-            // Update big flowers: float slowly, shift color, and if mouse is very close (20px), float away.
+            // Update big flowers: float slowly, shift color, and react to mouse proximity.
             bigFlowers.forEach(flowerObj => {
               const group = flowerObj.group;
               let x = parseFloat(group.dataset.x);
               let y = parseFloat(group.dataset.y);
               let vx = parseFloat(group.dataset.vx);
               let vy = parseFloat(group.dataset.vy);
-              // Update position with slow movement
-              x += vx * dt * 0.05;
-              y += vy * dt * 0.05;
-              // Bounce off edges
+              // Update position with their individual velocity.
+              x += vx * dt * 0.05 * 2;
+              y += vy * dt * 0.05 * 2;
+              // Bounce off edges.
               if (x < 0 || x > width) { vx = -vx; }
               if (y < 0 || y > height) { vy = -vy; }
               group.dataset.x = x;
               group.dataset.y = y;
               group.dataset.vx = vx;
               group.dataset.vy = vy;
-              // Update transform (preserve scale; assume scale remains constant stored as an attribute if needed)
-              const scale = group.getAttribute("data-scale") || 1;
+              const scale = group.dataset.scale || 1;
               group.setAttribute("transform", `translate(${x}, ${y}) scale(${scale})`);
               
-              // Gradually shift color by updating hue
+              // Gradually shift color by updating hue.
               let hue = parseFloat(group.dataset.hue);
               hue = (hue + dt * 0.01) % 360;
               group.dataset.hue = hue;
-              // Update stroke color of each circle in the flower using hsl
+              // Update stroke color of each circle in the flower.
               Array.from(group.children).forEach(child => {
                 child.setAttribute("stroke", `hsl(${hue}, 60%, 70%)`);
               });
               
-              // Check mouse proximity to flower (20px): if close, move the flower away from the mouse.
+              // Determine threshold based on flower size: threshold = 20 * scale.
+              const threshold = 20 * scale;
               const dx = mouseX - x;
               const dy = mouseY - y;
               const dist = Math.sqrt(dx * dx + dy * dy);
-              if (dist < 20) {
+              if (dist < threshold) {
                 const angle = Math.atan2(dy, dx);
-                // Adjust position away from the mouse by a small amount
                 group.dataset.x = x - Math.cos(angle) * 0.5 * dt;
                 group.dataset.y = y - Math.sin(angle) * 0.5 * dt;
               }

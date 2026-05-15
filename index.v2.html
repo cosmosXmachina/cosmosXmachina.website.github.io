@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<!--
+  DESIGN CONCEPT:
+  This webpage creates an immersive cosmic experience featuring a deep space background
+  with dynamic elements including stars, nebulae, and increasingly complex geometric patterns.
+  
+  MODIFICATIONS (New Version):
+  1. Chaotic geometries are now far more complex – each shape features crossing grids, 
+     missing parts (via dashed strokes), variable sizes, and they slowly move and rotate.
+  2. A new Flower–of–Life fractal overlay is added:
+     - Many small flower–of–life patterns are overlapped across the entire canvas.
+     - Their strokes use a dynamically generated gradient with many stops (each stop’s color is random),
+       so the color shifts continuously along each line.
+     - Overall opacity is low for a subtle, fractal background.
+  3. Stars, nebulae, and mouse–interactive star sparkle remain unchanged.
+  
+  All sections include detailed comments for clarity and future development.
+-->
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>COSMOS EX MACHINA</title>
+  <style>
+    /* Import futuristic font from Google Fonts */
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap');
+    
+    /* Reset margins/padding; default cursor visible */
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+      font-family: 'Orbitron', sans-serif;
+    }
+    
+    .container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background: #000; /* Fallback background */
+    }
+    
+    /* SVG cosmic background container */
+    .cosmic-background {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+    
+    /* Title container */
+    .title-container {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 10;
+      text-align: center;
+      width: 100%;
+    }
+    
+    .title {
+      font-size: 5vw;
+      font-weight: bold;
+      color: #fff;
+      text-shadow: 0 0 10px rgba(116, 182, 255, 0.8),
+                   0 0 20px rgba(94, 151, 255, 0.6),
+                   0 0 30px rgba(65, 129, 255, 0.4);
+      letter-spacing: 5px;
+      background: linear-gradient(to right, #37d5d6, #36096d);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      animation: pulsate 3s infinite alternate;
+    }
+    
+    .subtitle {
+      font-size: 1.5vw;
+      color: rgba(255, 255, 255, 0.7);
+      margin-top: 20px;
+      letter-spacing: 2px;
+    }
+    
+    @keyframes pulsate {
+      0% {
+        text-shadow: 0 0 10px rgba(116, 182, 255, 0.8),
+                     0 0 20px rgba(94, 151, 255, 0.6),
+                     0 0 30px rgba(65, 129, 255, 0.4);
+      }
+      100% {
+        text-shadow: 0 0 15px rgba(116, 182, 255, 0.9),
+                     0 0 25px rgba(94, 151, 255, 0.7),
+                     0 0 35px rgba(65, 129, 255, 0.5),
+                     0 0 45px rgba(44, 111, 255, 0.3);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- SVG container with multiple layers for nebula, stars, fractal, and complex geometry -->
+    <svg class="cosmic-background" preserveAspectRatio="xMidYMid slice">
+      <defs>
+	  
+		<!-- Radial gradient creates depth in the cosmic background - transitions from purple center to black edges -->
+        <radialGradient id="cosmos-gradient" cx="50%" cy="50%" r="70%" fx="50%" fy="50%">
+          <stop offset="0%" stop-color="#1a0033" /> <!-- Deep purple at center -->
+          <stop offset="40%" stop-color="#0c001f" /> <!-- Darker purple mid-way -->
+          <stop offset="90%" stop-color="#0e0b30" /> <!-- Near black at outer edges -->
+          <stop offset="100%" stop-color="#07051a" /> <!-- Pure black at furthest edges -->
+        </radialGradient>
+        
+        <!-- Star glow filter -->
+        <filter id="star-glow" x="-100%" y="-100%" width="300%" height="300%">
+          <feGaussianBlur stdDeviation="3" result="blur" />
+          <feComposite in="SourceGraphic" in2="blur" operator="over" />
+        </filter>
+        
+        <!-- Nebula gradients -->
+        <radialGradient id="nebula1" cx="30%" cy="30%" r="50%" fx="30%" fy="30%">
+          <stop offset="0%" stop-color="rgba(154, 29, 223, 0.3)" />
+          <stop offset="50%" stop-color="rgba(126, 31, 213, 0.2)" />
+          <stop offset="100%" stop-color="rgba(98, 32, 203, 0)" />
+        </radialGradient>
+        <radialGradient id="nebula2" cx="70%" cy="60%" r="40%" fx="70%" fy="60%">
+          <stop offset="0%" stop-color="rgba(21, 152, 207, 0.25)" />
+          <stop offset="60%" stop-color="rgba(27, 135, 173, 0.15)" />
+          <stop offset="100%" stop-color="rgba(33, 117, 139, 0)" />
+        </radialGradient>
+        <radialGradient id="nebula3" cx="20%" cy="70%" r="30%" fx="20%" fy="70%">
+          <stop offset="0%" stop-color="rgba(230, 169, 25, 0.15)" />
+          <stop offset="60%" stop-color="rgba(210, 149, 25, 0.1)" />
+          <stop offset="100%" stop-color="rgba(190, 129, 25, 0)" />
+        </radialGradient>
+        <radialGradient id="nebula4" cx="75%" cy="25%" r="35%" fx="75%" fy="25%">
+          <stop offset="0%" stop-color="rgba(23, 185, 120, 0.15)" />
+          <stop offset="60%" stop-color="rgba(23, 165, 110, 0.1)" />
+          <stop offset="100%" stop-color="rgba(23, 145, 100, 0)" />
+        </radialGradient>
+		
+		<!-- Hypergeometric pattern - creates subtle grid-like structure suggesting higher dimensions -->
+        <pattern id="hypergeometric" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse">
+          <line x1="0" y1="0" x2="100" y2="100" stroke="rgba(255, 255, 255, 0.2)" stroke-width="0.5" /> <!-- Diagonal line -->
+          <line x1="100" y1="0" x2="0" y2="100" stroke="rgba(255, 255, 255, 0.2)" stroke-width="0.5" /> <!-- Opposing diagonal line -->
+          <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255, 255, 255, 0.15)" stroke-width="0.5" /> <!-- Central circle -->
+          <polygon points="50,10 90,50 50,90 10,50" fill="none" stroke="rgba(255, 255, 255, 0.1)" stroke-width="0.5" /> <!-- Diamond shape -->
+        </pattern>
+        
+        <!-- Gradient for Flower-of-Life fractal strokes.
+             This will be populated with many stops (each with random color) via JavaScript -->
+        <linearGradient id="flowerGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+          <!-- Stops generated dynamically -->
+        </linearGradient>
+      </defs>
+      
+      <!-- Base cosmic background -->
+      <rect width="100%" height="100%" fill="url(#cosmos-gradient)" />
+	  
+	  <!-- Hypergeometric pattern overlay - subtle geometric shapes suggesting higher dimensions -->
+      <rect width="100%" height="100%" fill="url(#hypergeometric)" opacity="0.3" />
+      
+      <!-- Nebula layer -->
+      <g id="nebula-layer">
+        <ellipse cx="30%" cy="30%" rx="50%" ry="40%" fill="url(#nebula1)" opacity="0.7" />
+        <ellipse cx="70%" cy="60%" rx="45%" ry="35%" fill="url(#nebula2)" opacity="0.6" />
+        <ellipse cx="20%" cy="70%" rx="35%" ry="25%" fill="url(#nebula3)" opacity="0.5" />
+        <ellipse cx="75%" cy="25%" rx="40%" ry="30%" fill="url(#nebula4)" opacity="0.5" />
+      </g>
+      
+      <!-- Flower-of-Life Fractal Overlay -->
+      <g id="flower-fractal" opacity="0.08">
+        <!-- This group will be populated via JavaScript with many overlapping flower patterns -->
+      </g>
+      
+      <!-- Stars layer -->
+      <g id="stars-layer"></g>
+      
+      <!-- Complex Chaotic Geometry Layer -->
+      <g id="chaotic-geometry">
+        <!-- Populated via JavaScript -->
+      </g>
+	  
+	  
+      
+      <!-- (Optional: Other layers can be added here) -->
+      
+      <!-- JavaScript for dynamic star generation, complex geometry, and fractal overlay -->
+      <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+          const svg = document.querySelector('.cosmic-background');
+          const width = window.innerWidth;
+          const height = window.innerHeight;
+          const starsLayer = document.getElementById('stars-layer');
+          const chaosLayer = document.getElementById('chaotic-geometry');
+          const flowerFractalLayer = document.getElementById('flower-fractal');
+          
+          // -----------------------------
+          // STAR GENERATION (150 stars)
+          // -----------------------------
+          const stars = [];
+          for (let i = 0; i < 150; i++) {
+            const x = Math.random() * width;
+            const y = Math.random() * height;
+            const radius = Math.random() * 2 + 1;
+            const baseOpacity = Math.random() * 0.5 + 0.5;
+            
+            const star = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            star.setAttribute("cx", x);
+            star.setAttribute("cy", y);
+            star.setAttribute("r", radius);
+            star.setAttribute("fill", "white");
+            star.setAttribute("opacity", baseOpacity);
+            star.setAttribute("filter", "url(#star-glow)");
+            star.dataset.x = x;
+            star.dataset.y = y;
+            star.dataset.baseOpacity = baseOpacity;
+            star.dataset.baseRadius = radius;
+            
+            // Twinkling animation (3× slower blinking speed)
+            const animate = document.createElementNS("http://www.w3.org/2000/svg", "animate");
+            animate.setAttribute("attributeName", "opacity");
+            const originalDur = (Math.random() * 2 + 1) * 3; // slower duration
+            star.dataset.originalDur = originalDur;
+            const maxOpacity = Math.min(1, baseOpacity * 2);
+            animate.setAttribute("values", `${baseOpacity}; ${baseOpacity * 0.1}; ${maxOpacity}; ${baseOpacity}`);
+            animate.setAttribute("dur", originalDur + "s");
+            animate.setAttribute("repeatCount", "indefinite");
+            star.appendChild(animate);
+            
+            stars.push(star);
+            starsLayer.appendChild(star);
+          }
+          
+          // Mousemove event: Speed up twinkling for nearby stars (2× faster)
+          let scheduled = false;
+          document.addEventListener('mousemove', function(e) {
+            if (!scheduled) {
+              scheduled = true;
+              requestAnimationFrame(() => {
+                stars.forEach(star => {
+                  const starX = parseFloat(star.dataset.x);
+                  const starY = parseFloat(star.dataset.y);
+                  const dx = e.clientX - starX;
+                  const dy = e.clientY - starY;
+                  const distance = Math.sqrt(dx*dx + dy*dy);
+                  const threshold = 150;
+                  const animateElem = star.firstElementChild;
+                  const originalDur = parseFloat(star.dataset.originalDur);
+                  if (distance < threshold) {
+                    animateElem.setAttribute("dur", (originalDur / 2) + "s");
+                  } else {
+                    animateElem.setAttribute("dur", originalDur + "s");
+                  }
+                });
+                scheduled = false;
+              });
+            }
+          });
+          
+          // -----------------------------
+          // COMPLEX CHAOTIC GEOMETRY
+          // -----------------------------
+          // Function to create a complex grid-like geometry with missing segments
+          function createComplexGeometry(x, y, w, h) {
+            const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+            group.setAttribute("transform", `translate(${x},${y})`);
+            group.style.opacity = 0.15; // low opacity for blending
+            
+            // Define grid dimensions
+            const cols = 4;
+            const rows = 4;
+            const dx = w / cols;
+            const dy = h / rows;
+            
+            // Create vertical and horizontal grid lines with random dashes
+            for (let i = 0; i <= cols; i++) {
+              const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+              const xPos = i * dx;
+              line.setAttribute("x1", xPos);
+              line.setAttribute("y1", 0);
+              line.setAttribute("x2", xPos);
+              line.setAttribute("y2", h);
+              line.setAttribute("stroke", "white");
+              line.setAttribute("stroke-width", "0.5");
+              // Random dash pattern for missing parts
+              line.setAttribute("stroke-dasharray", Math.random() > 0.5 ? "4,4" : "2,3");
+              group.appendChild(line);
+            }
+            for (let j = 0; j <= rows; j++) {
+              const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+              const yPos = j * dy;
+              line.setAttribute("x1", 0);
+              line.setAttribute("y1", yPos);
+              line.setAttribute("x2", w);
+              line.setAttribute("y2", yPos);
+              line.setAttribute("stroke", "white");
+              line.setAttribute("stroke-width", "0.5");
+              line.setAttribute("stroke-dasharray", Math.random() > 0.5 ? "4,4" : "2,3");
+              group.appendChild(line);
+            }
+            
+            // Add two diagonal lines for crossing effect
+            const diag1 = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            diag1.setAttribute("x1", 0);
+            diag1.setAttribute("y1", 0);
+            diag1.setAttribute("x2", w);
+            diag1.setAttribute("y2", h);
+            diag1.setAttribute("stroke", "white");
+            diag1.setAttribute("stroke-width", "0.5");
+            diag1.setAttribute("stroke-dasharray", "5,3");
+            group.appendChild(diag1);
+            
+            const diag2 = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            diag2.setAttribute("x1", w);
+            diag2.setAttribute("y1", 0);
+            diag2.setAttribute("x2", 0);
+            diag2.setAttribute("y2", h);
+            diag2.setAttribute("stroke", "white");
+            diag2.setAttribute("stroke-width", "0.5");
+            diag2.setAttribute("stroke-dasharray", "5,3");
+            group.appendChild(diag2);
+            
+            // Animate rotation around the center of the shape
+            const rotAnim = document.createElementNS("http://www.w3.org/2000/svg", "animateTransform");
+            rotAnim.setAttribute("attributeName", "transform");
+            rotAnim.setAttribute("type", "rotate");
+            rotAnim.setAttribute("from", `0 ${w/2} ${h/2}`);
+            rotAnim.setAttribute("to", `360 ${w/2} ${h/2}`);
+            rotAnim.setAttribute("dur", `${Math.random()*100+100}s`);
+            rotAnim.setAttribute("repeatCount", "indefinite");
+            rotAnim.setAttribute("additive", "sum");
+            group.appendChild(rotAnim);
+            
+            // Animate slow translation (drift) across the view
+            const transAnim = document.createElementNS("http://www.w3.org/2000/svg", "animateTransform");
+            transAnim.setAttribute("attributeName", "transform");
+            transAnim.setAttribute("type", "translate");
+            // Oscillate between 0,0 and a small offset
+            transAnim.setAttribute("values", "0,0; 20,20; 0,0");
+            transAnim.setAttribute("dur", `${Math.random()*150+150}s`);
+            transAnim.setAttribute("repeatCount", "indefinite");
+            transAnim.setAttribute("additive", "sum");
+            group.appendChild(transAnim);
+            
+            return group;
+          }
+          
+          // Generate multiple complex geometry shapes (e.g. 8)
+          for (let i = 0; i < 8; i++) {
+            const posX = Math.random() * width;
+            const posY = Math.random() * height;
+            const shapeW = Math.random() * 150 + 50;
+            const shapeH = Math.random() * 150 + 50;
+            const complexShape = createComplexGeometry(posX, posY, shapeW, shapeH);
+            chaosLayer.appendChild(complexShape);
+          }
+          
+          // -----------------------------
+          // FLOWER-OF-LIFE FRACTAL OVERLAY
+          // -----------------------------
+          // Function to create a single flower-of-life pattern (7 circles)
+          function createFlower(x, y, scale) {
+            const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+            group.setAttribute("transform", `translate(${x},${y}) scale(${scale})`);
+            // Set low opacity so overlay is subtle
+            group.style.opacity = 0.1;
+            const r = 20;
+            const angles = [0, 60, 120, 180, 240, 300];
+            // Central circle
+            const center = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            center.setAttribute("cx", 0);
+            center.setAttribute("cy", 0);
+            center.setAttribute("r", r);
+            center.setAttribute("fill", "none");
+            center.setAttribute("stroke", "url(#flowerGradient)");
+            center.setAttribute("stroke-width", "1");
+            group.appendChild(center);
+            // Surrounding circles
+            angles.forEach(angle => {
+              const rad = angle * Math.PI / 180;
+              const cx = r * Math.cos(rad);
+              const cy = r * Math.sin(rad);
+              const circ = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+              circ.setAttribute("cx", cx);
+              circ.setAttribute("cy", cy);
+              circ.setAttribute("r", r);
+              circ.setAttribute("fill", "none");
+              circ.setAttribute("stroke", "url(#flowerGradient)");
+              circ.setAttribute("stroke-width", "1");
+              group.appendChild(circ);
+            });
+            // Animate rotation of the flower pattern
+            const flowerRot = document.createElementNS("http://www.w3.org/2000/svg", "animateTransform");
+            flowerRot.setAttribute("attributeName", "transform");
+            flowerRot.setAttribute("type", "rotate");
+            flowerRot.setAttribute("from", `0 0 0`);
+            flowerRot.setAttribute("to", `360 0 0`);
+            flowerRot.setAttribute("dur", `${Math.random()*200+200}s`);
+            flowerRot.setAttribute("repeatCount", "indefinite");
+            flowerRot.setAttribute("additive", "sum");
+            group.appendChild(flowerRot);
+            return group;
+          }
+          
+          // Populate the flower-of-life fractal overlay with many overlapping flowers
+          const flowerCount = 15;
+          for (let i = 0; i < flowerCount; i++) {
+            const fx = Math.random() * width;
+            const fy = Math.random() * height;
+            const scale = Math.random() * 1.5 + 0.5; // vary scale
+            const flower = createFlower(fx, fy, scale);
+            flowerFractalLayer.appendChild(flower);
+          }
+          
+          // -----------------------------
+          // GRADIENT STOPS FOR FLOWER STROKES
+          // -----------------------------
+          // Dynamically generate many stops for the flower gradient so that the stroke color shifts
+          const flowerGradient = document.getElementById("flowerGradient");
+          const stopCount = 20;
+          // Clear existing stops if any
+          while(flowerGradient.firstChild) {
+            flowerGradient.removeChild(flowerGradient.firstChild);
+          }
+          for (let i = 0; i < stopCount; i++) {
+            const stop = document.createElementNS("http://www.w3.org/2000/svg", "stop");
+            const offset = (i / (stopCount - 1)) * 100;
+            stop.setAttribute("offset", offset + "%");
+            // Random color for each stop (each "pixel" will differ)
+            const randomColor = '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+            stop.setAttribute("stop-color", randomColor);
+            flowerGradient.appendChild(stop);
+          }
+        });
+      </script>
+    </svg>
+    
+    <!-- Title container -->
+    <div class="title-container">
+      <h1 class="title">COSMOS EX MACHINA</h1>
+      <p class="subtitle">DIGITAL UNIVERSE INTERVENTIONS</p>
+    </div>
+  </div>
+</body>
+</html>
