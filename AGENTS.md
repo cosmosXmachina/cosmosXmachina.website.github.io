@@ -22,7 +22,9 @@ Use these files in order:
 - `index3d.html` is the approved experimental Three.js version and must remain separate from `index.html`.
 - The base approved stack is HTML, CSS, vanilla JavaScript and static image assets.
 - `index3d.html` may load Three.js as a pinned CDN ES module.
-- Do not add frameworks, package managers, external CSS/JS libraries beyond the approved Three.js import in `index3d.html`, analytics or form backends without user approval.
+- Approved contact backend: `api/contact.js`, a no-dependency Node SMTP endpoint for the project intake form. It sends through Gmail SMTP using the project `.env` file only. Never put Gmail app passwords or SMTP secrets in `index.html` or any committed file.
+- GitHub Pages alone cannot execute `api/contact.js`; deploy the endpoint on a Node/serverless host or serve the site from a platform that supports `/api/contact`. Keep the `mailto:` fallback in `index.html`.
+- Do not add frameworks, package managers, external CSS/JS libraries beyond the approved Three.js import in `index3d.html`, analytics or additional form backends without user approval.
 - If a new technology is approved, update both this file and `cosmos_interface.md`.
 - The About/Profile section has been removed and must not be reintroduced unless requested.
 - The FAQ must not contain portfolio/demo questions or references.

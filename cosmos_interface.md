@@ -10,14 +10,16 @@ This file documents the architecture, technologies, visual system and implementa
 - Experimental 3D variant: `index3d.html`
 - Asset folder: `assets/`
 - README: `README.md` documents GitHub Pages publishing
+- Installation guide: `installation.md` documents dependencies, fresh-machine setup and contact endpoint deployment
 - Hosting target: GitHub Pages static hosting
 - Architecture: single-page website based on `cosmos_business.md` Section 18.5, variant 1
 - Languages: Italian and English, switched client-side
 - Current base tech stack: HTML, CSS, vanilla JavaScript, static image assets
 - Additional approved technology for `index3d.html` only: Three.js loaded as a pinned CDN ES module
-- No build step, framework, package manager, analytics or server form handler is currently approved
+- Approved contact backend: `api/contact.js`, a no-dependency Node SMTP endpoint that sends the project intake form through Gmail SMTP using the project `.env` file
+- No build step, framework, package manager or analytics is currently approved
 
-Any new technology beyond the static stack and the `index3d.html` Three.js experiment must be approved by the user first, then documented in both `AGENTS.md` and this file.
+Any new technology beyond the static stack, the `index3d.html` Three.js experiment and the approved contact endpoint must be approved by the user first, then documented in both `AGENTS.md` and this file.
 
 ## Public Brand And Contacts
 
@@ -29,7 +31,9 @@ Real contacts currently wired into the site:
 - Italian LinkedIn: `https://www.linkedin.com/in/vash-vacuum/`
 - English LinkedIn: `https://www.linkedin.com/in/vash-vacuum/?locale=en_US`
 
-The contact form is static. On submit it opens the visitor's email client with a `mailto:` URL addressed to `davide.deon@gmail.com`, using the selected language's subject and form labels.
+The contact form posts JSON to `CONTACT_ENDPOINT`, which defaults to `/api/contact`. The Gmail SMTP mail system requires `api/contact.js` to be running on a Node/serverless host. The endpoint reads the project `.env` file and sends through Gmail SMTP with `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM`, `MAIL_TO`, `ALLOWED_ORIGIN` and `PORT`. Gmail app passwords must never be committed or placed in browser JavaScript.
+
+If the endpoint is unavailable, `index.html` falls back to a `mailto:` URL addressed to `davide.deon@gmail.com`, using the selected language's subject and form labels. This preserves a backup contact path, but real Gmail SMTP delivery requires the Node endpoint to be deployed separately or the site to be served from a host that runs `/api/contact`.
 
 ## Current Sections
 
@@ -116,7 +120,10 @@ The form submit handler:
 - prevents default submission
 - reads the active language
 - serializes the project intake fields
-- opens a `mailto:` URL with encoded subject and body
+- ignores spam-trap submissions with the hidden `company` field
+- posts the intake fields to `CONTACT_ENDPOINT` as JSON
+- shows bilingual sending/success/fallback status text
+- opens a `mailto:` URL with encoded subject and body if the SMTP endpoint is unavailable
 
 ## Visual System
 
@@ -207,7 +214,7 @@ Current accessibility decisions:
 
 Performance notes:
 
-- The site is static and has no external runtime dependencies.
+- The frontend remains static. Gmail SMTP delivery requires the `api/contact.js` Node endpoint; pure GitHub Pages hosting can only use the `mailto:` backup unless the endpoint is deployed elsewhere.
 - Background images are large PNG files. If performance becomes an issue, convert them to optimized WebP/AVIF while keeping fallbacks or updating references.
 - No analytics or external scripts are loaded.
 
@@ -217,7 +224,7 @@ Potential future changes that require user approval before implementation:
 
 - promoting the Three.js experiment into the production `index.html`, adding native WebGL, or adding heavier 3D tooling
 - Analytics or conversion tracking
-- Real backend form handling
+- Additional backend form handling, CRM writes or third-party form services beyond `api/contact.js`
 - Dedicated service pages
 - Blog/articles
 - Case studies, demos or portfolio content

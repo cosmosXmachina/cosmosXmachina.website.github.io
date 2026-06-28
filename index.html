@@ -10,6 +10,8 @@
     <meta property="og:description" content="Bilingual software engineering, custom business tools, dashboards, APIs, AI assistants and digital products from Treviso.">
     <meta property="og:type" content="website">
     <meta property="og:image" content="assets/cosmos-hero.png">
+    <!--meta name="cosmos-contact-endpoint" content="/api/contact"-->
+    <meta name="cosmos-contact-endpoint" content="http://127.0.0.1:8787">
     <style>
       :root {
         color-scheme: dark;
@@ -219,6 +221,7 @@
       }
       .btn:hover { transform: translateY(-2px); border-color: rgba(179, 103, 255, .7); background: rgba(141, 92, 255, .14); }
       .btn.primary { border-color: transparent; background: linear-gradient(135deg, var(--violet), var(--purple), var(--blue)); font-weight: 850; }
+      .btn:disabled { cursor: wait; opacity: .68; transform: none; }
 
       .runes { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; max-width: 940px; }
       .rune, .card, details, .contact-card {
@@ -300,6 +303,10 @@
       textarea { min-height: 130px; resize: vertical; }
       .form-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
       .small { color: var(--faint); font-size: .9rem; }
+      .hp-field { position: absolute; left: -100vw; width: 1px; height: 1px; overflow: hidden; }
+      .form-status { min-height: 1.4em; margin: 0; color: var(--faint); font-size: .92rem; }
+      .form-status[data-tone="success"] { color: var(--cyan); }
+      .form-status[data-tone="error"] { color: #c9c3ef; }
       .footer { padding: 34px 0; border-top: 1px solid var(--line); color: var(--faint); }
       .footer .wrap { display: flex; justify-content: space-between; gap: 18px; flex-wrap: wrap; }
 
@@ -395,7 +402,9 @@
               </div>
               <label><span data-i18n="form.tools">Strumenti usati oggi</span><input name="tools" id="toolsInput"></label>
               <label><span data-i18n="form.problem">Problema / risultato desiderato</span><textarea name="problem" id="problemInput" required></textarea></label>
-              <button class="btn primary" type="submit" data-i18n="form.submit">Invia email</button>
+              <label class="hp-field" aria-hidden="true"><span>Company</span><input name="company" tabindex="-1" autocomplete="off"></label>
+              <button class="btn primary" type="submit" data-i18n="form.submit">Invia richiesta</button>
+              <p class="form-status" id="formStatus" role="status" aria-live="polite"></p>
             </form>
           </div>
         </div>
@@ -406,6 +415,7 @@
 
     <script>
       const CONTACT_EMAIL = "davide.deon@gmail.com";
+      const CONTACT_ENDPOINT = window.COSMOS_CONTACT_ENDPOINT || document.querySelector('meta[name="cosmos-contact-endpoint"]')?.content || "/api/contact";
       const LINKEDIN = {
         it: "https://www.linkedin.com/in/vash-vacuum/",
         en: "https://www.linkedin.com/in/vash-vacuum/?locale=en_US"
@@ -423,7 +433,7 @@
           faq: { kicker: "FAQ", title: "Domande prima di aprire il portale.", items: [["Lavori solo su progetti AI?", "No. Lavoro sia su AI sia su software generale. L'obiettivo è scegliere lo strumento giusto per ridurre lavoro manuale e creare valore operativo."], ["Da dove si parte?", "Di solito da una breve discovery, poi da audit, prototipo o MVP a seconda di urgenza, dati disponibili e rischio tecnico."], ["Puoi lavorare con aziende locali?", "Sì. La base è Treviso, con focus naturale su Veneto, Nord Italia e clienti italiani, ma lavoro anche in inglese per progetti internazionali."], ["Come gestisci dati e AI?", "I sistemi AI possono includere revisione umana, limiti chiari, logging e attenzione a privacy, dati e responsabilità professionali."]] },
           contact: { kicker: "Contatto", title: "Descrivi il workflow che vuoi trasformare.", text: "Scrivi il processo, il problema software o l'automazione che vuoi migliorare. Posso aiutarti a definire il perimetro e scegliere la soluzione utile più veloce.", emailLabel: "Email:", linkedinLabel: "LinkedIn:" },
           trust: ["AI con revisione umana dove serve.", "Dati trattati con attenzione e confini chiari.", "Privacy, legale e fiscale sempre da verificare con professionisti quando necessario."],
-          form: { name: "Nome", email: "Email", type: "Tipo di progetto", budget: "Budget indicativo", tools: "Strumenti usati oggi", problem: "Problema / risultato desiderato", submit: "Invia email", note: "Il sito è statico: il pulsante apre il tuo client email con il messaggio già composto.", subject: "Richiesta progetto cosmosXmachina", types: ["Audit automazione", "Web app / mini CRM", "Dashboard / report", "Assistente AI", "Integrazione API", "Sito / booking / CRM", "E-commerce", "Manutenzione", "MVP / prodotto digitale"], budgets: ["Da definire", "Meno di 1.500 EUR", "1.500 - 5.000 EUR", "5.000 - 10.000 EUR", "10.000+ EUR"], toolsPlaceholder: "Excel, email, CRM, Shopify, WooCommerce, Google Workspace...", problemPlaceholder: "Descrivi cosa succede oggi, cosa dovrebbe succedere e quali risultati vuoi ottenere." },
+          form: { name: "Nome", email: "Email", type: "Tipo di progetto", budget: "Budget indicativo", tools: "Strumenti usati oggi", problem: "Problema / risultato desiderato", submit: "Invia richiesta", sending: "Invio in corso...", success: "Messaggio inviato. Ti risponderò appena possibile.", fallback: "Il server email non ha risposto. Apro una email già compilata.", subject: "Richiesta progetto cosmosXmachina", types: ["Audit automazione", "Web app / mini CRM", "Dashboard / report", "Assistente AI", "Integrazione API", "Sito / booking / CRM", "E-commerce", "Manutenzione", "MVP / prodotto digitale"], budgets: ["Da definire", "Meno di 1.500 EUR", "1.500 - 5.000 EUR", "5.000 - 10.000 EUR", "10.000+ EUR"], toolsPlaceholder: "Excel, email, CRM, Shopify, WooCommerce, Google Workspace...", problemPlaceholder: "Descrivi cosa succede oggi, cosa dovrebbe succedere e quali risultati vuoi ottenere." },
           footer: { text: "Software, AI automation e strumenti digitali da Treviso." }
         },
         en: {
@@ -438,7 +448,7 @@
           faq: { kicker: "FAQ", title: "Questions before opening the portal.", items: [["Do you only work on AI projects?", "No. I work on both AI and general software projects. The goal is choosing the right tool to reduce manual work and create operational value."], ["Where does a project start?", "Usually with a short discovery, then an audit, prototype or MVP depending on urgency, available data and technical risk."], ["Can you work with local companies?", "Yes. I am based in Treviso, with a natural focus on Veneto, Northern Italy and Italian clients, while also working in English for international projects."], ["How do you handle data and AI?", "AI systems can include human review, clear limits, logging and careful handling of privacy, data and professional responsibility."]] },
           contact: { kicker: "Contact", title: "Describe the workflow you want to transform.", text: "Tell me about the process, software problem or automation you want to improve. I can help define the scope and choose the fastest useful solution.", emailLabel: "Email:", linkedinLabel: "LinkedIn:" },
           trust: ["Human review where AI needs it.", "Careful data handling and clear boundaries.", "Privacy, legal and tax topics should be reviewed with qualified professionals when needed."],
-          form: { name: "Name", email: "Email", type: "Project type", budget: "Indicative budget", tools: "Tools used today", problem: "Problem / desired outcome", submit: "Send email", note: "This is a static website: the button opens your email client with a pre-composed message.", subject: "cosmosXmachina project request", types: ["Automation audit", "Web app / mini CRM", "Dashboard / report", "AI assistant", "API integration", "Website / booking / CRM", "E-commerce", "Maintenance", "MVP / digital product"], budgets: ["To define", "Less than EUR 1,500", "EUR 1,500 - 5,000", "EUR 5,000 - 10,000", "EUR 10,000+"], toolsPlaceholder: "Excel, email, CRM, Shopify, WooCommerce, Google Workspace...", problemPlaceholder: "Describe what happens today, what should happen, and which outcome you want." },
+          form: { name: "Name", email: "Email", type: "Project type", budget: "Indicative budget", tools: "Tools used today", problem: "Problem / desired outcome", submit: "Send request", sending: "Sending...", success: "Message sent. I will reply as soon as possible.", fallback: "The mail server did not respond. Opening a prepared email instead.", subject: "cosmosXmachina project request", types: ["Automation audit", "Web app / mini CRM", "Dashboard / report", "AI assistant", "API integration", "Website / booking / CRM", "E-commerce", "Maintenance", "MVP / digital product"], budgets: ["To define", "Less than EUR 1,500", "EUR 1,500 - 5,000", "EUR 5,000 - 10,000", "EUR 10,000+"], toolsPlaceholder: "Excel, email, CRM, Shopify, WooCommerce, Google Workspace...", problemPlaceholder: "Describe what happens today, what should happen, and which outcome you want." },
           footer: { text: "Software, AI automation and digital tools from Treviso." }
         }
       };
@@ -450,7 +460,7 @@
 
       function render(lang) {
         document.documentElement.lang = lang;
-        document.title = lang === "it" ? "cosmosXmachina 3D | Software su misura, AI e automazioni" : "cosmosXmachina 3D | Custom software and AI automation";
+        document.title = lang === "it" ? "cosmosXmachina | Software su misura, AI e automazioni" : "cosmosXmachina | Custom software and AI automation";
         $$("[data-i18n]").forEach(node => { const value = get(node.dataset.i18n, lang); if (typeof value === "string") node.textContent = value; });
         $("#runes").innerHTML = copy[lang].runes.map(([title, text]) => `<div class="rune"><strong>${title}</strong><span>${text}</span></div>`).join("");
         $("#problemGrid").innerHTML = copy[lang].problems.items.map(([title, text]) => card(title, text)).join("");
@@ -470,13 +480,61 @@
         localStorage.setItem("cosmos-lang", lang);
       }
 
-      $("#projectForm").addEventListener("submit", event => {
+      function formPayload(form, lang) {
+        const data = new FormData(form);
+        return {
+          lang,
+          name: String(data.get("name") || "").trim(),
+          email: String(data.get("email") || "").trim(),
+          type: String(data.get("type") || "").trim(),
+          budget: String(data.get("budget") || "").trim(),
+          tools: String(data.get("tools") || "").trim(),
+          problem: String(data.get("problem") || "").trim(),
+          company: String(data.get("company") || "").trim()
+        };
+      }
+
+      function mailtoUrl(payload, labels) {
+        const body = [`${labels.name}: ${payload.name}`, `${labels.email}: ${payload.email}`, `${labels.type}: ${payload.type}`, `${labels.budget}: ${payload.budget}`, `${labels.tools}: ${payload.tools}`, "", `${labels.problem}:`, payload.problem].join("\n");
+        return `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(labels.subject)}&body=${encodeURIComponent(body)}`;
+      }
+
+      function setFormStatus(tone, text) {
+        const status = $("#formStatus");
+        status.dataset.tone = tone;
+        status.textContent = text;
+      }
+
+      $("#projectForm").addEventListener("submit", async event => {
         event.preventDefault();
         const lang = document.documentElement.lang;
-        const data = new FormData(event.currentTarget);
         const labels = copy[lang].form;
-        const body = [`${labels.name}: ${data.get("name")}`, `${labels.email}: ${data.get("email")}`, `${labels.type}: ${data.get("type")}`, `${labels.budget}: ${data.get("budget")}`, `${labels.tools}: ${data.get("tools")}`, "", `${labels.problem}:`, data.get("problem")].join("\n");
-        location.href = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(labels.subject)}&body=${encodeURIComponent(body)}`;
+        const form = event.currentTarget;
+        const button = form.querySelector("button[type='submit']");
+        const payload = formPayload(form, lang);
+        if (payload.company) {
+          setFormStatus("success", labels.success);
+          form.reset();
+          return;
+        }
+        button.disabled = true;
+        setFormStatus("", labels.sending);
+        try {
+          const response = await fetch(CONTACT_ENDPOINT, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "Accept": "application/json" },
+            body: JSON.stringify(payload)
+          });
+          if (!response.ok) throw new Error(`Contact endpoint returned ${response.status}`);
+          setFormStatus("success", labels.success);
+          form.reset();
+        } catch (error) {
+          console.warn("Contact endpoint unavailable, falling back to mailto.", error);
+          setFormStatus("error", labels.fallback);
+          setTimeout(() => { location.href = mailtoUrl(payload, labels); }, 600);
+        } finally {
+          button.disabled = false;
+        }
       });
       $$("[data-lang-switch]").forEach(button => button.addEventListener("click", () => render(button.dataset.langSwitch)));
       render(localStorage.getItem("cosmos-lang") || "it");
