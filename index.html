@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>cosmosXmachina 3D | Software su misura, AI e automazioni</title>
+    <title>cosmosXmachina | Software su misura, AI e automazioni</title>
     <meta name="description" content="cosmosXmachina crea software su misura, automazioni AI, dashboard, integrazioni, siti operativi e prodotti digitali per PMI, studi professionali, e-commerce e attività locali.">
     <meta name="theme-color" content="#0b1026">
     <meta property="og:title" content="cosmosXmachina | Custom software and AI automation">
@@ -158,30 +158,31 @@
       #contact { --bg-img: url("assets/section-contact.png"); }
 
       .hero-inner { padding: 86px 0 48px; display: grid; gap: 34px; }
-      .hero-copy { max-width: 780px; display: grid; gap: 20px; }
+      .hero-copy { max-width: 950px; display: grid; gap: 20px; }
       .hero h1, .section-head h2 {
         margin: 0;
+        padding-bottom: 0.2em;
         line-height: 1.02;
         letter-spacing: 0;
-        background: linear-gradient(115deg, var(--text) 0%, #9bbcff 32%, var(--blue) 48%, #233a86 58%, var(--purple) 74%, var(--violet) 100%);
+        background: linear-gradient(115deg, #ff00cb 0%, #004cff 32%, var(--blue) 48%, #85e8ff  58%, var(--purple) 74%, var(--violet) 100%);
         -webkit-background-clip: text;
         background-clip: text;
         color: transparent;
         -webkit-text-stroke: .45px rgba(11, 16, 38, .22);
         text-shadow: 0 7px 18px rgba(11, 16, 38, .4), 0 1px 2px rgba(11, 16, 38, .44), 0 0 18px rgba(112, 228, 255, .08);
       }
-      .hero h1 { max-width: 11ch; font-size: clamp(2.8rem, 8.5vw, 7.6rem); }
+      .hero h1 { max-width: 950px; font-size: clamp(2rem, 5vw, 5rem); }
       .hero p, .section-head p {
         margin: 0;
         color: var(--muted);
         font-size: clamp(1.04rem, 2vw, 1.22rem);
         text-shadow: 0 5px 14px rgba(11, 16, 38, .46), 0 1px 2px rgba(11, 16, 38, .42);
       }
-      .hero p { max-width: 680px; }
+      .hero p { max-width: 800px; }
       .hero-copy, .section-head {
         filter: drop-shadow(0 12px 24px rgba(11, 16, 38, .22));
       }
-      .section-head { display: grid; gap: 12px; max-width: 790px; margin-bottom: 30px; }
+      .section-head { display: grid; gap: 12px; max-width: 950px; margin-bottom: 30px; }
       .section-head h2 { font-size: clamp(2rem, 5vw, 4.2rem); }
       .eyebrow {
         color: var(--cyan);
@@ -394,8 +395,7 @@
               </div>
               <label><span data-i18n="form.tools">Strumenti usati oggi</span><input name="tools" id="toolsInput"></label>
               <label><span data-i18n="form.problem">Problema / risultato desiderato</span><textarea name="problem" id="problemInput" required></textarea></label>
-              <button class="btn primary" type="submit" data-i18n="form.submit">Prepara email di progetto</button>
-              <p class="small" data-i18n="form.note">Il sito è statico: il pulsante apre il tuo client email con il messaggio già composto.</p>
+              <button class="btn primary" type="submit" data-i18n="form.submit">Invia email</button>
             </form>
           </div>
         </div>
@@ -423,7 +423,7 @@
           faq: { kicker: "FAQ", title: "Domande prima di aprire il portale.", items: [["Lavori solo su progetti AI?", "No. Lavoro sia su AI sia su software generale. L'obiettivo è scegliere lo strumento giusto per ridurre lavoro manuale e creare valore operativo."], ["Da dove si parte?", "Di solito da una breve discovery, poi da audit, prototipo o MVP a seconda di urgenza, dati disponibili e rischio tecnico."], ["Puoi lavorare con aziende locali?", "Sì. La base è Treviso, con focus naturale su Veneto, Nord Italia e clienti italiani, ma lavoro anche in inglese per progetti internazionali."], ["Come gestisci dati e AI?", "I sistemi AI possono includere revisione umana, limiti chiari, logging e attenzione a privacy, dati e responsabilità professionali."]] },
           contact: { kicker: "Contatto", title: "Descrivi il workflow che vuoi trasformare.", text: "Scrivi il processo, il problema software o l'automazione che vuoi migliorare. Posso aiutarti a definire il perimetro e scegliere la soluzione utile più veloce.", emailLabel: "Email:", linkedinLabel: "LinkedIn:" },
           trust: ["AI con revisione umana dove serve.", "Dati trattati con attenzione e confini chiari.", "Privacy, legale e fiscale sempre da verificare con professionisti quando necessario."],
-          form: { name: "Nome", email: "Email", type: "Tipo di progetto", budget: "Budget indicativo", tools: "Strumenti usati oggi", problem: "Problema / risultato desiderato", submit: "Prepara email di progetto", note: "Il sito è statico: il pulsante apre il tuo client email con il messaggio già composto.", subject: "Richiesta progetto cosmosXmachina", types: ["Audit automazione", "Web app / mini CRM", "Dashboard / report", "Assistente AI", "Integrazione API", "Sito / booking / CRM", "E-commerce", "Manutenzione", "MVP / prodotto digitale"], budgets: ["Da definire", "Meno di 1.500 EUR", "1.500 - 5.000 EUR", "5.000 - 10.000 EUR", "10.000+ EUR"], toolsPlaceholder: "Excel, email, CRM, Shopify, WooCommerce, Google Workspace...", problemPlaceholder: "Descrivi cosa succede oggi, cosa dovrebbe succedere e quali risultati vuoi ottenere." },
+          form: { name: "Nome", email: "Email", type: "Tipo di progetto", budget: "Budget indicativo", tools: "Strumenti usati oggi", problem: "Problema / risultato desiderato", submit: "Invia email", note: "Il sito è statico: il pulsante apre il tuo client email con il messaggio già composto.", subject: "Richiesta progetto cosmosXmachina", types: ["Audit automazione", "Web app / mini CRM", "Dashboard / report", "Assistente AI", "Integrazione API", "Sito / booking / CRM", "E-commerce", "Manutenzione", "MVP / prodotto digitale"], budgets: ["Da definire", "Meno di 1.500 EUR", "1.500 - 5.000 EUR", "5.000 - 10.000 EUR", "10.000+ EUR"], toolsPlaceholder: "Excel, email, CRM, Shopify, WooCommerce, Google Workspace...", problemPlaceholder: "Descrivi cosa succede oggi, cosa dovrebbe succedere e quali risultati vuoi ottenere." },
           footer: { text: "Software, AI automation e strumenti digitali da Treviso." }
         },
         en: {
@@ -438,7 +438,7 @@
           faq: { kicker: "FAQ", title: "Questions before opening the portal.", items: [["Do you only work on AI projects?", "No. I work on both AI and general software projects. The goal is choosing the right tool to reduce manual work and create operational value."], ["Where does a project start?", "Usually with a short discovery, then an audit, prototype or MVP depending on urgency, available data and technical risk."], ["Can you work with local companies?", "Yes. I am based in Treviso, with a natural focus on Veneto, Northern Italy and Italian clients, while also working in English for international projects."], ["How do you handle data and AI?", "AI systems can include human review, clear limits, logging and careful handling of privacy, data and professional responsibility."]] },
           contact: { kicker: "Contact", title: "Describe the workflow you want to transform.", text: "Tell me about the process, software problem or automation you want to improve. I can help define the scope and choose the fastest useful solution.", emailLabel: "Email:", linkedinLabel: "LinkedIn:" },
           trust: ["Human review where AI needs it.", "Careful data handling and clear boundaries.", "Privacy, legal and tax topics should be reviewed with qualified professionals when needed."],
-          form: { name: "Name", email: "Email", type: "Project type", budget: "Indicative budget", tools: "Tools used today", problem: "Problem / desired outcome", submit: "Prepare project email", note: "This is a static website: the button opens your email client with a pre-composed message.", subject: "cosmosXmachina project request", types: ["Automation audit", "Web app / mini CRM", "Dashboard / report", "AI assistant", "API integration", "Website / booking / CRM", "E-commerce", "Maintenance", "MVP / digital product"], budgets: ["To define", "Less than EUR 1,500", "EUR 1,500 - 5,000", "EUR 5,000 - 10,000", "EUR 10,000+"], toolsPlaceholder: "Excel, email, CRM, Shopify, WooCommerce, Google Workspace...", problemPlaceholder: "Describe what happens today, what should happen, and which outcome you want." },
+          form: { name: "Name", email: "Email", type: "Project type", budget: "Indicative budget", tools: "Tools used today", problem: "Problem / desired outcome", submit: "Send email", note: "This is a static website: the button opens your email client with a pre-composed message.", subject: "cosmosXmachina project request", types: ["Automation audit", "Web app / mini CRM", "Dashboard / report", "AI assistant", "API integration", "Website / booking / CRM", "E-commerce", "Maintenance", "MVP / digital product"], budgets: ["To define", "Less than EUR 1,500", "EUR 1,500 - 5,000", "EUR 5,000 - 10,000", "EUR 10,000+"], toolsPlaceholder: "Excel, email, CRM, Shopify, WooCommerce, Google Workspace...", problemPlaceholder: "Describe what happens today, what should happen, and which outcome you want." },
           footer: { text: "Software, AI automation and digital tools from Treviso." }
         }
       };
@@ -493,52 +493,52 @@
         const cyan = 0x70e4ff;
         const sectionPlans = {
           hero: [
-            { kind: "portal", position: [1.16, .18, -.18], mobile: [.68, -.22, -.3], scale: .68, colors: [blue, darkViolet, cyan, violet] },
-            { kind: "merkaba", position: [-1.18, -.5, -.08], mobile: [-.62, .36, -.28], scale: .5, colors: [violet, cyan, purple, blue] },
-            { kind: "nested", position: [1.46, -.58, -.24], mobile: [.34, .44, -.42], scale: .34, colors: [purple, blue, cyan, darkViolet] },
-            { kind: "prism", position: [-1.42, .44, -.22], mobile: [-.34, -.46, -.42], scale: .36, colors: [cyan, indigo, violet, purple] }
+            { kind: "portal", position: [1.46, .7, -.18], mobile: [.68, -.22, -.3], scale: .68, colors: [blue, darkViolet, cyan, violet] },
+            { kind: "merkaba", position: [1.8, -.7, -.08], mobile: [-.62, .36, -.28], scale: .5, colors: [violet, cyan, purple, blue] },
+            { kind: "nested", position: [-2.7, -1.1, -.24], mobile: [.34, .44, -.42], scale: .34, colors: [purple, blue, cyan, darkViolet] },
+            { kind: "prism", position: [-2.7, .44, -.22], mobile: [-.34, -.46, -.42], scale: .36, colors: [cyan, indigo, violet, purple] }
           ],
           problems: [
-            { kind: "nested", position: [1.28, .46, -.18], mobile: [.64, .34, -.32], scale: .52, colors: [purple, cyan, indigo, violet] },
-            { kind: "prism", position: [-1.14, -.38, -.06], mobile: [-.64, -.32, -.28], scale: .58, colors: [blue, violet, cyan, darkViolet] },
-            { kind: "portal", position: [1.4, -.52, -.24], mobile: [.3, -.48, -.42], scale: .36, colors: [cyan, purple, blue, violet] },
-            { kind: "merkaba", position: [-1.42, .52, -.24], mobile: [-.34, .48, -.42], scale: .34, colors: [darkViolet, cyan, indigo, blue] }
+            { kind: "nested", position: [3, -1, -.18], mobile: [.64, .34, -.32], scale: .52, colors: [purple, cyan, indigo, violet] },
+            { kind: "prism", position: [2.2 , 0.8, -.06], mobile: [-.64, -.32, -.28], scale: .58, colors: [blue, violet, cyan, darkViolet] },
+            { kind: "portal", position: [-3, -.6, -.24], mobile: [.3, -.48, -.42], scale: .36, colors: [cyan, purple, blue, violet] },
+            { kind: "merkaba", position: [-3, .52, -.24], mobile: [-.34, .48, -.42], scale: .34, colors: [darkViolet, cyan, indigo, blue] }
           ],
           services: [
-            { kind: "merkaba", position: [-1.18, -.56, -.08], mobile: [-.62, -.42, -.3], scale: .5, colors: [violet, blue, purple, cyan] },
-            { kind: "portal", position: [1.42, .72, -.18], mobile: [.68, .36, -.34], scale: .56, colors: [purple, cyan, darkViolet, blue] },
-            { kind: "nested", position: [1.52, -.42, -.28], mobile: [.28, -.5, -.44], scale: .34, colors: [blue, violet, cyan, indigo] },
-            { kind: "prism", position: [-1.44, .34, -.24], mobile: [-.32, .46, -.42], scale: .34, colors: [cyan, darkViolet, purple, blue] }
+            { kind: "merkaba", position: [-2.1, 1.1, -.08], mobile: [-.62, -.42, -.3], scale: .5, colors: [violet, blue, purple, cyan] },
+            { kind: "portal", position: [1.42, 1, -.18], mobile: [.68, .36, -.34], scale: .56, colors: [purple, cyan, darkViolet, blue] },
+            { kind: "nested", position: [2.1, -1.2, -.28], mobile: [.28, -.5, -.44], scale: .34, colors: [blue, violet, cyan, indigo] },
+            { kind: "prism", position: [-2.05, -0.5, -.24], mobile: [-.32, .46, -.42], scale: .34, colors: [cyan, darkViolet, purple, blue] }
           ],
           entry: [
-            { kind: "prism", position: [1.2, .42, -.16], mobile: [.62, .28, -.3], scale: .54, colors: [blue, cyan, violet, purple] },
-            { kind: "nested", position: [-1.18, -.48, -.04], mobile: [-.64, -.34, -.26], scale: .56, colors: [darkViolet, purple, cyan, indigo] },
-            { kind: "merkaba", position: [1.48, -.54, -.26], mobile: [.34, -.48, -.42], scale: .34, colors: [violet, blue, cyan, purple] },
-            { kind: "portal", position: [-1.42, .46, -.24], mobile: [-.32, .46, -.42], scale: .34, colors: [cyan, purple, darkViolet, blue] }
+            { kind: "prism", position: [1.8, .42, -.16], mobile: [.62, .28, -.3], scale: .54, colors: [blue, cyan, violet, purple] },
+            { kind: "nested", position: [-3.6, -.6, -.04], mobile: [-.64, -.34, -.26], scale: .56, colors: [darkViolet, purple, cyan, indigo] },
+            { kind: "merkaba", position: [3.5, 1.3, -.26], mobile: [.34, -.48, -.42], scale: .34, colors: [violet, blue, cyan, purple] },
+            { kind: "portal", position: [-1.42, 1.3, -.24], mobile: [-.32, .46, -.42], scale: .34, colors: [cyan, purple, darkViolet, blue] }
           ],
           process: [
-            { kind: "portal", position: [-1.18, .42, -.16], mobile: [-.64, .32, -.32], scale: .56, colors: [cyan, violet, blue, purple] },
-            { kind: "prism", position: [1.28, -.42, -.04], mobile: [.62, -.34, -.28], scale: .5, colors: [purple, blue, darkViolet, cyan] },
-            { kind: "nested", position: [1.46, .46, -.24], mobile: [.32, .46, -.42], scale: .34, colors: [blue, cyan, violet, darkViolet] },
-            { kind: "merkaba", position: [-1.42, -.48, -.24], mobile: [-.34, -.46, -.42], scale: .34, colors: [purple, indigo, cyan, violet] }
+            { kind: "portal", position: [1.8, .6, -.16], mobile: [-.64, .32, -.32], scale: .56, colors: [cyan, violet, blue, purple] },
+            { kind: "prism", position: [-2.8, -1, -.04], mobile: [.62, -.34, -.28], scale: .5, colors: [purple, blue, darkViolet, cyan] },
+            { kind: "nested", position: [-3, .46, -.24], mobile: [.32, .46, -.42], scale: .34, colors: [blue, cyan, violet, darkViolet] },
+            { kind: "merkaba", position: [2.9, -.48, -.24], mobile: [-.34, -.46, -.42], scale: .34, colors: [purple, indigo, cyan, violet] }
           ],
           stack: [
-            { kind: "nested", position: [1.3, .42, -.16], mobile: [.64, .34, -.34], scale: .52, colors: [blue, purple, cyan, violet] },
-            { kind: "merkaba", position: [-1.16, -.48, -.04], mobile: [-.62, -.34, -.28], scale: .5, colors: [cyan, darkViolet, violet, blue] },
-            { kind: "portal", position: [1.5, -.5, -.26], mobile: [.32, -.48, -.44], scale: .34, colors: [violet, cyan, blue, purple] },
-            { kind: "prism", position: [-1.44, .42, -.24], mobile: [-.34, .46, -.42], scale: .34, colors: [purple, blue, darkViolet, cyan] }
+            { kind: "nested", position: [1.4, 1.2, -.16], mobile: [.64, .34, -.34], scale: .52, colors: [blue, purple, cyan, violet] },
+            { kind: "merkaba", position: [2.1, -1.15, -.04], mobile: [-.62, -.34, -.28], scale: .5, colors: [cyan, darkViolet, violet, blue] },
+            { kind: "portal", position: [-2.5, -.1, -.26], mobile: [.32, -.48, -.44], scale: .34, colors: [violet, cyan, blue, purple] },
+            { kind: "prism", position: [0, -1.2, -.24], mobile: [-.34, .46, -.42], scale: .34, colors: [purple, blue, darkViolet, cyan] }
           ],
           faq: [
-            { kind: "portal", position: [1.14, .38, -.14], mobile: [.62, .32, -.3], scale: .5, colors: [violet, blue, purple, cyan] },
-            { kind: "nested", position: [-1.16, -.4, -.06], mobile: [-.62, -.32, -.28], scale: .5, colors: [purple, cyan, indigo, violet] },
-            { kind: "prism", position: [1.42, -.5, -.24], mobile: [.3, -.46, -.42], scale: .34, colors: [blue, darkViolet, cyan, violet] },
-            { kind: "merkaba", position: [-1.4, .46, -.24], mobile: [-.32, .46, -.42], scale: .34, colors: [cyan, purple, blue, indigo] }
+            { kind: "portal", position: [1.8, .8, -.14], mobile: [.62, .32, -.3], scale: .5, colors: [violet, blue, purple, cyan] },
+            { kind: "nested", position: [-3.1, -1.1, -.06], mobile: [-.62, -.32, -.28], scale: .5, colors: [purple, cyan, indigo, violet] },
+            { kind: "prism", position: [3.2, -.5, -.24], mobile: [.3, -.46, -.42], scale: .34, colors: [blue, darkViolet, cyan, violet] },
+            { kind: "merkaba", position: [-3.2, 1.2, -.24], mobile: [-.32, .46, -.42], scale: .34, colors: [cyan, purple, blue, indigo] }
           ],
           contact: [
-            { kind: "prism", position: [-1.16, .28, -.16], mobile: [-.62, .26, -.34], scale: .54, colors: [violet, cyan, darkViolet, blue] },
-            { kind: "merkaba", position: [1.18, -.42, -.06], mobile: [.64, -.34, -.28], scale: .48, colors: [blue, purple, cyan, violet] },
-            { kind: "portal", position: [1.46, .4, -.28], mobile: [.32, .46, -.44], scale: .32, colors: [purple, cyan, indigo, blue] },
-            { kind: "nested", position: [-1.42, -.5, -.24], mobile: [-.32, -.48, -.42], scale: .34, colors: [cyan, violet, darkViolet, purple] }
+            { kind: "prism", position: [-3.1, .5, -.16], mobile: [-.62, .26, -.34], scale: .54, colors: [violet, cyan, darkViolet, blue] },
+            { kind: "merkaba", position: [3, -.42, -.06], mobile: [.64, -.34, -.28], scale: .48, colors: [blue, purple, cyan, violet] },
+            { kind: "portal", position: [3.2, 1.2, -.28], mobile: [.32, .46, -.44], scale: .32, colors: [purple, cyan, indigo, blue] },
+            { kind: "nested", position: [-2.9, -1.4, -.24], mobile: [-.32, -.48, -.42], scale: .34, colors: [cyan, violet, darkViolet, purple] }
           ]
         };
 
