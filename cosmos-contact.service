@@ -1,0 +1,15 @@
+[Unit]
+Description=cosmosXmachina contact SMTP endpoint
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/var/www/cosmosXmachina.website.github.io
+ExecStart=/usr/bin/node /var/www/cosmosXmachina.website.github.io/api/contact.js
+Restart=always
+RestartSec=5
+User=www-data
+Environment=NODE_ENV=production
+
+[Install]
+WantedBy=multi-user.target
