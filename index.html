@@ -458,6 +458,39 @@
       const get = (path, lang) => path.split(".").reduce((value, key) => value?.[key], copy[lang]);
       const card = (title, text) => `<article class="card"><h3>${title}</h3><p>${text}</p></article>`;
 
+      function validLang(value) {
+        return value === "it" || value === "en" ? value : "";
+      }
+
+      function langFromUrl() {
+        return validLang(new URL(location.href).searchParams.get("lang"));
+      }
+
+      function storedLang() {
+        return validLang(localStorage.getItem("cosmos-lang"));
+      }
+
+      function langFromClient() {
+        const languages = navigator.languages?.length ? navigator.languages : [navigator.language];
+        for (const code of languages) {
+          const lang = String(code || "").toLowerCase();
+          if (lang === "it" || lang.startsWith("it-")) return "it";
+          if (lang === "en" || lang.startsWith("en-")) return "en";
+        }
+        return "it";
+      }
+
+      function initialLang() {
+        return langFromUrl() || storedLang() || langFromClient();
+      }
+
+      function removeLangParamFromUrl() {
+        const url = new URL(location.href);
+        if (!url.searchParams.has("lang")) return;
+        url.searchParams.delete("lang");
+        history.replaceState(history.state, "", `${url.pathname}${url.search}${url.hash}`);
+      }
+
       function render(lang) {
         document.documentElement.lang = lang;
         document.title = lang === "it" ? "cosmosXmachina | Software su misura, AI e automazioni" : "cosmosXmachina | Custom software and AI automation";
@@ -536,8 +569,13 @@
           button.disabled = false;
         }
       });
-      $$("[data-lang-switch]").forEach(button => button.addEventListener("click", () => render(button.dataset.langSwitch)));
-      render(localStorage.getItem("cosmos-lang") || "it");
+      $$("[data-lang-switch]").forEach(button => button.addEventListener("click", () => {
+        const lang = validLang(button.dataset.langSwitch);
+        if (!lang) return;
+        removeLangParamFromUrl();
+        render(lang);
+      }));
+      render(initialLang());
     </script>
     <script type="module">
       import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.min.js";

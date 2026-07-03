@@ -18,17 +18,19 @@ Use these files in order:
 ## Current Website Rules
 
 - The site is a single-page GitHub Pages website in `index.html`.
-- `index.html` is the static production version.
-- `index3d.html` is the approved experimental Three.js version and must remain separate from `index.html`.
+- `index.html` is the production 3D version and the canonical homepage.
+- `index2D.html` is the older non-3D fallback/reference version.
+- `index_temp.html` is scratch/experiment space and can be ignored unless the user explicitly asks about it.
 - The base approved stack is HTML, CSS, vanilla JavaScript and static image assets.
-- `index3d.html` may load Three.js as a pinned CDN ES module.
+- `index.html` may load Three.js as a pinned CDN ES module for the approved 3D layer.
 - Approved contact backend: `api/contact.js`, a no-dependency Node SMTP endpoint for the project intake form. It sends through Gmail SMTP using the project `.env` file only. Never put Gmail app passwords or SMTP secrets in `index.html` or any committed file.
 - GitHub Pages alone cannot execute `api/contact.js`; deploy the endpoint on a Node/serverless host or serve the site from a platform that supports `/api/contact`. Keep the `mailto:` fallback in `index.html`.
-- Do not add frameworks, package managers, external CSS/JS libraries beyond the approved Three.js import in `index3d.html`, analytics or additional form backends without user approval.
+- Do not add frameworks, package managers, external CSS/JS libraries beyond the approved Three.js import in `index.html`, analytics or additional form backends without user approval.
 - If a new technology is approved, update both this file and `cosmos_interface.md`.
 - The About/Profile section has been removed and must not be reintroduced unless requested.
 - The FAQ must not contain portfolio/demo questions or references.
 - Real contact links are now approved: `davide.deon@gmail.com`, Italian LinkedIn `https://www.linkedin.com/in/vash-vacuum/`, English LinkedIn `https://www.linkedin.com/in/vash-vacuum/?locale=en_US`.
+- Language selection priority is URL `?lang=it|en`, then saved `localStorage` value `cosmos-lang`, then browser/system language, then Italian fallback. Header language buttons must remove only the `lang` URL parameter and then save/render the clicked language.
 
 ## Visual Direction
 
@@ -43,11 +45,11 @@ Current main palette:
 
 Do not return to yellow/gold accents. Purple text accents should stay relatively dark, not pastel. Each major section has its own generated background image, with CSS sacred-geometry overlays to create movement and section-to-section transition while scrolling; overlays should not hide the generated images too much.
 
-The `index3d.html` text treatment uses dark-blue outline/shadow support so headings and key copy feel lifted from the animated background layers while staying readable. Its header uses `assets/cxm-logo.svg`, a small sacred-geometry `cXm` mark. Keep the logo vector-editable unless the user asks for a raster image.
+The `index.html` text treatment uses dark-blue outline/shadow support so headings and key copy feel lifted from the animated background layers while staying readable. Its header uses `assets/cxm-logo.svg`, a small sacred-geometry `cXm` mark. Keep the logo vector-editable unless the user asks for a raster image.
 
 The 3D version should use solid procedural sacred-geometry structures layered between section background images and text. It renders exactly four structures per active section with one reusable Three.js canvas, places them in negative-space areas around text/cards, and must avoid visible circular rings, orbital halos, circular platforms or outward ray-burst elements in the 3D objects. Keep object counts restrained, respect reduced-motion preferences and avoid heavy post-processing.
 
-`index3d.html` motion/effects rules:
+`index.html` 3D motion/effects rules:
 
 - Use solid nested geometry only: merkaba, prism tower, nested sigil and portal diamond variants built from Three.js primitives.
 - Give nested layers varied approved blue, dark purple, dark violet, indigo, violet and cyan colors.
@@ -62,5 +64,5 @@ The 3D version should use solid procedural sacred-geometry structures layered be
 - Italian remains the priority market language.
 - Do not invent claims, testimonials, client results, demos or case studies.
 - Preserve accessibility basics: semantic sections, readable contrast, focus states, mobile-first layout and reduced-motion support.
-- When changing visual style, start with CSS variables and section background assignments in `index.html` and mirror intentional changes into `index3d.html` when appropriate.
-- When changing content, update the bilingual `copy` object in both page variants when appropriate.
+- When changing visual style, start with CSS variables and section background assignments in `index.html`.
+- When changing content, update the bilingual `copy` object in `index.html`; only mirror to `index2D.html` if the user explicitly wants the fallback version maintained.

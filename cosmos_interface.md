@@ -7,7 +7,8 @@ This file documents the architecture, technologies, visual system and implementa
 ## Current Build
 
 - Main file: `index.html`
-- Experimental 3D variant: `index3d.html`
+- Legacy/reference 2D file: `index2D.html`
+- Scratch/experiment file: `index_temp.html`, ignored unless explicitly needed
 - Asset folder: `assets/`
 - README: `README.md` documents GitHub Pages publishing
 - Installation guide: `installation.md` documents dependencies, fresh-machine setup and contact endpoint deployment
@@ -15,11 +16,11 @@ This file documents the architecture, technologies, visual system and implementa
 - Architecture: single-page website based on `cosmos_business.md` Section 18.5, variant 1
 - Languages: Italian and English, switched client-side
 - Current base tech stack: HTML, CSS, vanilla JavaScript, static image assets
-- Additional approved technology for `index3d.html` only: Three.js loaded as a pinned CDN ES module
+- Additional approved technology for `index.html`: Three.js loaded as a pinned CDN ES module
 - Approved contact backend: `api/contact.js`, a no-dependency Node SMTP endpoint that sends the project intake form through Gmail SMTP using the project `.env` file
 - No build step, framework, package manager or analytics is currently approved
 
-Any new technology beyond the static stack, the `index3d.html` Three.js experiment and the approved contact endpoint must be approved by the user first, then documented in both `AGENTS.md` and this file.
+Any new technology beyond the static stack, the approved `index.html` Three.js layer and the approved contact endpoint must be approved by the user first, then documented in both `AGENTS.md` and this file.
 
 ## Public Brand And Contacts
 
@@ -54,11 +55,11 @@ The About/Profile section was intentionally removed. There is no demo, portfolio
 
 ## File Variants
 
-`index.html` is the production static version without Three.js. Keep it fast, dependency-free and easy to host.
+`index.html` is the canonical production homepage and includes the approved Three.js solid sacred-geometry layer. GitHub Pages serves this file at the site root.
 
-`index3d.html` is a cloned experimental version that adds a Three.js solid sacred-geometry layer. It is used to test and refine the 3D direction without risking the simpler production file.
+`index2D.html` is the older non-3D fallback/reference page. Do not treat it as the main implementation unless the user asks to restore or maintain the 2D version.
 
-GitHub Pages serves `index.html` as the root page. To publish the 3D version as the public homepage, manually copy or rename `index3d.html` to `index.html` before pushing, or visitors will only see it at `/index3d.html`.
+`index_temp.html` is scratch/experiment space and can be ignored unless the user explicitly asks about it.
 
 The 3D version imports Three.js as a pinned ES module:
 
@@ -115,6 +116,15 @@ The `render(lang)` function:
 - updates form select options and placeholders
 - stores the chosen language in `localStorage` under `cosmos-lang`
 
+Initial language selection is resolved before `render()` with this priority:
+
+1. valid URL parameter `?lang=it` or `?lang=en`
+2. saved `localStorage` value `cosmos-lang`
+3. browser/system language from `navigator.languages` or `navigator.language`
+4. Italian fallback
+
+The header language buttons still call `render(lang)`, but first remove only the `lang` URL parameter with `history.replaceState`, preserving other query parameters and the hash. Manual button choice therefore overrides URL language and becomes the new saved preference.
+
 The form submit handler:
 
 - prevents default submission
@@ -147,7 +157,7 @@ The site deliberately avoids yellow/gold accents. Headings use gradient text bas
 
 The 3D variant adds a dark-blue heading stroke, layered text shadows and light drop shadows around text clusters so copy appears suspended above the background and 3D layers. The heading gradient now includes a controlled dark-blue band alongside white, blue, purple and violet.
 
-Header branding in `index3d.html` uses `assets/cxm-logo.svg`, a compact vector sacred-geometry mark with the `cXm` initials. Keep it as SVG for crisp display and easy future edits.
+Header branding in `index.html` uses `assets/cxm-logo.svg`, a compact vector sacred-geometry mark with the `cXm` initials. Keep it as SVG for crisp display and easy future edits.
 
 ## Background Asset System
 
@@ -216,13 +226,13 @@ Performance notes:
 
 - The frontend remains static. Gmail SMTP delivery requires the `api/contact.js` Node endpoint; pure GitHub Pages hosting can only use the `mailto:` backup unless the endpoint is deployed elsewhere.
 - Background images are large PNG files. If performance becomes an issue, convert them to optimized WebP/AVIF while keeping fallbacks or updating references.
-- No analytics or external scripts are loaded.
+- No analytics are loaded; the only approved external frontend script is the pinned Three.js ES module.
 
 ## Future Evolution
 
 Potential future changes that require user approval before implementation:
 
-- promoting the Three.js experiment into the production `index.html`, adding native WebGL, or adding heavier 3D tooling
+- adding native WebGL beyond Three.js, post-processing, model loaders, physics or heavier 3D tooling
 - Analytics or conversion tracking
 - Additional backend form handling, CRM writes or third-party form services beyond `api/contact.js`
 - Dedicated service pages

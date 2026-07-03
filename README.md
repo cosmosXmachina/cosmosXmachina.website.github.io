@@ -1,11 +1,12 @@
 # cosmosXmachina Website
 
-Static bilingual website for **cosmosXmachina**, built for GitHub Pages.
+Static bilingual 3D website for **cosmosXmachina**, built for GitHub Pages or any static host with an optional Node contact endpoint.
 
 ## Current Files
 
-- `index.html`: current static production page without Three.js.
-- `index3d.html`: current preferred 3D version with the approved Three.js symbol layer.
+- `index.html`: canonical production homepage with the approved Three.js symbol layer.
+- `index2D.html`: older non-3D fallback/reference page.
+- `index_temp.html`: scratch/experiment page; ignore it unless intentionally testing something.
 - `assets/`: generated section backgrounds and the `cxm-logo.svg` header mark.
 - `AGENTS.md`: short operating guide for future agents.
 - `cosmos_interface.md`: detailed architecture and implementation notes.
@@ -13,7 +14,7 @@ Static bilingual website for **cosmosXmachina**, built for GitHub Pages.
 
 ## GitHub Pages Publishing
 
-GitHub Pages serves `index.html` as the root homepage. If the 3D version should be the main public website, manually copy or rename `index3d.html` to `index.html` before publishing. If both files stay as they are, visitors will see the non-3D version at `/` and the 3D version only at `/index3d.html`.
+GitHub Pages serves `index.html` as the root homepage. The 3D version is already the canonical `index.html`, so no rename step is needed.
 
 Recommended procedure:
 
@@ -23,13 +24,12 @@ Recommended procedure:
    python -m http.server 4173 --bind 127.0.0.1
    ```
 
-2. Open `http://127.0.0.1:4173/index3d.html` and confirm the 3D version is the one to publish.
-3. If yes, copy or rename `index3d.html` to `index.html`.
-4. Commit and push the repository to GitHub.
-5. In GitHub, open **Settings > Pages**.
-6. Set **Source** to **Deploy from a branch**.
-7. Select the publishing branch, usually `main`, and folder `/root`.
-8. Save. GitHub will publish the site after the Pages build completes.
+2. Open `http://127.0.0.1:4173/index.html` and confirm the production page.
+3. Commit and push the repository to GitHub.
+4. In GitHub, open **Settings > Pages**.
+5. Set **Source** to **Deploy from a branch**.
+6. Select the publishing branch, usually `main`, and folder `/root`.
+7. Save. GitHub will publish the site after the Pages build completes.
 
 ## Static Hosting Notes
 
