@@ -5,6 +5,8 @@ Static bilingual 3D website for **cosmosXmachina**, built for GitHub Pages or an
 ## Current Files
 
 - `index.html`: canonical production homepage with the approved Three.js symbol layer.
+- `assets/design-modes.css`: shared styling for five optional design directions.
+- `index-hermetic-observatory.html`, `index-prismatic-glass-atelier.html`, `index-arcane-editorial-codex.html`, `index-digital-cathedral.html`, `index-transmutation-system-map.html`: named preview entry points that redirect to the canonical page with a `design` parameter.
 - `index2D.html`: older non-3D fallback/reference page.
 - `index_temp.html`: scratch/experiment page; ignore it unless intentionally testing something.
 - `assets/`: generated section backgrounds and the `cxm-logo.svg` header mark.

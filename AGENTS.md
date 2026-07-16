@@ -19,6 +19,7 @@ Use these files in order:
 
 - The site is a single-page GitHub Pages website in `index.html`.
 - `index.html` is the production 3D version and the canonical homepage.
+- `assets/design-modes.css` contains five approved visual preview modes selected by `?design=<slug>`; the named `index-*.html` files are thin redirect entry points and must not duplicate the site implementation.
 - `index2D.html` is the older non-3D fallback/reference version.
 - `index_temp.html` is scratch/experiment space and can be ignored unless the user explicitly asks about it.
 - The base approved stack is HTML, CSS, vanilla JavaScript and static image assets.
@@ -43,19 +44,21 @@ Current main palette:
 - dark violet: `#25104f`
 - supporting glow colors: darker indigo/violet/purple/blue and cyan
 
-Do not return to yellow/gold accents. Purple text accents should stay relatively dark, not pastel. Each major section has its own generated background image, with CSS sacred-geometry overlays to create movement and section-to-section transition while scrolling; overlays should not hide the generated images too much.
+Do not return to yellow/gold accents. Purple text accents should stay relatively dark, not pastel. Major sections alternate between dark generated backgrounds and luminous pearl/ice-blue sacred-geometry backgrounds; overlays should not hide the images too much and no visible divider may interrupt the transition between sections.
 
-The `index.html` text treatment uses dark-blue outline/shadow support so headings and key copy feel lifted from the animated background layers while staying readable. Its header uses `assets/cxm-logo.svg`, a small sacred-geometry `cXm` mark. Keep the logo vector-editable unless the user asks for a raster image.
+The `index.html` text treatment uses dark-blue outline/shadow support so headings and key copy feel lifted from the animated background layers while staying readable. Light-section titles use a high-contrast deep navy treatment with subtle violet support. Its header uses `assets/cxm-logo.svg`, a small sacred-geometry `cXm` mark. Keep the logo vector-editable unless the user asks for a raster image.
 
-The 3D version should use solid procedural sacred-geometry structures layered between section background images and text. It renders exactly four structures per active section with one reusable Three.js canvas, places them in negative-space areas around text/cards, and must avoid visible circular rings, orbital halos, circular platforms or outward ray-burst elements in the 3D objects. Keep object counts restrained, respect reduced-motion preferences and avoid heavy post-processing.
+The 3D version should use solid procedural sacred-geometry structures layered between section background images and text. It renders exactly two structures per active section with one reusable Three.js canvas. Place them in responsive side rails outside the central `.wrap`; when side rails are too narrow, move them into reserved top/bottom section padding and scale them to remain inside the page without crossing the content zone. Avoid visible circular rings, orbital halos, circular platforms or outward ray-burst elements. Keep object counts restrained, respect reduced-motion preferences and avoid heavy post-processing.
 
 `index.html` 3D motion/effects rules:
 
-- Use solid nested geometry only: merkaba, prism tower, nested sigil and portal diamond variants built from Three.js primitives.
+- Use the ten approved low-poly artifact families built from Three.js primitives: Fire Tetra Crown, Earth Cubic Vault, Air Octa Engine, Water Icosa Bloom, Aether Dodeca Core, Azoth Merkaba, Philosopher Gate, Hermetic Prism, Celestial Sigil and Prima Materia.
+- The concept sheet is a visual reference only; runtime objects remain procedural and use the shared shader, not raster textures or external models.
 - Give nested layers varied approved blue, dark purple, dark violet, indigo, violet and cyan colors.
 - Use always-moving multicolor wave bands and soft glow as the base state.
 - On hover, use raycasting to increase glow and speed up metallic rainbow interference, without adding ray-burst geometry.
 - Rotate objects with randomized changing axes/directions every few seconds; do not return to a single fixed vertical spin.
+- Cards, accordions, contact panels and major text clusters should gain a restrained glow/shine response plus a visible but controlled panel-background color shift on hover while preserving readability and layout stability.
 
 ## Maintenance Rules
 

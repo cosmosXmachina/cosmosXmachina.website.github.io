@@ -7,6 +7,8 @@ This file documents the architecture, technologies, visual system and implementa
 ## Current Build
 
 - Main file: `index.html`
+- Optional visual-mode stylesheet: `assets/design-modes.css`
+- Five named visual preview entry files: `index-hermetic-observatory.html`, `index-prismatic-glass-atelier.html`, `index-arcane-editorial-codex.html`, `index-digital-cathedral.html`, `index-transmutation-system-map.html`
 - Legacy/reference 2D file: `index2D.html`
 - Scratch/experiment file: `index_temp.html`, ignored unless explicitly needed
 - Asset folder: `assets/`
@@ -61,6 +63,8 @@ The About/Profile section was intentionally removed. There is no demo, portfolio
 
 `index_temp.html` is scratch/experiment space and can be ignored unless the user explicitly asks about it.
 
+The five named visual preview files are intentionally tiny redirectors. They preserve the incoming query string and hash, add their `design` parameter, and load the canonical `index.html`; they do not duplicate content, language logic, forms or Three.js code. The modes are marked `noindex` at the entry-file level and are intended for design comparison.
+
 The 3D version imports Three.js as a pinned ES module:
 
 ```js
@@ -70,9 +74,9 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.m
 The 3D layer:
 
 - uses one transparent `<canvas class="alchemy-3d">`
-- renders four solid procedural structures per major section
+- renders two solid procedural structures per major section
 - places symbols between generated section background images and text
-- uses section-specific negative-space placement profiles so structures fill open areas and avoid sitting under dense text, cards or the contact form where possible
+- derives symbol placement from the live section and `.wrap` bounding boxes: desktop uses the left/right side rails outside content, while narrow layouts use reserved top/bottom padding; scale is clamped to keep each object inside the page and outside the content zone
 - uses different structure pairings per section
 - moves the same renderer/canvas into the currently active section instead of creating many WebGL contexts
 - contains no visible circular 3D rings, orbital halos or circular platforms; edge outlines must follow the solid geometry itself
@@ -82,25 +86,40 @@ The 3D layer:
 - rotates with randomized changing axes and directions every 2.5-5 seconds instead of a single fixed vertical spin
 - disables itself for `prefers-reduced-motion: reduce`
 
-Current Three.js section sets:
+Current Three.js section pairs:
 
-- Hero: portal diamond, merkaba, nested sigil and prism tower
-- Problems: nested sigil, prism tower, portal diamond and merkaba
-- Services: merkaba, portal diamond, nested sigil and prism tower
-- Entry offers: prism tower, nested sigil, merkaba and portal diamond
-- Process: portal diamond, prism tower, nested sigil and merkaba
-- Stack: nested sigil, merkaba, portal diamond and prism tower
-- FAQ: portal diamond, nested sigil, prism tower and merkaba
-- Contact: prism tower, merkaba, portal diamond and nested sigil
+- Hero: Philosopher Gate and Azoth Merkaba
+- Problems: Earth Cubic Vault and Air Octa Engine
+- Services: Hermetic Prism and Aether Dodeca Core
+- Entry offers: Fire Tetra Crown and Water Icosa Bloom
+- Process: Celestial Sigil and Philosopher Gate
+- Stack: Aether Dodeca Core and Prima Materia
+- FAQ: Water Icosa Bloom and Celestial Sigil
+- Contact: Hermetic Prism and Azoth Merkaba
 
 Current procedural builders:
 
-- `createMerkaba()`: dual tetrahedrons, inner octahedrons, small diamond and a thin angular crystal core
-- `createPrismTower()`: faceted hex prism, top crystal cap, inner shard and tiered angular base
-- `createNestedSigil()`: stacked octahedron, icosahedron, tetrahedron and vertical angular core
-- `createPortalDiamond()`: tall faceted octahedron/diamond with inner cone/tetrahedron layers and side shards
+- `createFireTetraCrown()` and `createEarthCubicVault()`
+- `createAirOctaEngine()` and `createWaterIcosaBloom()`
+- `createAetherDodecaCore()` and `createAzothMerkaba()`
+- `createPhilosopherGate()` and `createHermeticPrism()`
+- `createCelestialSigil()` and `createPrimaMateria()`
+
+These ten artifact families translate the approved three-view concept sheet into built-in low-detail Three.js primitives. Nested layers share a compact set of shader materials per artifact, so there are no raster textures, external models or texture downloads at runtime. Only two artifact groups are active at once.
 
 Keep the 3D implementation compact. Avoid post-processing passes, GLTF assets, texture loading, physics engines or many WebGL renderers unless the user explicitly approves a heavier 3D direction.
+
+## Visual Preview Modes
+
+The canonical page reads a valid `design` query parameter before CSS paints and stores it on `<html data-design>`. `assets/design-modes.css` then applies one of five complete visual systems while the HTML, bilingual copy, form behavior and Three.js runtime stay shared:
+
+- `hermetic-observatory`: dark astronomical editorial layout, serif display typography and fine coordinate rules
+- `prismatic-glass-atelier`: luminous crystalline backgrounds, deep-blue copy and translucent glass surfaces
+- `arcane-editorial-codex`: light editorial system with a desktop navigation rail and folio-like rules
+- `digital-cathedral`: monumental centered dark composition with architectural spacing and vertical accents
+- `transmutation-system-map`: dense systems-oriented layout with connected modules, coded accents and a split hero
+
+The matching named `index-*.html` entry files add the correct mode and redirect to `index.html`. Any `lang`, other query parameters and section hash are preserved. The header language buttons remove only `lang`, so a selected design remains active. Add future visual modes to the early allowlist in `index.html`, implement them in `assets/design-modes.css`, and create a thin entry redirect; do not fork the site content or JavaScript.
 
 ## Content Architecture
 
@@ -153,38 +172,39 @@ Supporting glow palette:
 - `--blue: #3f86e8`
 - `--cyan: #70e4ff`
 
-The site deliberately avoids yellow/gold accents. Headings use gradient text based on the violet, purple and blue family, with darker purple accents rather than pastel purple. Cards use translucent dark panels with blur and light borders.
+The site deliberately avoids yellow/gold accents. Dark-section headings use gradient text based on the violet, purple and blue family, with darker purple accents rather than pastel purple. Light-section titles use solid deep navy with restrained violet edge/shadow support for reliable contrast. Dark sections use translucent dark panels; light sections use translucent pearl/ice-blue panels. Cards, accordions, contact panels, form fields and major text clusters use restrained hover glow/shine feedback plus a controlled panel-background color shift.
 
-The 3D variant adds a dark-blue heading stroke, layered text shadows and light drop shadows around text clusters so copy appears suspended above the background and 3D layers. The heading gradient now includes a controlled dark-blue band alongside white, blue, purple and violet.
+The 3D version adds a dark-blue heading stroke, layered text shadows and light drop shadows around text clusters so copy appears suspended above the background and 3D layers. Dark backgrounds retain the blue/purple/violet gradient; luminous sections use the high-contrast deep-navy title treatment described above.
 
 Header branding in `index.html` uses `assets/cxm-logo.svg`, a compact vector sacred-geometry mark with the `cXm` initials. Keep it as SVG for crisp display and easy future edits.
 
 ## Background Asset System
 
-Each major section has its own generated raster background image. These are blended with CSS gradients and sacred-geometry overlays through `::before` and `::after` pseudo-elements. The overlays should preserve readability while letting the image remain visibly present.
+Each major section has its own generated raster background image. These are blended with CSS gradients and sacred-geometry overlays through `::before` and `::after` pseudo-elements. Sections alternate dark/light by page position: dark on hero, services, process and FAQ; light on problems, entry offers, stack and contact. The overlays preserve readability while letting the image remain visibly present, and there are no borders between major sections.
 
 Current assets:
 
 - `assets/cosmos-hero.png` for the hero
-- `assets/section-problems.png` for problems
+- `assets/section-problems-light.png` for problems
 - `assets/section-services.png` for services
-- `assets/section-entry.png` for entry offers
+- `assets/section-entry-light.png` for entry offers
 - `assets/section-process.png` for process
-- `assets/section-stack.png` for technologies
+- `assets/section-stack-light.png` for technologies
 - `assets/section-faq.png` for FAQ
-- `assets/section-contact.png` for contact
+- `assets/section-contact-light.png` for contact
+- `assets/concepts/cxm-symbol-concepts-01.png` is the numbered ten-object, three-view source sheet for the current procedural artifact families; it remains a design reference and is not loaded by the website
 
 Section assignments are declared in CSS:
 
 ```css
 .hero { --bg-img: url("assets/cosmos-hero.png"); }
-#problems { --bg-img: url("assets/section-problems.png"); }
+#problems { --bg-img: url("assets/section-problems-light.png"); }
 #services { --bg-img: url("assets/section-services.png"); }
-#entry { --bg-img: url("assets/section-entry.png"); }
+#entry { --bg-img: url("assets/section-entry-light.png"); }
 #process { --bg-img: url("assets/section-process.png"); }
-#stack { --bg-img: url("assets/section-stack.png"); }
+#stack { --bg-img: url("assets/section-stack-light.png"); }
 #faq { --bg-img: url("assets/section-faq.png"); }
-#contact { --bg-img: url("assets/section-contact.png"); }
+#contact { --bg-img: url("assets/section-contact-light.png"); }
 ```
 
 Desktop uses CSS `background-attachment: fixed` when supported to create a light parallax feeling between sections. Mobile uses normal scrolling for compatibility and performance.
