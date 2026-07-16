@@ -9,7 +9,7 @@ Static bilingual 3D website for **cosmosXmachina**, built for GitHub Pages or an
 - `index-hermetic-observatory.html`, `index-prismatic-glass-atelier.html`, `index-arcane-editorial-codex.html`, `index-digital-cathedral.html`, `index-transmutation-system-map.html`: named preview entry points that redirect to the canonical page with a `design` parameter.
 - `index2D.html`: older non-3D fallback/reference page.
 - `index_temp.html`: scratch/experiment page; ignore it unless intentionally testing something.
-- `assets/`: generated section backgrounds and the `cxm-logo.svg` header mark.
+- `assets/`: generated section backgrounds and the shared `cxm-logo.svg` header/favicon mark.
 - `AGENTS.md`: short operating guide for future agents.
 - `cosmos_interface.md`: detailed architecture and implementation notes.
 - `installation.md`: dependencies, fresh-machine setup and run/deploy checklist.

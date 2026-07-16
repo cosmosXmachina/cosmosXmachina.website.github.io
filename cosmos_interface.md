@@ -176,7 +176,7 @@ The site deliberately avoids yellow/gold accents. Dark-section headings use grad
 
 The 3D version adds a dark-blue heading stroke, layered text shadows and light drop shadows around text clusters so copy appears suspended above the background and 3D layers. Dark backgrounds retain the blue/purple/violet gradient; luminous sections use the high-contrast deep-navy title treatment described above.
 
-Header branding in `index.html` uses `assets/cxm-logo.svg`, a compact vector sacred-geometry mark with the `cXm` initials. Keep it as SVG for crisp display and easy future edits.
+Header branding and the `sizes="any"` browser favicon in `index.html` both use `assets/cxm-logo.svg`, a compact vector sacred-geometry mark with the `cXm` initials. The shared SVG keeps the tab icon crisp without adding a duplicate asset; keep it vector-based for easy future edits.
 
 ## Background Asset System
 
