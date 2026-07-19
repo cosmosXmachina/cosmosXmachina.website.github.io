@@ -1,61 +1,100 @@
-# cosmosXmachina Website
+# cosmosXmachina Website and Creation Lab
 
-Static bilingual 3D website for **cosmosXmachina**, built for GitHub Pages or any static host with an optional Node contact endpoint.
+This repository contains the bilingual cosmosXmachina homepage, the public Creation Lab portfolio, ten independent product demonstrations, the Gmail SMTP contact route, and the private deterministic lab services.
 
-## Current Files
+The approved product plan is preserved in creation_lab_plan.md.
 
-- `index.html`: canonical production homepage with the approved Three.js symbol layer.
-- `index2D.html`: older non-3D fallback/reference page.
-- `index_temp.html`: scratch/experiment page; ignore it unless intentionally testing something.
-- `assets/`: generated section backgrounds and the `cxm-logo.svg` header mark.
-- `AGENTS.md`: short operating guide for future agents.
-- `cosmos_interface.md`: detailed architecture and implementation notes.
-- `installation.md`: dependencies, fresh-machine setup and run/deploy checklist.
+## Public Surface
 
-## GitHub Pages Publishing
+- index.html is the canonical homepage. Its Three.js composition, SMTP behavior, language precedence, and contact endpoint remain intact.
+- portfolio/index.html is the Creation Lab index.
+- portfolio/<demo-slug>/ contains the ten complete demonstrations.
+- assets/ contains homepage media and deliberate public portfolio images.
+- dist/ is the only production web root. It is generated and is never committed.
 
-GitHub Pages serves `index.html` as the root homepage. The 3D version is already the canonical `index.html`, so no rename step is needed.
+Every portfolio system uses Orion Works, a clearly fictional Veneto SME, and synthetic data. Version 1 makes no request to an external AI provider.
 
-Recommended procedure:
+## Runtime Architecture
 
-1. Preview locally from the repository root:
+Production has three layers:
 
-   ```bash
-   python -m http.server 4173 --bind 127.0.0.1
-   ```
+1. Nginx serves dist/ and proxies /api/*.
+2. api/server.mjs binds to 127.0.0.1:8787 and handles SMTP, sessions, workflow validation, and Node-based demonstrations.
+3. python_service binds to 127.0.0.1:8790 and runs deterministic document, retrieval, and catalog pipelines.
 
-2. Open `http://127.0.0.1:4173/index.html` and confirm the production page.
-3. Commit and push the repository to GitHub.
-4. In GitHub, open **Settings > Pages**.
-5. Set **Source** to **Deploy from a branch**.
-6. Select the publishing branch, usually `main`, and folder `/root`.
-7. Save. GitHub will publish the site after the Pages build completes.
+Both services are private loopback processes managed by systemd. The public internet reaches them only through Nginx on the same origin.
 
-## Static Hosting Notes
+The Spring Boot/JUnit project in architecture-fixture is CI evidence for Architecture Rescue Lab. Java is not a production dependency.
 
-- Keep asset paths relative, such as `assets/cxm-logo.svg`.
-- File names are case-sensitive on GitHub Pages.
-- The 3D version loads Three.js from the pinned CDN URL documented in `cosmos_interface.md`.
-- No build step or package install is required.
-- For a custom domain, add it in **Settings > Pages** and create the DNS records GitHub requests.
+## Quick Start
 
-## Contact Form SMTP Endpoint
+Requirements:
 
-`index.html` posts the project intake form to `/api/contact`. The endpoint is `api/contact.js`, a no-dependency Node handler that sends mail through Gmail SMTP.
+- Node.js 22 or a compatible current LTS release
+- Python 3.11 or newer
+- npm
+- A Gmail account with an app password for real contact delivery
 
-GitHub Pages does not run Node API routes. The Gmail SMTP mail system requires `api/contact.js` to run on a Node/serverless host, or the site must be served from a platform that supports `/api/contact`. If the endpoint is missing or unavailable, the form only falls back to a prepared `mailto:` email as a backup path; that fallback is not the SMTP mail system.
+Setup:
 
-Create `.env` from `.env.example` and fill these keys on the machine or host that runs `api/contact.js`:
+~~~powershell
+Copy-Item .env.example .env
+npm install
+python -m venv .venv
+.\.venv\Scripts\python -m pip install -r python_service\requirements.txt
+npm run build
+~~~
 
-```text
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=465
-SMTP_USER=davide.deon@gmail.com
-SMTP_PASS=your_gmail_app_password_without_spaces
-MAIL_FROM=davide.deon@gmail.com
-MAIL_TO=davide.deon@gmail.com
-ALLOWED_ORIGIN=http://127.0.0.1:4173,http://localhost:4173
-PORT=8787
-```
+Start the three local processes in separate terminals:
 
-Never commit the Gmail app password. Use `.env.example` as the template and keep real `.env` files local or deployed only on the endpoint host.
+~~~powershell
+.\.venv\Scripts\python -m uvicorn python_service.app:app --host 127.0.0.1 --port 8790
+npm start
+npm run preview
+~~~
+
+Open http://127.0.0.1:4173/ and http://127.0.0.1:4173/portfolio/.
+
+The ALLOWED_ORIGIN example already permits http://127.0.0.1:4173 and http://localhost:4173.
+
+## Commands
+
+~~~text
+npm run build          Build homepage, portfolio, demos, and public assets into dist/
+npm start              Run the private Node gateway on loopback
+npm run preview        Serve dist/ locally
+npm test               Run Vitest, node:test, and pytest
+npm run test:e2e       Run responsive Playwright browser tests
+~~~
+
+Run modernization evidence separately when Java and Maven are available:
+
+~~~text
+cd architecture-fixture
+mvn test
+~~~
+
+## Configuration and Privacy
+
+.env is the only runtime configuration source. Create it from .env.example and never commit it.
+
+No AI credentials are needed in version 1. LAB_SESSION_SECRET must be at least 24 random characters. PYTHON_LAB_URL must remain a loopback URL.
+
+Never commit or publish:
+
+- .env
+- vash_key or vash_key.pub
+- CV and personal-profile source files
+- planning source files
+- node_modules, .venv, test output, or repository metadata
+
+The build script deliberately copies only index.html, assets/, processed portfolio pages, and the packaged extension source into dist/.
+
+## Documentation
+
+- creation_lab_plan.md: complete approved portfolio plan and locked decisions
+- installation.md: fresh-machine, local, DNS, and production deployment procedure
+- cosmos_interface.md: architecture, interfaces, language rules, and visual boundaries
+- AGENTS.md: repository rules for future implementation work
+
+The old GitHub Pages-only deployment is no longer sufficient for the complete site because SMTP and Creation Lab sessions require the private Node gateway. Use the production procedure in installation.md.

@@ -1,11 +1,11 @@
 [Unit]
-Description=cosmosXmachina contact SMTP endpoint
+Description=cosmosXmachina private Node gateway
 After=network.target
 
 [Service]
 Type=simple
 WorkingDirectory=/var/www/cosmosXmachina.website.github.io
-ExecStart=/usr/bin/node /var/www/cosmosXmachina.website.github.io/api/contact.js
+ExecStart=/usr/bin/node /var/www/cosmosXmachina.website.github.io/api/server.mjs
 Restart=always
 RestartSec=5
 User=www-data

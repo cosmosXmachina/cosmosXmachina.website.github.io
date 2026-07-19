@@ -1,243 +1,221 @@
-# cosmos_interface.md
+# cosmosXmachina Interface and Architecture
 
-## Purpose
+The complete approved direction is in creation_lab_plan.md. This document records the implemented interface and system boundaries.
 
-This file documents the architecture, technologies, visual system and implementation decisions for the cosmosXmachina website. It is the main technical interface document for future agents or developers. `AGENTS.md` is the concise operating rule sheet; this file explains how the website is built and how to evolve it.
+## Public Information Architecture
 
-## Current Build
+Routes:
 
-- Main file: `index.html`
-- Legacy/reference 2D file: `index2D.html`
-- Scratch/experiment file: `index_temp.html`, ignored unless explicitly needed
-- Asset folder: `assets/`
-- README: `README.md` documents GitHub Pages publishing
-- Installation guide: `installation.md` documents dependencies, fresh-machine setup and contact endpoint deployment
-- Hosting target: GitHub Pages static hosting
-- Architecture: single-page website based on `cosmos_business.md` Section 18.5, variant 1
-- Languages: Italian and English, switched client-side
-- Current base tech stack: HTML, CSS, vanilla JavaScript, static image assets
-- Additional approved technology for `index.html`: Three.js loaded as a pinned CDN ES module
-- Approved contact backend: `api/contact.js`, a no-dependency Node SMTP endpoint that sends the project intake form through Gmail SMTP using the project `.env` file
-- No build step, framework, package manager or analytics is currently approved
+- / is the existing cosmosXmachina homepage.
+- /portfolio/ is the Creation Lab index.
+- /portfolio/<demo-slug>/ is a complete demonstration.
+- /api/contact is the Gmail SMTP contact route.
+- /api/lab/* is the same-origin demonstration API.
 
-Any new technology beyond the static stack, the approved `index.html` Three.js layer and the approved contact endpoint must be approved by the user first, then documented in both `AGENTS.md` and this file.
+The homepage includes Portfolio in navigation and previews the four strongest commercial demonstrations. Demo bundles are not loaded by the homepage.
 
-## Public Brand And Contacts
+Every portfolio page states that Orion Works is fictional, the data is synthetic, and the work is a self-directed demonstration rather than a client result.
 
-Public brand: `cosmosXmachina`
+## Language Contract
 
-Real contacts currently wired into the site:
+All public pages use:
 
-- Email: `davide.deon@gmail.com`
-- Italian LinkedIn: `https://www.linkedin.com/in/vash-vacuum/`
-- English LinkedIn: `https://www.linkedin.com/in/vash-vacuum/?locale=en_US`
-
-The contact form posts JSON to `CONTACT_ENDPOINT`, which defaults to `/api/contact`. The Gmail SMTP mail system requires `api/contact.js` to be running on a Node/serverless host. The endpoint reads the project `.env` file and sends through Gmail SMTP with `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM`, `MAIL_TO`, `ALLOWED_ORIGIN` and `PORT`. Gmail app passwords must never be committed or placed in browser JavaScript.
-
-If the endpoint is unavailable, `index.html` falls back to a `mailto:` URL addressed to `davide.deon@gmail.com`, using the selected language's subject and form labels. This preserves a backup contact path, but real Gmail SMTP delivery requires the Node endpoint to be deployed separately or the site to be served from a host that runs `/api/contact`.
-
-## Current Sections
-
-The page currently contains these sections:
-
-1. Header / navigation
-2. Hero
-3. Problems I solve
-4. Services overview with 10 services
-5. Entry offers
-6. Process
-7. Technologies and platforms
-8. FAQ
-9. Contact / project intake
-10. Footer
-
-The About/Profile section was intentionally removed. There is no demo, portfolio or case-study section, and the FAQ no longer references portfolio/demo content.
-
-## File Variants
-
-`index.html` is the canonical production homepage and includes the approved Three.js solid sacred-geometry layer. GitHub Pages serves this file at the site root.
-
-`index2D.html` is the older non-3D fallback/reference page. Do not treat it as the main implementation unless the user asks to restore or maintain the 2D version.
-
-`index_temp.html` is scratch/experiment space and can be ignored unless the user explicitly asks about it.
-
-The 3D version imports Three.js as a pinned ES module:
-
-```js
-import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.min.js";
-```
-
-The 3D layer:
-
-- uses one transparent `<canvas class="alchemy-3d">`
-- renders four solid procedural structures per major section
-- places symbols between generated section background images and text
-- uses section-specific negative-space placement profiles so structures fill open areas and avoid sitting under dense text, cards or the contact form where possible
-- uses different structure pairings per section
-- moves the same renderer/canvas into the currently active section instead of creating many WebGL contexts
-- contains no visible circular 3D rings, orbital halos or circular platforms; edge outlines must follow the solid geometry itself
-- uses varied colors per nested layer from the approved blue, dark purple, dark violet, indigo, violet and cyan family
-- uses always-moving multicolor wave bands and additive soft glow as the base visual state
-- reacts to pointer hover through raycasting, stronger glow, faster wave motion and metallic rainbow interference across faceted surfaces
-- rotates with randomized changing axes and directions every 2.5-5 seconds instead of a single fixed vertical spin
-- disables itself for `prefers-reduced-motion: reduce`
-
-Current Three.js section sets:
-
-- Hero: portal diamond, merkaba, nested sigil and prism tower
-- Problems: nested sigil, prism tower, portal diamond and merkaba
-- Services: merkaba, portal diamond, nested sigil and prism tower
-- Entry offers: prism tower, nested sigil, merkaba and portal diamond
-- Process: portal diamond, prism tower, nested sigil and merkaba
-- Stack: nested sigil, merkaba, portal diamond and prism tower
-- FAQ: portal diamond, nested sigil, prism tower and merkaba
-- Contact: prism tower, merkaba, portal diamond and nested sigil
-
-Current procedural builders:
-
-- `createMerkaba()`: dual tetrahedrons, inner octahedrons, small diamond and a thin angular crystal core
-- `createPrismTower()`: faceted hex prism, top crystal cap, inner shard and tiered angular base
-- `createNestedSigil()`: stacked octahedron, icosahedron, tetrahedron and vertical angular core
-- `createPortalDiamond()`: tall faceted octahedron/diamond with inner cone/tetrahedron layers and side shards
-
-Keep the 3D implementation compact. Avoid post-processing passes, GLTF assets, texture loading, physics engines or many WebGL renderers unless the user explicitly approves a heavier 3D direction.
-
-## Content Architecture
-
-All visible bilingual content lives in the `copy` object inside the inline script in `index.html`.
-
-The `render(lang)` function:
-
-- sets `document.documentElement.lang`
-- updates the page title
-- replaces all `[data-i18n]` text
-- renders runes, problem cards, services, entry offers, process cards, stack groups, FAQ and trust notes
-- switches the LinkedIn URL and label by language
-- updates form select options and placeholders
-- stores the chosen language in `localStorage` under `cosmos-lang`
-
-Initial language selection is resolved before `render()` with this priority:
-
-1. valid URL parameter `?lang=it` or `?lang=en`
-2. saved `localStorage` value `cosmos-lang`
-3. browser/system language from `navigator.languages` or `navigator.language`
+1. an explicit ?lang=it or ?lang=en query
+2. localStorage key cosmos-lang
+3. browser preference
 4. Italian fallback
 
-The header language buttons still call `render(lang)`, but first remove only the `lang` URL parameter with `history.replaceState`, preserving other query parameters and the hash. Manual button choice therefore overrides URL language and becomes the new saved preference.
+Explicit choices are saved. Links carry the active language when practical. Italian and English workflows must remain functionally equivalent.
 
-The form submit handler:
+## Homepage Contract
 
-- prevents default submission
-- reads the active language
-- serializes the project intake fields
-- ignores spam-trap submissions with the hidden `company` field
-- posts the intake fields to `CONTACT_ENDPOINT` as JSON
-- shows bilingual sending/success/fallback status text
-- opens a `mailto:` URL with encoded subject and body if the SMTP endpoint is unavailable
+index.html remains the canonical homepage.
 
-## Visual System
+Preserve:
 
-The visual direction is mystical future technology: alchemy, sacred geometry, digital transcendence, AI interfaces and professional software systems.
+- the approved Three.js geometry, object placement, idle sizing, hover growth, and directional hover spin
+- the pinned Three.js module and reduced-motion behavior
+- the current section imagery and cosmosXmachina branding
+- the same-origin /api/contact endpoint
+- Gmail SMTP plus mailto fallback
+- the current language precedence
 
-Base palette:
+The new portfolio preview uses the homepage's existing visual grammar because it belongs to the homepage. It does not import React or any demo CSS.
 
-- `--dark-blue: #0b1026`
-- `--dark-purple: #190a31`
-- `--dark-violet: #25104f`
+A demo CTA stores an editable summary under cosmos-lab-handoff in sessionStorage. The summary expires after 15 minutes. The homepage loads it into the contact form and tells the visitor to review it. It never submits automatically.
 
-Supporting glow palette:
+## Creation Lab Index
 
-- `--indigo: #3f4fd8`
-- `--violet: #6742d6`
-- `--purple: #7a34d8`
-- `--blue: #3f86e8`
-- `--cyan: #70e4ff`
+The index has a distinct Creation Lab editorial identity and publishes complete demonstrations only.
 
-The site deliberately avoids yellow/gold accents. Headings use gradient text based on the violet, purple and blue family, with darker purple accents rather than pastel purple. Cards use translucent dark panels with blur and light borders.
+It supports:
 
-The 3D variant adds a dark-blue heading stroke, layered text shadows and light drop shadows around text clusters so copy appears suspended above the background and 3D layers. The heading gradient now includes a controlled dark-blue band alongside white, blue, purple and violet.
+- ten ranked systems
+- commercial-impact and technical-depth filters
+- Italian and English copy
+- synthetic-data disclosure
+- direct links into usable interfaces
 
-Header branding in `index.html` uses `assets/cxm-logo.svg`, a compact vector sacred-geometry mark with the `cXm` initials. Keep it as SVG for crisp display and easy future edits.
+## Independent Demo Identities
 
-## Background Asset System
+Visual components, CSS tokens, layouts, and card systems are not shared between demos.
 
-Each major section has its own generated raster background image. These are blended with CSS gradients and sacred-geometry overlays through `::before` and `::after` pseudo-elements. The overlays should preserve readability while letting the image remain visibly present.
+Implemented identities:
 
-Current assets:
+1. Document Operations: ivory and graphite split-view workstation.
+2. Operations Hub: dense green SME operations console.
+3. Knowledge Assistant: editorial research and citation interface.
+4. Catalog Intelligence: image-led coral merchant console.
+5. Lead-to-Appointment: Veneto hospitality experience and staff CRM.
+6. KPI Studio: bright analytical workspace with ECharts.
+7. Integration Control: dark event observability console.
+8. Architecture Rescue: code diff and ADR case file.
+9. Workflow Audit: restrained consultancy canvas and SVG process map.
+10. Opportunity Scout: compact Chrome side-panel simulator.
 
-- `assets/cosmos-hero.png` for the hero
-- `assets/section-problems.png` for problems
-- `assets/section-services.png` for services
-- `assets/section-entry.png` for entry offers
-- `assets/section-process.png` for process
-- `assets/section-stack.png` for technologies
-- `assets/section-faq.png` for FAQ
-- `assets/section-contact.png` for contact
+Shared frontend modules are limited to:
 
-Section assignments are declared in CSS:
+- portfolio/shared/catalog.js for synthetic Orion fixtures and demo metadata
+- portfolio/shared/i18n.js for language behavior
+- portfolio/shared/disclosure.js for synthetic labels
+- portfolio/shared/api.js for same-origin API access and deterministic preview fallback
+- portfolio/shared/fixture-ai.js for provider contract fixtures
+- portfolio/shared/handoff.js for expiring contact summaries
 
-```css
-.hero { --bg-img: url("assets/cosmos-hero.png"); }
-#problems { --bg-img: url("assets/section-problems.png"); }
-#services { --bg-img: url("assets/section-services.png"); }
-#entry { --bg-img: url("assets/section-entry.png"); }
-#process { --bg-img: url("assets/section-process.png"); }
-#stack { --bg-img: url("assets/section-stack.png"); }
-#faq { --bg-img: url("assets/section-faq.png"); }
-#contact { --bg-img: url("assets/section-contact.png"); }
-```
+## Provider Contract
 
-Desktop uses CSS `background-attachment: fixed` when supported to create a light parallax feeling between sections. Mobile uses normal scrolling for compatibility and performance.
+All AI-like behavior in version 1 is synthetic and deterministic.
 
-## Layout System
+~~~text
+execute({ task, schema, context, input })
+  -> { output, evidence, usage, trace, warnings }
+~~~
 
-The layout is intentionally small and custom instead of using Bootstrap or another framework.
+Responsibilities outside the provider:
 
-Core classes:
+- request and extraction schemas
+- normalization and validation
+- permissions
+- workflow state transitions
+- authorization and quotas
+- business actions
 
-- `.wrap`: centered max-width container
-- `.grid`: base CSS grid
-- `.grid-2`, `.grid-3`, `.grid-4`, `.grid-5`: responsive grid variants
-- `.section`: major content band with image background
-- `.section-head`: heading cluster
-- `.card`: standard content card
-- `.btn` and `.btn.primary`: action links/buttons
-- `.service-card`: accordion details for services
-- `.contact-card`: contact and form panels
+Fixture providers exist in browser, Node, and Python. A future provider must pass the same contract tests and cannot require UI or workflow changes.
 
-Responsive behavior:
+Every AI-like result shows Synthetic demonstration. Version 1 has no AI credentials and network tests reject external AI-provider traffic.
 
-- Desktop uses multi-column grids.
-- Below `980px`, larger grids collapse to two columns and nav stacks.
-- Below `680px`, major grids collapse to one column and hero typography is reduced.
+## Public API
 
-## Accessibility And Performance
+~~~text
+POST /api/lab/session
+POST /api/lab/:demo/:action
+POST /api/lab/:demo/reset
+GET  /api/lab/health
+~~~
 
-Current accessibility decisions:
+Standard success shape:
 
-- Semantic `header`, `nav`, `main`, `section`, `footer`
-- Real links for email and LinkedIn
-- Keyboard-visible focus states
-- Native `details/summary` accordions
-- `prefers-reduced-motion` support
-- Mobile-first responsive behavior
+~~~text
+{ ok, mode, demo, action, session, result, trace, warnings, quota }
+~~~
 
-Performance notes:
+Session rules:
 
-- The frontend remains static. Gmail SMTP delivery requires the `api/contact.js` Node endpoint; pure GitHub Pages hosting can only use the `mailto:` backup unless the endpoint is deployed elsewhere.
-- Background images are large PNG files. If performance becomes an issue, convert them to optimized WebP/AVIF while keeping fallbacks or updating references.
-- No analytics are loaded; the only approved external frontend script is the pinned Three.js ES module.
+- HMAC-signed anonymous token
+- 30-minute expiry
+- in-memory state only
+- 25 action quota
+- no visitor-content logging or persistence
 
-## Future Evolution
+Request rules:
 
-Potential future changes that require user approval before implementation:
+- 64 KiB gateway body limit
+- 12 KiB normalized input limit
+- allowlisted demos and actions
+- explicit state transitions
+- hostile HTML rejection
+- no arbitrary upload or URL
+- no scraping
+- no automatic proposal sending
 
-- adding native WebGL beyond Three.js, post-processing, model loaders, physics or heavier 3D tooling
-- Analytics or conversion tracking
-- Additional backend form handling, CRM writes or third-party form services beyond `api/contact.js`
-- Dedicated service pages
-- Blog/articles
-- Case studies, demos or portfolio content
-- A build system such as Astro, Next.js or Vite
+## Service Topology
 
-If the site grows beyond one page, keep `index.html` as the homepage narrative and move repeated content into data files or a static-site framework only after approval.
+~~~text
+Nginx public :80/:443
+  -> dist/ for static pages and assets
+  -> /api/* to Node 127.0.0.1:8787
+       -> SMTP over TLS to Gmail
+       -> signed lab sessions and Node workflows
+       -> Python 127.0.0.1:8790 for deterministic pipelines
+~~~
+
+The Node gateway uses Fastify and binds only to loopback. It preserves the existing api/contact.js SMTP handler through the unified route.
+
+Python uses FastAPI/Pydantic and binds only to loopback. python_service/server.py reads PYTHON_LAB_PORT from the project-root .env.
+
+If the private Python process is temporarily unavailable, eligible Node routes return a deterministic Node fixture with a warning. This is an explicit degraded mode, not a live AI fallback.
+
+## Build Boundary
+
+npm run build:
+
+1. deletes and recreates dist/
+2. copies index.html
+3. copies assets/
+4. builds only portfolio HTML entries and imported bundles with Vite
+5. copies the packaged Manifest V3 extension source
+
+Nginx serves dist/ only.
+
+The build does not copy:
+
+- .env
+- repository metadata
+- documentation
+- CV/profile/planning sources
+- private keys
+- Node or Python source
+- architecture-fixture
+- tests
+- node_modules or .venv
+
+## Data and Assets
+
+Orion Works fixtures are synthetic and shared for continuity. They do not represent a registered client.
+
+Public generated assets:
+
+- assets/portfolio/orion-products.png supports Catalog Intelligence.
+- assets/portfolio/orion-vineyard.png supports Lead-to-Appointment.
+
+Primary product and venue imagery must remain inspectable, responsive, and relevant to the actual demonstration.
+
+## Accessibility and Performance
+
+Required across all published systems:
+
+- semantic landmarks and headings
+- keyboard-operable controls
+- visible focus
+- responsive layout around 360, 768, 1024, and 1440 pixels
+- prefers-reduced-motion support where motion exists
+- live regions for asynchronous results
+- an accessible table equivalent for every chart
+
+ECharts is isolated to KPI Studio. React and demo CSS stay out of index.html. Each Vite HTML input is an independent build target with CSS code splitting.
+
+## Verification Map
+
+- tests/frontend: browser provider contract and zero-fetch behavior
+- tests/node: provider replay, signed sessions, expiry, tamper, and quota
+- python_service/tests: provider contract and secure abstention
+- tests/e2e: ten published entries, synthetic disclosure, deterministic document workflow, and external-AI network assertion
+- architecture-fixture: executable JUnit pricing-policy evidence
+- .github/workflows/creation-lab-checks.yml: web, Python, browser, and Java CI
+
+## Deployment Files
+
+- cosmos-contact.service runs the unified Node gateway.
+- cosmos-lab-python.service runs the private Python server.
+- cosmos-x-machina.nginx serves dist/ and proxies /api/.
+- installation.md is the canonical fresh-machine and production procedure.

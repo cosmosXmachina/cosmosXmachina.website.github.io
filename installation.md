@@ -1,226 +1,314 @@
-# cosmosXmachina Installation Guide
+# Installation and Deployment
 
-This project is a static single-page website with a required Node.js SMTP endpoint for direct Gmail mail delivery from the contact form. The endpoint reads its configuration from the project `.env` file.
+This is the supported setup guide for the cosmosXmachina homepage and Creation Lab. The approved product specification is in creation_lab_plan.md.
+
+The complete production site requires Nginx, Node.js, and Python. The Node endpoint is required: it provides Gmail SMTP delivery, anonymous lab sessions, workflow validation, and access to the private Python pipelines.
+
+.env is the only application runtime configuration source. Do not add alternate environment-file names, systemd EnvironmentFile entries, JSON configuration, or browser-exposed secrets.
 
 ## Dependencies
 
-- Git, for cloning and version control.
-- A modern browser.
-- Internet access, because `index.html` loads Three.js from the pinned CDN URL already in the file.
-- Node.js LTS, recommended Node 20 or newer. The contact endpoint was validated with Node `v24.18.0`.
-- npm, installed with Node. The project does not currently require npm packages.
-- Optional Python 3, only if you want to preview the static files with `python -m http.server`.
-- A Gmail account with 2-Step Verification enabled and a Gmail app password for SMTP sending.
-- A host for the Node endpoint. GitHub Pages can serve `index.html`, but it cannot run `api/contact.js`; without a deployed endpoint and its `.env` file, the form can only use the `mailto:` backup.
+Development and production:
 
-## Fresh Machine Setup
+- Git
+- Node.js 22.5 or newer
+- npm
+- Python 3.11 or newer
+- Python venv and pip
 
-1. Install Node.js LTS.
+Production only:
 
-   On Windows with winget:
+- Nginx
+- systemd
+- Certbot for HTTPS
 
-   ```powershell
-   winget install --id OpenJS.NodeJS.LTS -e --source winget
-   ```
+Development or CI only:
 
-2. Clone the repository and enter the project folder.
+- Java 21 and Maven for architecture-fixture
+- Playwright Chromium for browser tests
 
-   ```powershell
-   git clone <repo-url>
-   cd cosmosXmachina.website.github.io
-   ```
+Not required in production:
 
-3. Check the runtime.
+- Docker
+- PostgreSQL
+- Redis
+- Java
+- an AI-provider account or key
 
-   ```powershell
-   node --version
-   npm --version
-   ```
+## Runtime Configuration
 
-4. Create the `.env` file from the template.
+Create the real file from the tracked template:
 
-   ```powershell
-   Copy-Item .env.example .env
-   ```
+~~~powershell
+Copy-Item .env.example .env
+~~~
 
-   Fill `.env` with the exact keys used by `api/contact.js`:
+Linux:
 
-   ```text
-   SMTP_HOST=smtp.gmail.com
-   SMTP_PORT=465
-   SMTP_USER=davide.deon@gmail.com
-   SMTP_PASS=your_gmail_app_password_without_spaces
-   MAIL_FROM=davide.deon@gmail.com
-   MAIL_TO=davide.deon@gmail.com
-   ALLOWED_ORIGIN=http://127.0.0.1:4173,http://localhost:4173
-   PORT=8787
-   ```
+~~~bash
+cp .env.example .env
+chmod 600 .env
+~~~
 
-   Never commit `.env` or the Gmail app password.
+Fill every value in .env. For Gmail SMTP, use the generated Google app password without spaces.
 
-## Local Preview
+Local example:
 
-For a static frontend preview:
+~~~text
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=465
+SMTP_USER=davide.deon@gmail.com
+SMTP_PASS=replace_with_real_app_password
+MAIL_FROM=davide.deon@gmail.com
+MAIL_TO=davide.deon@gmail.com
+ALLOWED_ORIGIN=http://127.0.0.1:4173,http://localhost:4173
+PORT=8787
+LAB_MODE=fixture
+LAB_SESSION_SECRET=replace_with_at_least_24_random_characters
+PYTHON_LAB_URL=http://127.0.0.1:8790
+PYTHON_LAB_PORT=8790
+~~~
 
-```powershell
-python -m http.server 4173 --bind 127.0.0.1
-```
+Production ALLOWED_ORIGIN:
+
+~~~text
+ALLOWED_ORIGIN=https://cosmos-x-machina.it,https://www.cosmos-x-machina.it
+~~~
+
+Generate LAB_SESSION_SECRET on the server:
+
+~~~bash
+openssl rand -hex 32
+~~~
+
+Version 1 has no AI credential. Never put an AI key in browser code or dist/.
+
+## Local Setup
+
+From the repository root:
+
+~~~powershell
+npm install
+python -m venv .venv
+.\.venv\Scripts\python -m pip install --upgrade pip
+.\.venv\Scripts\python -m pip install -r python_service\requirements.txt
+npm run build
+~~~
+
+Start these commands in three terminals:
+
+~~~powershell
+.\.venv\Scripts\python python_service\server.py
+~~~
+
+~~~powershell
+npm start
+~~~
+
+~~~powershell
+npm run preview
+~~~
 
 Open:
 
-```text
-http://127.0.0.1:4173/index.html
-```
+- http://127.0.0.1:4173/
+- http://127.0.0.1:4173/portfolio/
+- http://127.0.0.1:8787/api/lab/health
 
-If Python is not installed, use any static file server. Opening `index.html` directly can work for visual inspection, but a local server is better for browser module behavior and contact-form testing.
+The homepage and demos are served from dist/. The Node and Python services remain private on 127.0.0.1.
 
-## Local Contact Endpoint
+The browser demos contain a deterministic fixture fallback for static preview, but the Node gateway and Python process must both run when testing the production topology.
 
-After `.env` is filled, start the endpoint from the repository root:
+## Local Tests
 
-```powershell
-node api/contact.js
-```
+~~~powershell
+npm test
+npm run build
+npm run test:e2e
+~~~
 
-This starts the endpoint at:
+Playwright browsers are installed once with:
 
-```text
-http://127.0.0.1:8787
-```
+~~~powershell
+npx playwright install chromium
+~~~
 
-For full browser form testing with a separate local endpoint, set the `cosmos-contact-endpoint` meta tag in `index.html` to the endpoint URL:
+Optional Java evidence:
 
-```html
-<meta name="cosmos-contact-endpoint" content="http://127.0.0.1:8787">
-```
-
-For production, set it back to `/api/contact` when the endpoint is served from the same origin, or to the full deployed endpoint URL when it is hosted separately.
+~~~powershell
+Set-Location architecture-fixture
+mvn test
+~~~
 
 ## Production Deployment
 
-The default production deployment uses one Linux server with Node.js, the project files under `/var/www/cosmosXmachina.website.github.io`, and the committed `cosmos-contact.service` file installed as a `systemd` service. This keeps the Gmail SMTP endpoint running after server restarts and restarts it if it crashes.
+The default production layout is:
 
-The public internet should see only the registered domain on HTTP/HTTPS. The Node endpoint should stay private on the same machine, listening on `127.0.0.1:8787`, and the web server should proxy only `/api/contact` to it. The browser still calls `https://your-domain.example/api/contact`, but Node itself is not directly exposed.
-
-Recommended production shape:
-
-```text
+~~~text
 Internet
-  -> https://your-domain.example
-  -> Nginx/Caddy serves index.html and assets
-  -> Nginx/Caddy proxies /api/contact to http://127.0.0.1:8787
-  -> Node SMTP endpoint sends through Gmail
-```
+  -> Nginx :80/:443
+      -> / and /portfolio from /var/www/cosmosXmachina.website.github.io/dist
+      -> /api/* to 127.0.0.1:8787
+          -> Node SMTP, sessions, and workflows
+          -> private Python pipelines at 127.0.0.1:8790
+~~~
 
-Do not open the Node port publicly in the firewall. `ALLOWED_ORIGIN` should still be set to the exact public origin, but remember that browser JavaScript is public: the endpoint cannot be made accessible only to "the website" in a strict secret sense. The practical protection is same-origin proxying, localhost-only Node binding, the hidden spam trap, and web-server rate limiting if needed.
+Do not expose ports 8787 or 8790 in the firewall. Do not serve the repository root.
 
-1. Copy or clone the project to the production path:
+### 1. DNS
 
-   ```bash
-   sudo mkdir -p /var/www
-   sudo git clone <repo-url> /var/www/cosmosXmachina.website.github.io
-   cd /var/www/cosmosXmachina.website.github.io
-   ```
+At the domain registrar for cosmos-x-machina.it:
 
-   If the project already exists on the server, update it instead:
+- Create an A record for @ pointing to the server's public IPv4 address.
+- Create a CNAME record for www pointing to cosmos-x-machina.it.
+- If the server has stable IPv6, add an AAAA record for @ and configure IPv6 firewall rules.
+- Remove conflicting A, AAAA, or forwarding records.
+- Wait for DNS propagation and verify with dig or nslookup.
 
-   ```bash
-   cd /var/www/cosmosXmachina.website.github.io
-   sudo git pull
-   ```
+Both cosmos-x-machina.it and www.cosmos-x-machina.it must resolve to the deployment machine before requesting certificates.
 
-2. Create the production `.env` file from the template:
+### 2. Install System Packages
 
-   ```bash
-   sudo cp .env.example .env
-   sudo nano .env
-   ```
+On Ubuntu/Debian:
 
-   Fill `.env` with the production values:
+~~~bash
+sudo apt update
+sudo apt install -y git nginx python3 python3-venv python3-pip certbot python3-certbot-nginx
+~~~
 
-   ```text
-   SMTP_HOST=smtp.gmail.com
-   SMTP_PORT=465
-   SMTP_USER=davide.deon@gmail.com
-   SMTP_PASS=your_gmail_app_password_without_spaces
-   MAIL_FROM=davide.deon@gmail.com
-   MAIL_TO=davide.deon@gmail.com
-   ALLOWED_ORIGIN=https://your-public-site.example
-   PORT=8787
-   ```
+Install a supported Node.js release and verify it:
 
-   Set `ALLOWED_ORIGIN` to the exact public website origin. Never commit the production `.env` file.
+~~~bash
+node --version
+npm --version
+~~~
 
-3. Set file ownership so the service user can read the project:
+Node must be 22.5 or newer because Operations Hub uses the built-in SQLite module. Install Node 22 from a supported distribution package if the OS repository is older.
 
-   ```bash
-   sudo chown -R www-data:www-data /var/www/cosmosXmachina.website.github.io
-   sudo chmod 600 /var/www/cosmosXmachina.website.github.io/.env
-   ```
+### 3. Deploy the Repository
 
-4. Install the included `systemd` service file:
+~~~bash
+sudo mkdir -p /var/www/cosmosXmachina.website.github.io
+sudo chown -R "$USER":www-data /var/www/cosmosXmachina.website.github.io
+git clone YOUR_REPOSITORY_URL /var/www/cosmosXmachina.website.github.io
+cd /var/www/cosmosXmachina.website.github.io
+npm ci
+python3 -m venv .venv
+.venv/bin/python -m pip install --upgrade pip
+.venv/bin/python -m pip install -r python_service/requirements.txt
+cp .env.example .env
+chmod 640 .env
+~~~
 
-   ```bash
-   sudo cp /var/www/cosmosXmachina.website.github.io/cosmos-contact.service /etc/systemd/system/cosmos-contact.service
-   sudo systemctl daemon-reload
-   sudo systemctl enable --now cosmos-contact
-   ```
+Edit .env with the production values. Do not copy a development app password into a public file or shell history.
 
-5. Check the service:
+Build the only public web root:
 
-   ```bash
-   sudo systemctl status cosmos-contact
-   sudo journalctl -u cosmos-contact -f
-   ```
+~~~bash
+npm run build
+test -f dist/index.html
+test -f dist/portfolio/index.html
+~~~
 
-6. Configure the web server to serve the static site and proxy `/api/contact` to the Node endpoint running on `127.0.0.1:8787`.
+Check that secrets and private sources are absent:
 
-   Example Nginx location block:
+~~~bash
+find dist -name '.env*' -o -name 'vash_key*' -o -name '*.md'
+~~~
 
-   ```nginx
-   location /api/contact {
-       proxy_pass http://127.0.0.1:8787;
-       proxy_http_version 1.1;
-       proxy_set_header Host $host;
-       proxy_set_header X-Real-IP $remote_addr;
-       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-       proxy_set_header X-Forwarded-Proto $scheme;
-   }
-   ```
+The command should print nothing.
 
-   Optional Nginx rate limiting can be added if spam becomes a problem:
+### 4. Install systemd Units
 
-   ```nginx
-   limit_req_zone $binary_remote_addr zone=contact:10m rate=5r/m;
+The tracked units are cosmos-contact.service and cosmos-lab-python.service.
 
-   location /api/contact {
-       limit_req zone=contact burst=3 nodelay;
-       proxy_pass http://127.0.0.1:8787;
-       proxy_http_version 1.1;
-       proxy_set_header Host $host;
-       proxy_set_header X-Real-IP $remote_addr;
-       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-       proxy_set_header X-Forwarded-Proto $scheme;
-   }
-   ```
+~~~bash
+sudo cp cosmos-contact.service /etc/systemd/system/cosmos-contact.service
+sudo cp cosmos-lab-python.service /etc/systemd/system/cosmos-lab-python.service
+sudo systemctl daemon-reload
+sudo systemctl enable --now cosmos-lab-python.service
+sudo systemctl enable --now cosmos-contact.service
+sudo systemctl status cosmos-lab-python.service --no-pager
+sudo systemctl status cosmos-contact.service --no-pager
+~~~
 
-7. In production, keep the endpoint meta tag in `index.html` as same-origin:
+Both services use Restart=always and start automatically after a reboot. They bind only to loopback. The Node and Python applications read the project-root .env directly; the units do not define another configuration source.
 
-   ```html
-   <meta name="cosmos-contact-endpoint" content="/api/contact">
-   ```
+Health checks:
 
-8. Test the contact form from the live site.
+~~~bash
+curl http://127.0.0.1:8790/health
+curl http://127.0.0.1:8787/api/lab/health
+~~~
 
-If `/api/contact` is unavailable, the website intentionally falls back to a prepared `mailto:` message so visitors can still contact `davide.deon@gmail.com`.
+### 5. Install Nginx Configuration
 
-## Validation Commands
+~~~bash
+sudo cp cosmos-x-machina.nginx /etc/nginx/sites-available/cosmos-x-machina
+sudo ln -s /etc/nginx/sites-available/cosmos-x-machina /etc/nginx/sites-enabled/cosmos-x-machina
+sudo rm -f /etc/nginx/sites-enabled/default
+sudo nginx -t
+sudo systemctl reload nginx
+~~~
 
-Run these checks after changes:
+Nginx serves only dist/ and is the sole public route to /api/*. It does not proxy the repository, .env, profiles, plans, or keys.
 
-```powershell
-node --check api/contact.js
-node -e "require('./api/contact.js'); console.log('contact module loaded')"
-```
+### 6. Firewall and HTTPS
 
-No build step is currently required.
+Allow only SSH, HTTP, and HTTPS:
+
+~~~bash
+sudo ufw allow OpenSSH
+sudo ufw allow 'Nginx Full'
+sudo ufw enable
+~~~
+
+Do not allow 8787 or 8790.
+
+After DNS resolves:
+
+~~~bash
+sudo certbot --nginx -d cosmos-x-machina.it -d www.cosmos-x-machina.it --redirect
+sudo certbot renew --dry-run
+~~~
+
+Certbot adds the HTTPS server and HTTP-to-HTTPS redirect to the installed Nginx configuration.
+
+### 7. Production Verification
+
+~~~bash
+curl -I https://cosmos-x-machina.it/
+curl -I https://cosmos-x-machina.it/portfolio/
+curl https://cosmos-x-machina.it/api/lab/health
+journalctl -u cosmos-contact.service -n 50 --no-pager
+journalctl -u cosmos-lab-python.service -n 50 --no-pager
+~~~
+
+Use the live contact form for the final SMTP check. Visitor content is not intentionally logged; do not add request-body logging.
+
+## Updating Production
+
+~~~bash
+cd /var/www/cosmosXmachina.website.github.io
+git pull --ff-only
+npm ci
+.venv/bin/python -m pip install -r python_service/requirements.txt
+npm run build
+sudo systemctl restart cosmos-lab-python.service cosmos-contact.service
+sudo nginx -t
+sudo systemctl reload nginx
+~~~
+
+Verify the homepage, Portfolio index, one Node workflow, one Python workflow, and contact delivery after every deployment.
+
+## Security Checklist
+
+- .env exists only on the runtime machine and is mode 640 or stricter.
+- vash_key, vash_key.pub, CVs, profiles, and planning sources are not committed or copied into dist/.
+- Only Nginx listens publicly.
+- Node listens on 127.0.0.1:8787.
+- Python listens on 127.0.0.1:8790.
+- The repository root is never an Nginx root.
+- Gmail SMTP uses an app password, not the main account password.
+- Version 1 has no AI key and no external AI traffic.
+- Arbitrary uploads, URL fetching, scraping, and automatic proposal sending remain disabled.

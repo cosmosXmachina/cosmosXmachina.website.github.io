@@ -1,0 +1,15 @@
+[Unit]
+Description=cosmosXmachina private deterministic Python pipelines
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/var/www/cosmosXmachina.website.github.io
+ExecStart=/var/www/cosmosXmachina.website.github.io/.venv/bin/python /var/www/cosmosXmachina.website.github.io/python_service/server.py
+Restart=always
+RestartSec=5
+User=www-data
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target

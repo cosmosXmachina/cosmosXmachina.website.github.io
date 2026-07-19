@@ -3,3 +3,18 @@
 !.env.example
 cosmos_key
 cosmos_key.pub
+vash_key
+vash_key.pub
+node_modules/
+dist/
+.venv/
+__pycache__/
+.pytest_cache/
+coverage/
+Davide_Deon_CV_EN.pdf
+Vash Services Profile.txt
+Vash The Trismegistus*.txt
+sol codex demo plan.txt
+sol gpt plan.txt
+test-results/
+playwright-report/

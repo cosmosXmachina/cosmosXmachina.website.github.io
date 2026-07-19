@@ -1,68 +1,81 @@
-# cosmosXmachina Website Agent Guide
+# Repository Operating Guide
 
-## Project Vision
+Read creation_lab_plan.md before changing the portfolio. It contains the approved scope and locked decisions.
 
-cosmosXmachina is the public service website for a bilingual software engineer and digital automation consultant based in Treviso, Italy. It should convert visitors into conversations, audits, prototypes and project requests for custom software, AI automation, internal tools, dashboards, APIs, e-commerce systems, websites, maintenance and digital products.
+## Product Boundaries
 
-The public brand is **cosmosXmachina**. `cosmos_business.md` remains the strategic source document, not the customer-facing brand name.
+- index.html remains the canonical bilingual homepage.
+- Preserve its Three.js layer, contact endpoint, hover behavior, and language precedence.
+- The public Portfolio is the cosmosXmachina Creation Lab under portfolio/.
+- Orion Works is fictional and all demonstration data is synthetic.
+- Never imply a real client, measured client outcome, testimonial, or unsupported personal claim.
+- Every published demo must be complete, usable, bilingual, and explicit about its synthetic status.
+- Individual demos choose their own professional visual identity. Do not introduce shared visual components, design tokens, card systems, or layouts.
+- Shared code is limited to fixtures, schemas, localization, accessibility helpers, API contracts, provider contracts, and contact handoff.
 
-## Source Of Truth
+## Runtime Boundaries
 
-Use these files in order:
+- Version 1 makes zero external AI-provider calls and uses no AI key.
+- FixtureAIProvider must satisfy the provider-neutral asynchronous contract documented in creation_lab_plan.md.
+- Validation, schemas, permissions, and workflow transitions stay outside providers.
+- Anonymous sessions expire after 30 minutes.
+- Do not persist or log visitor content.
+- Keep arbitrary uploads, arbitrary URL fetching, scraping, and automatic proposal sending disabled.
+- Reject unknown actions, oversized input, hostile HTML, and invalid transitions.
 
-1. `cosmos_interface.md` for the current website architecture, visual system, assets, contact wiring and implementation decisions.
-2. `cosmos_business.md` Section 17 for public services, profile copy and technology groups.
-3. `cosmos_business.md` Section 18 for website strategy and architecture direction.
-4. Current user instructions for new changes.
+## Build and Deployment
 
-## Current Website Rules
+- npm run build creates dist/, the only production web root.
+- Never serve or copy the repository root into Nginx.
+- Nginx proxies /api/* to the private Node gateway at 127.0.0.1:8787.
+- Node routes deterministic pipeline work to Python at 127.0.0.1:8790.
+- Both services run under systemd with Restart=always.
+- .env is the only application runtime configuration source.
+- Production needs Node, Python, and Nginx only.
+- Java/Maven belongs to development and CI evidence only.
 
-- The site is a single-page GitHub Pages website in `index.html`.
-- `index.html` is the production 3D version and the canonical homepage.
-- `index2D.html` is the older non-3D fallback/reference version.
-- `index_temp.html` is scratch/experiment space and can be ignored unless the user explicitly asks about it.
-- The base approved stack is HTML, CSS, vanilla JavaScript and static image assets.
-- `index.html` may load Three.js as a pinned CDN ES module for the approved 3D layer.
-- Approved contact backend: `api/contact.js`, a no-dependency Node SMTP endpoint for the project intake form. It sends through Gmail SMTP using the project `.env` file only. Never put Gmail app passwords or SMTP secrets in `index.html` or any committed file.
-- GitHub Pages alone cannot execute `api/contact.js`; deploy the endpoint on a Node/serverless host or serve the site from a platform that supports `/api/contact`. Keep the `mailto:` fallback in `index.html`.
-- Do not add frameworks, package managers, external CSS/JS libraries beyond the approved Three.js import in `index.html`, analytics or additional form backends without user approval.
-- If a new technology is approved, update both this file and `cosmos_interface.md`.
-- The About/Profile section has been removed and must not be reintroduced unless requested.
-- The FAQ must not contain portfolio/demo questions or references.
-- Real contact links are now approved: `davide.deon@gmail.com`, Italian LinkedIn `https://www.linkedin.com/in/vash-vacuum/`, English LinkedIn `https://www.linkedin.com/in/vash-vacuum/?locale=en_US`.
-- Language selection priority is URL `?lang=it|en`, then saved `localStorage` value `cosmos-lang`, then browser/system language, then Italian fallback. Header language buttons must remove only the `lang` URL parameter and then save/render the clicked language.
+## Privacy
 
-## Visual Direction
+Never commit, publish, or place in dist/:
 
-The site uses a mystical future-technology aesthetic: alchemy, manifestation, sacred geometry, ascended universe, AI systems and digital transcendence, kept professional and readable.
+- .env or credentials
+- vash_key or vash_key.pub
+- CV and personal-profile source files
+- private planning files
+- node_modules, .venv, caches, logs, or repository metadata
 
-Current main palette:
+The .gitignore patterns and scripts/build.mjs allowlist are security controls. Do not weaken them.
 
-- dark blue: `#0b1026`
-- dark purple: `#190a31`
-- dark violet: `#25104f`
-- supporting glow colors: darker indigo/violet/purple/blue and cyan
+## Language
 
-Do not return to yellow/gold accents. Purple text accents should stay relatively dark, not pastel. Each major section has its own generated background image, with CSS sacred-geometry overlays to create movement and section-to-section transition while scrolling; overlays should not hide the generated images too much.
+Use this precedence on every public page:
 
-The `index.html` text treatment uses dark-blue outline/shadow support so headings and key copy feel lifted from the animated background layers while staying readable. Its header uses `assets/cxm-logo.svg`, a small sacred-geometry `cXm` mark. Keep the logo vector-editable unless the user asks for a raster image.
+1. ?lang=it or ?lang=en
+2. localStorage key cosmos-lang
+3. browser language
+4. Italian fallback
 
-The 3D version should use solid procedural sacred-geometry structures layered between section background images and text. It renders exactly four structures per active section with one reusable Three.js canvas, places them in negative-space areas around text/cards, and must avoid visible circular rings, orbital halos, circular platforms or outward ray-burst elements in the 3D objects. Keep object counts restrained, respect reduced-motion preferences and avoid heavy post-processing.
+A language choice is saved. Demo CTAs use sessionStorage key cosmos-lab-handoff with a 15-minute expiry and always require user review in the contact form.
 
-`index.html` 3D motion/effects rules:
+## Verification
 
-- Use solid nested geometry only: merkaba, prism tower, nested sigil and portal diamond variants built from Three.js primitives.
-- Give nested layers varied approved blue, dark purple, dark violet, indigo, violet and cyan colors.
-- Use always-moving multicolor wave bands and soft glow as the base state.
-- On hover, use raycasting to increase glow and speed up metallic rainbow interference, without adding ray-burst geometry.
-- Rotate objects with randomized changing axes/directions every few seconds; do not return to a single fixed vertical spin.
+Scale checks to the change:
 
-## Maintenance Rules
+- Vitest for browser logic and provider contracts
+- node:test for Node workflows, sessions, and deterministic replay
+- pytest for Python pipelines
+- JUnit for architecture-fixture
+- Playwright for bilingual workflows, keyboard use, responsive layouts, and external-AI network assertions
 
-- Keep code lean, readable and static.
-- Keep bilingual Italian/English content complete and aligned.
-- Italian remains the priority market language.
-- Do not invent claims, testimonials, client results, demos or case studies.
-- Preserve accessibility basics: semantic sections, readable contrast, focus states, mobile-first layout and reduced-motion support.
-- When changing visual style, start with CSS variables and section background assignments in `index.html`.
-- When changing content, update the bilingual `copy` object in `index.html`; only mirror to `index2D.html` if the user explicitly wants the fallback version maintained.
+Keep framework bundles out of the homepage. Verify approximately 360, 768, 1024, and 1440 pixel widths. Preserve visible focus, reduced motion, semantic landmarks, and table alternatives for charts.
+
+## Documentation
+
+Update these files when architecture or deployment changes:
+
+- creation_lab_plan.md for approved scope or locked-decision changes
+- README.md for repository overview and commands
+- installation.md for fresh-machine and production procedures
+- cosmos_interface.md for interfaces, visual boundaries, and runtime architecture
+
+Do not return documentation to the old single-file, no-build, GitHub Pages-only model.

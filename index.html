@@ -10,8 +10,8 @@
     <meta property="og:description" content="Bilingual software engineering, custom business tools, dashboards, APIs, AI assistants and digital products from Treviso.">
     <meta property="og:type" content="website">
     <meta property="og:image" content="assets/cosmos-hero.png">
-    <!--meta name="cosmos-contact-endpoint" content="/api/contact"-->
-    <meta name="cosmos-contact-endpoint" content="http://127.0.0.1:8787">
+    <meta name="cosmos-contact-endpoint" content="/api/contact">
+    <!--meta name="cosmos-contact-endpoint" content="http://127.0.0.1:8787"-->
     <style>
       :root {
         color-scheme: dark;
@@ -238,6 +238,16 @@
       .card, details, .contact-card { padding: 20px; }
       .card h3, details h3, .contact-card h3 { margin: 0 0 8px; line-height: 1.18; }
       .card p, details p { margin: 0; }
+      .portfolio-preview { position: relative; min-height: 230px; padding-bottom: 62px; }
+      .portfolio-preview .number { color: var(--cyan); border-color: rgba(112, 228, 255, .46); }
+      .portfolio-preview .preview-link {
+        position: absolute;
+        left: 20px;
+        bottom: 20px;
+        color: var(--cyan);
+        font-weight: 800;
+      }
+      .portfolio-actions { margin-top: 24px; }
       .number {
         display: inline-grid;
         place-items: center;
@@ -344,6 +354,7 @@
         <div class="nav-links">
           <a href="#home" data-i18n="nav.home">Home</a>
           <a href="#services" data-i18n="nav.services">Servizi</a>
+          <a href="#portfolio" id="portfolioNav">Portfolio</a>
           <a href="#process" data-i18n="nav.process">Metodo</a>
           <a href="#stack" data-i18n="nav.stack">Stack</a>
           <a href="#contact" data-i18n="nav.contact">Contatto</a>
@@ -374,6 +385,7 @@
       <section class="section" id="problems"><div class="wrap"><div class="section-head"><span class="eyebrow" data-i18n="problems.kicker"></span><h2 data-i18n="problems.title"></h2><p data-i18n="problems.text"></p></div><div class="grid grid-3" id="problemGrid"></div></div></section>
       <section class="section" id="services"><div class="wrap"><div class="section-head"><span class="eyebrow" data-i18n="services.kicker"></span><h2 data-i18n="services.title"></h2><p data-i18n="services.text"></p></div><div class="grid grid-2" id="servicesGrid"></div></div></section>
       <section class="section" id="entry"><div class="wrap"><div class="section-head"><span class="eyebrow" data-i18n="entry.kicker"></span><h2 data-i18n="entry.title"></h2><p data-i18n="entry.text"></p></div><div class="grid grid-4" id="entryGrid"></div></div></section>
+      <section class="section" id="portfolio"><div class="wrap"><div class="section-head"><span class="eyebrow" id="portfolioKicker"></span><h2 id="portfolioTitle"></h2><p id="portfolioText"></p></div><div class="grid grid-2" id="portfolioGrid"></div><div class="portfolio-actions"><a class="btn primary" id="portfolioAll" href="/portfolio/"></a></div></div></section>
       <section class="section process" id="process"><div class="wrap"><div class="section-head"><span class="eyebrow" data-i18n="process.kicker"></span><h2 data-i18n="process.title"></h2><p data-i18n="process.text"></p></div><div class="grid grid-5" id="processGrid"></div></div></section>
       <section class="section" id="stack"><div class="wrap"><div class="section-head"><span class="eyebrow" data-i18n="stack.kicker"></span><h2 data-i18n="stack.title"></h2><p data-i18n="stack.text"></p></div><div class="grid grid-3" id="stackGrid"></div></div></section>
       <section class="section" id="faq"><div class="wrap"><div class="section-head"><span class="eyebrow" data-i18n="faq.kicker"></span><h2 data-i18n="faq.title"></h2></div><div class="faq-list" id="faqList"></div></div></section>
@@ -453,6 +465,30 @@
         }
       };
 
+      const portfolioCopy = {
+        it: {
+          kicker: "Creation Lab",
+          title: "Sistemi da usare, ispezionare e mettere alla prova.",
+          text: "Dieci dimostrazioni indipendenti costruite attorno alla PMI fittizia Orion Works. Dati sintetici, decisioni esplicite e workflow realmente utilizzabili.",
+          open: "Apri la demo",
+          all: "Esplora tutti i sistemi",
+          items: [
+            ["Operazioni documentali ed email", "Classificazione, estrazione e approvazione umana.", "document-operations"],
+            ["Orion Operations Hub", "Ordini, responsabilita e transizioni controllate.", "operations-hub"],
+            ["Assistente di conoscenza sicuro", "Retrieval con permessi, citazioni e astensione.", "knowledge-assistant"],
+            ["Intelligenza per cataloghi e-commerce", "Arricchimento, revisione, canali e rollback.", "catalog-intelligence"]
+          ]
+        },
+        en: {
+          kicker: "Creation Lab",
+          title: "Systems to use, inspect and challenge.",
+          text: "Ten independent demonstrations built around fictional Veneto SME Orion Works. Synthetic data, explicit decisions and genuinely usable workflows.",
+          open: "Open demo",
+          all: "Explore every system",
+          items: [["Document and email operations", "Classification, extraction and human approval.", "document-operations"], ["Orion Operations Hub", "Orders, ownership and controlled transitions.", "operations-hub"], ["Secure Knowledge Assistant", "Retrieval with permissions, citations and abstention.", "knowledge-assistant"], ["E-commerce Catalog Intelligence", "Enrichment, review, channels and rollback.", "catalog-intelligence"]]
+        }
+      };
+
       const $ = selector => document.querySelector(selector);
       const $$ = selector => [...document.querySelectorAll(selector)];
       const get = (path, lang) => path.split(".").reduce((value, key) => value?.[key], copy[lang]);
@@ -499,6 +535,13 @@
         $("#problemGrid").innerHTML = copy[lang].problems.items.map(([title, text]) => card(title, text)).join("");
         $("#entryGrid").innerHTML = copy[lang].entry.items.map(([title, text]) => card(title, text)).join("");
         $("#processGrid").innerHTML = copy[lang].process.items.map(([title, text]) => card(title, text)).join("");
+        $("#portfolioNav").textContent = "Portfolio";
+        $("#portfolioKicker").textContent = portfolioCopy[lang].kicker;
+        $("#portfolioTitle").textContent = portfolioCopy[lang].title;
+        $("#portfolioText").textContent = portfolioCopy[lang].text;
+        $("#portfolioGrid").innerHTML = portfolioCopy[lang].items.map(([title, text, slug], index) => '<article class="card portfolio-preview"><span class="number">' + String(index + 1).padStart(2, "0") + '</span><h3>' + title + '</h3><p>' + text + '</p><a class="preview-link" href="/portfolio/' + slug + '/?lang=' + lang + '">' + portfolioCopy[lang].open + ' -></a></article>').join("");
+        $("#portfolioAll").textContent = portfolioCopy[lang].all;
+        $("#portfolioAll").href = "/portfolio/?lang=" + lang;
         $("#trustList").innerHTML = copy[lang].trust.map(item => `<li>${item}</li>`).join("");
         $("#stackGrid").innerHTML = copy[lang].stack.groups.map(([title, text]) => `<article class="card stack-group"><h3>${title}</h3><ul><li>${text}</li></ul></article>`).join("");
         $("#faqList").innerHTML = copy[lang].faq.items.map(([q, a]) => `<details><summary>${q}</summary><p>${a}</p></details>`).join("");
@@ -575,7 +618,30 @@
         removeLangParamFromUrl();
         render(lang);
       }));
+
+      function applyLabHandoff() {
+        const raw = sessionStorage.getItem("cosmos-lab-handoff");
+        if (!raw) return;
+        try {
+          const handoff = JSON.parse(raw);
+          if (!handoff.expiresAt || handoff.expiresAt <= Date.now() || !handoff.summary) {
+            sessionStorage.removeItem("cosmos-lab-handoff");
+            return;
+          }
+          const option = document.createElement("option");
+          option.textContent = "Creation Lab: " + handoff.demo;
+          option.value = option.textContent;
+          option.selected = true;
+          $("#typeSelect").prepend(option);
+          $("#problemInput").value = handoff.summary;
+          setFormStatus("", document.documentElement.lang === "it" ? "Riepilogo della demo caricato. Rivedilo prima dell'invio." : "Demo summary loaded. Review it before sending.");
+        } catch {
+          sessionStorage.removeItem("cosmos-lab-handoff");
+        }
+      }
+
       render(initialLang());
+      applyLabHandoff();
     </script>
     <script type="module">
       import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.min.js";
