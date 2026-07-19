@@ -16,7 +16,6 @@ class ExecuteRequest(BaseModel):
 TASKS = {
     ("document-operations", "classify"): "document_classify",
     ("knowledge-assistant", "search"): "knowledge_search",
-    ("catalog-intelligence", "enrich"): "catalog_enrich",
 }
 
 app = FastAPI(

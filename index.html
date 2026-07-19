@@ -3,6 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="assets/cxm-logo.svg" type="image/svg+xml" sizes="any">
     <title>cosmosXmachina | Software su misura, AI e automazioni</title>
     <meta name="description" content="cosmosXmachina crea software su misura, automazioni AI, dashboard, integrazioni, siti operativi e prodotti digitali per PMI, studi professionali, e-commerce e attività locali.">
     <meta name="theme-color" content="#0b1026">
@@ -11,7 +12,13 @@
     <meta property="og:type" content="website">
     <meta property="og:image" content="assets/cosmos-hero.png">
     <meta name="cosmos-contact-endpoint" content="/api/contact">
-    <!--meta name="cosmos-contact-endpoint" content="http://127.0.0.1:8787"-->
+    <script>
+      (() => {
+        const modes = ["hermetic-observatory", "prismatic-glass-atelier", "arcane-editorial-codex", "digital-cathedral", "transmutation-system-map"];
+        const mode = new URL(location.href).searchParams.get("design");
+        if (modes.includes(mode)) document.documentElement.dataset.design = mode;
+      })();
+    </script>
     <style>
       :root {
         color-scheme: dark;
@@ -74,8 +81,9 @@
         position: relative;
         overflow: hidden;
         isolation: isolate;
-        border-bottom: 1px solid var(--line);
+        scroll-margin-top: 72px;
       }
+      #home { scroll-margin-top: 72px; }
       .alchemy-3d {
         position: absolute;
         inset: 0;
@@ -111,6 +119,29 @@
           repeating-conic-gradient(from 45deg at 50% 50%, transparent 0deg 13deg, rgba(112, 228, 255, .08) 13deg 14deg, transparent 14deg 30deg);
         mix-blend-mode: screen;
       }
+      .light-section {
+        --text: #10183b;
+        --muted: #303963;
+        --faint: #5c6485;
+        --panel: rgba(247, 249, 255, .78);
+        --line: rgba(31, 46, 111, .2);
+        --shadow: 0 24px 70px rgba(51, 64, 130, .16);
+        color: var(--text);
+      }
+      .light-section::before {
+        background:
+          linear-gradient(90deg, rgba(247, 249, 255, .48), rgba(232, 238, 255, .2) 48%, rgba(243, 246, 255, .46)),
+          linear-gradient(0deg, rgba(232, 238, 255, .58), rgba(255, 255, 255, .08) 46%, rgba(235, 239, 255, .2)),
+          var(--bg-img) center / cover no-repeat;
+      }
+      .light-section::after {
+        opacity: .2;
+        background:
+          linear-gradient(135deg, transparent 0 32%, rgba(63, 79, 216, .12) 32.2% 32.5%, transparent 32.7% 66%, rgba(122, 52, 216, .1) 66.2% 66.5%, transparent 66.7%),
+          repeating-conic-gradient(from 45deg at 50% 50%, transparent 0deg 13deg, rgba(33, 50, 130, .08) 13deg 14deg, transparent 14deg 30deg);
+        mix-blend-mode: multiply;
+      }
+      .light-section .alchemy-3d { mix-blend-mode: multiply; opacity: .72; filter: saturate(1.2) contrast(1.08); }
       @supports (background-attachment: fixed) {
         @media (min-width: 900px) { .section::before, .hero::before { background-attachment: scroll, scroll, fixed; } }
       }
@@ -151,13 +182,14 @@
       .lang button[aria-pressed="true"] { color: var(--text); background: linear-gradient(135deg, var(--violet), var(--blue)); }
 
       .hero { --bg-img: url("assets/cosmos-hero.png"); min-height: calc(100svh - 72px); display: grid; align-items: center; }
-      #problems { --bg-img: url("assets/section-problems.png"); }
+      #problems { --bg-img: url("assets/section-problems-light.png"); }
       #services { --bg-img: url("assets/section-services.png"); }
-      #entry { --bg-img: url("assets/section-entry.png"); }
+      #entry { --bg-img: url("assets/section-entry-light.png"); }
       #process { --bg-img: url("assets/section-process.png"); }
-      #stack { --bg-img: url("assets/section-stack.png"); }
+      #stack { --bg-img: url("assets/section-stack-light.png"); }
       #faq { --bg-img: url("assets/section-faq.png"); }
-      #contact { --bg-img: url("assets/section-contact.png"); }
+      #contact { --bg-img: url("assets/section-contact-light.png"); }
+      #portfolio { --bg-img: url("assets/section-portfolio.png"); }
 
       .hero-inner { padding: 86px 0 48px; display: grid; gap: 34px; }
       .hero-copy { max-width: 950px; display: grid; gap: 20px; }
@@ -173,6 +205,13 @@
         -webkit-text-stroke: .45px rgba(11, 16, 38, .22);
         text-shadow: 0 7px 18px rgba(11, 16, 38, .4), 0 1px 2px rgba(11, 16, 38, .44), 0 0 18px rgba(112, 228, 255, .08);
       }
+      .light-section .section-head h2 {
+        background: none;
+        -webkit-text-fill-color: #132c68;
+        color: #132c68;
+        -webkit-text-stroke: .2px rgba(52, 30, 105, .34);
+        text-shadow: 0 1px 0 rgba(255, 255, 255, .96), 1px 0 0 rgba(101, 31, 123, .22), 0 8px 20px rgba(35, 47, 112, .17), 0 20px 42px rgba(63, 79, 216, .08);
+      }
       .hero h1 { max-width: 950px; font-size: clamp(2rem, 5vw, 5rem); }
       .hero p, .section-head p {
         margin: 0;
@@ -183,7 +222,11 @@
       .hero p { max-width: 800px; }
       .hero-copy, .section-head {
         filter: drop-shadow(0 12px 24px rgba(11, 16, 38, .22));
+        transition: filter .35s var(--ease);
       }
+      .hero-copy:hover, .section-head:hover { filter: drop-shadow(0 14px 30px rgba(63, 134, 232, .3)) brightness(1.07); }
+      .light-section .section-head { filter: drop-shadow(0 12px 24px rgba(58, 70, 145, .13)); }
+      .light-section .section-head:hover { filter: drop-shadow(0 14px 30px rgba(63, 79, 216, .2)) brightness(1.04); }
       .section-head { display: grid; gap: 12px; max-width: 950px; margin-bottom: 30px; }
       .section-head h2 { font-size: clamp(2rem, 5vw, 4.2rem); }
       .eyebrow {
@@ -225,11 +268,44 @@
 
       .runes { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; max-width: 940px; }
       .rune, .card, details, .contact-card {
+        position: relative;
+        overflow: hidden;
         border: 1px solid var(--line);
         border-radius: var(--radius);
         background: linear-gradient(145deg, rgba(15, 15, 48, .82), rgba(31, 12, 65, .66));
         box-shadow: var(--shadow);
         backdrop-filter: blur(14px);
+        transition: transform .3s var(--ease), border-color .3s var(--ease), box-shadow .3s var(--ease), background .3s var(--ease);
+      }
+      .rune::after, .card::after, details::after, .contact-card::after {
+        content: "";
+        position: absolute;
+        inset: -45% auto -45% -55%;
+        width: 28%;
+        pointer-events: none;
+        opacity: 0;
+        transform: skewX(-18deg);
+        background: linear-gradient(90deg, transparent, rgba(112, 228, 255, .26), rgba(179, 103, 255, .32), transparent);
+        transition: left .72s var(--ease), opacity .25s var(--ease);
+      }
+      .rune:hover, .card:hover, details:hover, .contact-card:hover {
+        z-index: 1;
+        transform: translateY(-3px);
+        border-color: rgba(112, 228, 255, .5);
+        background: linear-gradient(145deg, rgba(25, 34, 82, .94), rgba(55, 21, 101, .84));
+        box-shadow: 0 22px 62px rgba(25, 10, 49, .42), 0 0 34px rgba(63, 134, 232, .17), inset 0 0 28px rgba(122, 52, 216, .08);
+      }
+      .rune:hover::after, .card:hover::after, details:hover::after, .contact-card:hover::after { left: 128%; opacity: 1; }
+      .light-section .rune, .light-section .card, .light-section details, .light-section .contact-card {
+        background: linear-gradient(145deg, rgba(255, 255, 255, .84), rgba(226, 232, 255, .7));
+      }
+      .light-section .rune:hover, .light-section .card:hover, .light-section details:hover, .light-section .contact-card:hover {
+        border-color: rgba(63, 79, 216, .48);
+        background: linear-gradient(145deg, rgba(255, 255, 255, .97), rgba(207, 221, 255, .9));
+        box-shadow: 0 22px 58px rgba(57, 69, 139, .2), 0 0 30px rgba(63, 134, 232, .14), inset 0 0 26px rgba(255, 255, 255, .46);
+      }
+      .light-section .rune::after, .light-section .card::after, .light-section details::after, .light-section .contact-card::after {
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .72), rgba(112, 228, 255, .3), transparent);
       }
       .rune { min-height: 112px; padding: 16px; }
       .rune strong { display: block; color: var(--blue); font-size: 1.12rem; }
@@ -238,7 +314,7 @@
       .card, details, .contact-card { padding: 20px; }
       .card h3, details h3, .contact-card h3 { margin: 0 0 8px; line-height: 1.18; }
       .card p, details p { margin: 0; }
-      .portfolio-preview { position: relative; min-height: 230px; padding-bottom: 62px; }
+      .portfolio-preview { min-height: 238px; padding-bottom: 66px; }
       .portfolio-preview .number { color: var(--cyan); border-color: rgba(112, 228, 255, .46); }
       .portfolio-preview .preview-link {
         position: absolute;
@@ -247,7 +323,14 @@
         color: var(--cyan);
         font-weight: 800;
       }
-      .portfolio-actions { margin-top: 24px; }
+      .portfolio-preview .preview-link:hover { color: #fff; }
+      .portfolio-actions { display: flex; margin-top: 24px; }
+      .portfolio-disclosure {
+        max-width: 760px;
+        margin-top: 18px;
+        color: var(--faint);
+        font-size: .92rem;
+      }
       .number {
         display: inline-grid;
         place-items: center;
@@ -309,7 +392,13 @@
         border-radius: var(--radius);
         background: rgba(255, 255, 255, .06);
         padding: 12px 13px;
+        transition: border-color .25s var(--ease), box-shadow .25s var(--ease), background .25s var(--ease);
       }
+      input:hover, select:hover, textarea:hover, input:focus, select:focus, textarea:focus { border-color: rgba(112, 228, 255, .5); box-shadow: 0 0 24px rgba(63, 134, 232, .12); }
+      .light-section input, .light-section select, .light-section textarea { color: var(--text); background: rgba(255, 255, 255, .72); }
+      .light-section .btn { color: var(--text); background: rgba(255, 255, 255, .58); }
+      .light-section .btn.primary { color: #fff; background: linear-gradient(135deg, var(--violet), var(--purple), var(--blue)); }
+      .light-section .eyebrow, .light-section .tag, .light-section .contact-links a { color: #115d8d; text-shadow: 0 1px 1px rgba(255, 255, 255, .8); }
       textarea { min-height: 130px; resize: vertical; }
       .form-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
       .small { color: var(--faint); font-size: .9rem; }
@@ -325,10 +414,12 @@
         .contact-grid, .grid-2 { grid-template-columns: 1fr; }
         .nav { align-items: flex-start; padding: 14px 0; flex-direction: column; }
         .nav-links { justify-content: flex-start; }
+        .section { padding-block: 108px; }
+        .section, .hero, #home { scroll-margin-top: 176px; }
       }
       @media (max-width: 680px) {
         .wrap { width: min(100% - 22px, var(--max)); }
-        .section { padding: 64px 0; }
+        .section { padding: 96px 0; }
         .hero { min-height: auto; }
         .hero-inner { padding-top: 58px; }
         .hero h1 { font-size: clamp(2.6rem, 15vw, 4.2rem); }
@@ -343,6 +434,7 @@
         .alchemy-3d { display: none; }
       }
     </style>
+    <link rel="stylesheet" href="assets/design-modes.css">
   </head>
   <body>
     <header class="site-header">
@@ -354,10 +446,10 @@
         <div class="nav-links">
           <a href="#home" data-i18n="nav.home">Home</a>
           <a href="#services" data-i18n="nav.services">Servizi</a>
-          <a href="#portfolio" id="portfolioNav">Portfolio</a>
           <a href="#process" data-i18n="nav.process">Metodo</a>
           <a href="#stack" data-i18n="nav.stack">Stack</a>
           <a href="#contact" data-i18n="nav.contact">Contatto</a>
+          <a href="#portfolio" data-i18n="nav.portfolio">Portfolio</a>
           <span class="lang" aria-label="Language switcher">
             <button type="button" data-lang-switch="it" aria-pressed="true">IT</button>
             <button type="button" data-lang-switch="en" aria-pressed="false">EN</button>
@@ -366,8 +458,8 @@
       </nav>
     </header>
 
-    <main id="home">
-      <section class="hero">
+    <main>
+      <section class="hero" id="home">
         <div class="wrap hero-inner">
           <div class="hero-copy">
             <span class="hero-brandline" data-i18n="hero.kicker">Software atelier da Treviso al futuro operativo.</span>
@@ -382,15 +474,14 @@
         </div>
       </section>
 
-      <section class="section" id="problems"><div class="wrap"><div class="section-head"><span class="eyebrow" data-i18n="problems.kicker"></span><h2 data-i18n="problems.title"></h2><p data-i18n="problems.text"></p></div><div class="grid grid-3" id="problemGrid"></div></div></section>
+      <section class="section light-section" id="problems"><div class="wrap"><div class="section-head"><span class="eyebrow" data-i18n="problems.kicker"></span><h2 data-i18n="problems.title"></h2><p data-i18n="problems.text"></p></div><div class="grid grid-3" id="problemGrid"></div></div></section>
       <section class="section" id="services"><div class="wrap"><div class="section-head"><span class="eyebrow" data-i18n="services.kicker"></span><h2 data-i18n="services.title"></h2><p data-i18n="services.text"></p></div><div class="grid grid-2" id="servicesGrid"></div></div></section>
-      <section class="section" id="entry"><div class="wrap"><div class="section-head"><span class="eyebrow" data-i18n="entry.kicker"></span><h2 data-i18n="entry.title"></h2><p data-i18n="entry.text"></p></div><div class="grid grid-4" id="entryGrid"></div></div></section>
-      <section class="section" id="portfolio"><div class="wrap"><div class="section-head"><span class="eyebrow" id="portfolioKicker"></span><h2 id="portfolioTitle"></h2><p id="portfolioText"></p></div><div class="grid grid-2" id="portfolioGrid"></div><div class="portfolio-actions"><a class="btn primary" id="portfolioAll" href="/portfolio/"></a></div></div></section>
+      <section class="section light-section" id="entry"><div class="wrap"><div class="section-head"><span class="eyebrow" data-i18n="entry.kicker"></span><h2 data-i18n="entry.title"></h2><p data-i18n="entry.text"></p></div><div class="grid grid-4" id="entryGrid"></div></div></section>
       <section class="section process" id="process"><div class="wrap"><div class="section-head"><span class="eyebrow" data-i18n="process.kicker"></span><h2 data-i18n="process.title"></h2><p data-i18n="process.text"></p></div><div class="grid grid-5" id="processGrid"></div></div></section>
-      <section class="section" id="stack"><div class="wrap"><div class="section-head"><span class="eyebrow" data-i18n="stack.kicker"></span><h2 data-i18n="stack.title"></h2><p data-i18n="stack.text"></p></div><div class="grid grid-3" id="stackGrid"></div></div></section>
+      <section class="section light-section" id="stack"><div class="wrap"><div class="section-head"><span class="eyebrow" data-i18n="stack.kicker"></span><h2 data-i18n="stack.title"></h2><p data-i18n="stack.text"></p></div><div class="grid grid-3" id="stackGrid"></div></div></section>
       <section class="section" id="faq"><div class="wrap"><div class="section-head"><span class="eyebrow" data-i18n="faq.kicker"></span><h2 data-i18n="faq.title"></h2></div><div class="faq-list" id="faqList"></div></div></section>
 
-      <section class="section" id="contact">
+      <section class="section light-section" id="contact">
         <div class="wrap grid contact-grid">
           <div class="contact-card">
             <span class="eyebrow" data-i18n="contact.kicker">Contatto</span>
@@ -421,6 +512,15 @@
           </div>
         </div>
       </section>
+
+      <section class="section" id="portfolio">
+        <div class="wrap">
+          <div class="section-head"><span class="eyebrow" id="portfolioKicker"></span><h2 id="portfolioTitle"></h2><p id="portfolioText"></p></div>
+          <div class="grid grid-2" id="portfolioGrid"></div>
+          <p class="portfolio-disclosure" id="portfolioDisclosure"></p>
+          <div class="portfolio-actions"><a class="btn primary" id="portfolioAll" href="/portfolio/"></a></div>
+        </div>
+      </section>
     </main>
 
     <footer class="footer"><div class="wrap"><span>cosmosXmachina</span><span data-i18n="footer.text"></span></div></footer>
@@ -434,7 +534,7 @@
       };
       const copy = {
         it: {
-          nav: { home: "Home", services: "Servizi", process: "Metodo", stack: "Stack", contact: "Contatto" },
+          nav: { home: "Home", services: "Servizi", process: "Metodo", stack: "Stack", contact: "Contatto", portfolio: "Portfolio" },
           hero: { kicker: "Software atelier da Treviso al futuro operativo.", title: "Software su misura, automazioni AI e strumenti digitali per PMI.", text: "Creo web app, gestionali, dashboard, API, assistenti AI, automazioni e-commerce e prodotti digitali per ridurre lavoro manuale e rendere i processi aziendali più chiari.", primary: "Richiedi un audit", secondary: "Vedi i servizi" },
           runes: [["AI pratica", "Assistenti, RAG, triage email, documenti e workflow con revisione umana."], ["Strumenti interni", "Mini CRM, dashboard, portali, app operative e flussi su misura."], ["Integrazioni", "API, webhook, automazioni e sincronizzazioni tra software aziendali."], ["Prodotti digitali", "MVP, micro-SaaS, plugin, estensioni e strumenti scalabili."]],
           problems: { kicker: "Problemi che trasformo", title: "Dal caos operativo a sistemi software affidabili.", text: "Il lavoro di cosmosXmachina parte dai processi reali: informazioni disperse, operazioni ripetitive, strumenti scollegati e opportunità AI senza un piano concreto.", items: [["Lavoro manuale", "Email, PDF, fogli Excel e attività amministrative che consumano ore ogni settimana."], ["Strumenti scollegati", "CRM, e-commerce, documenti, database e SaaS che non parlano tra loro."], ["Excel, email e WhatsApp come gestionale", "Informazioni critiche disperse in chat, thread e file difficili da controllare."], ["Report lenti", "Dati sparsi che richiedono esportazioni manuali prima di diventare decisioni."], ["AI senza piano", "Idee interessanti ma nessun workflow sicuro, misurabile e davvero utile."], ["Software fragile", "Sistemi esistenti da mantenere, rifinire, monitorare e far evolvere."]] },
@@ -449,7 +549,7 @@
           footer: { text: "Software, AI automation e strumenti digitali da Treviso." }
         },
         en: {
-          nav: { home: "Home", services: "Services", process: "Process", stack: "Stack", contact: "Contact" },
+          nav: { home: "Home", services: "Services", process: "Process", stack: "Stack", contact: "Contact", portfolio: "Portfolio" },
           hero: { kicker: "A software atelier from Treviso to cleaner operations.", title: "Custom software, AI automation and digital tools for SMEs.", text: "I build web apps, internal tools, dashboards, APIs, AI assistants, e-commerce automations and digital products that reduce manual work and make business operations cleaner.", primary: "Request an audit", secondary: "View services" },
           runes: [["Practical AI", "Assistants, RAG, email triage, documents and workflows with human review."], ["Internal tools", "Mini CRMs, dashboards, portals, operational apps and custom flows."], ["Integrations", "APIs, webhooks, automations and synchronization between business tools."], ["Digital products", "MVPs, micro-SaaS, plugins, extensions and scalable tools."]],
           problems: { kicker: "Problems I transform", title: "From messy workflows to reliable software systems.", text: "cosmosXmachina starts from real operations: scattered information, repetitive work, disconnected tools and AI opportunities without a practical plan.", items: [["Manual work", "Emails, PDFs, spreadsheets and admin tasks that burn hours every week."], ["Disconnected tools", "CRM, e-commerce, documents, databases and SaaS tools that do not speak to each other."], ["Excel, email and WhatsApp as the operating system", "Critical information scattered across chats, threads and files."], ["Slow reporting", "Scattered data that needs manual exports before it becomes a decision."], ["AI without a plan", "Interesting ideas without a safe, measurable and useful workflow."], ["Fragile software", "Existing systems that need maintenance, refactoring, monitoring and evolution."]] },
@@ -468,24 +568,31 @@
       const portfolioCopy = {
         it: {
           kicker: "Creation Lab",
-          title: "Sistemi da usare, ispezionare e mettere alla prova.",
-          text: "Dieci dimostrazioni indipendenti costruite attorno alla PMI fittizia Orion Works. Dati sintetici, decisioni esplicite e workflow realmente utilizzabili.",
+          title: "Quattro sistemi da usare, ispezionare e mettere alla prova.",
+          text: "Dimostrazioni indipendenti costruite attorno alla PMI fittizia Orion Works, ognuna con un'identità professionale scelta per il problema.",
+          disclosure: "Progetti autonomi con dati sintetici, non risultati ottenuti per clienti reali. La versione attuale non invia richieste a provider AI esterni.",
           open: "Apri la demo",
-          all: "Esplora tutti i sistemi",
+          all: "Entra nel Creation Lab",
           items: [
-            ["Operazioni documentali ed email", "Classificazione, estrazione e approvazione umana.", "document-operations"],
-            ["Orion Operations Hub", "Ordini, responsabilita e transizioni controllate.", "operations-hub"],
-            ["Assistente di conoscenza sicuro", "Retrieval con permessi, citazioni e astensione.", "knowledge-assistant"],
-            ["Intelligenza per cataloghi e-commerce", "Arricchimento, revisione, canali e rollback.", "catalog-intelligence"]
+            ["01", "Operazioni documentali ed email", "Classificazione, estrazione, prove e approvazione umana.", "document-operations"],
+            ["02", "Orion Operations Hub", "Ordini, responsabilità e transizioni operative controllate.", "operations-hub"],
+            ["03", "Assistente di conoscenza sicuro", "Ricerca con permessi, citazioni verificabili e astensione.", "knowledge-assistant"],
+            ["06", "KPI & Reporting Studio", "Elaborazione locale, indicatori trasparenti e viste accessibili.", "kpi-studio"]
           ]
         },
         en: {
           kicker: "Creation Lab",
-          title: "Systems to use, inspect and challenge.",
-          text: "Ten independent demonstrations built around fictional Veneto SME Orion Works. Synthetic data, explicit decisions and genuinely usable workflows.",
+          title: "Four systems to use, inspect and challenge.",
+          text: "Independent demonstrations built around fictional Veneto SME Orion Works, each with a professional identity selected for the problem.",
+          disclosure: "Self-directed projects using synthetic data, not real-client results. The current version makes no requests to external AI providers.",
           open: "Open demo",
-          all: "Explore every system",
-          items: [["Document and email operations", "Classification, extraction and human approval.", "document-operations"], ["Orion Operations Hub", "Orders, ownership and controlled transitions.", "operations-hub"], ["Secure Knowledge Assistant", "Retrieval with permissions, citations and abstention.", "knowledge-assistant"], ["E-commerce Catalog Intelligence", "Enrichment, review, channels and rollback.", "catalog-intelligence"]]
+          all: "Enter the Creation Lab",
+          items: [
+            ["01", "Document and Email Operations", "Classification, extraction, evidence and human approval.", "document-operations"],
+            ["02", "Orion Operations Hub", "Orders, ownership and controlled operational transitions.", "operations-hub"],
+            ["03", "Secure Knowledge Assistant", "Permission-aware retrieval, verifiable citations and abstention.", "knowledge-assistant"],
+            ["06", "KPI & Reporting Studio", "Local processing, transparent indicators and accessible views.", "kpi-studio"]
+          ]
         }
       };
 
@@ -535,11 +642,11 @@
         $("#problemGrid").innerHTML = copy[lang].problems.items.map(([title, text]) => card(title, text)).join("");
         $("#entryGrid").innerHTML = copy[lang].entry.items.map(([title, text]) => card(title, text)).join("");
         $("#processGrid").innerHTML = copy[lang].process.items.map(([title, text]) => card(title, text)).join("");
-        $("#portfolioNav").textContent = "Portfolio";
         $("#portfolioKicker").textContent = portfolioCopy[lang].kicker;
         $("#portfolioTitle").textContent = portfolioCopy[lang].title;
         $("#portfolioText").textContent = portfolioCopy[lang].text;
-        $("#portfolioGrid").innerHTML = portfolioCopy[lang].items.map(([title, text, slug], index) => '<article class="card portfolio-preview"><span class="number">' + String(index + 1).padStart(2, "0") + '</span><h3>' + title + '</h3><p>' + text + '</p><a class="preview-link" href="/portfolio/' + slug + '/?lang=' + lang + '">' + portfolioCopy[lang].open + ' -></a></article>').join("");
+        $("#portfolioDisclosure").textContent = portfolioCopy[lang].disclosure;
+        $("#portfolioGrid").innerHTML = portfolioCopy[lang].items.map(([rank, title, text, slug]) => '<article class="card portfolio-preview"><span class="number">' + rank + '</span><h3>' + title + '</h3><p>' + text + '</p><a class="preview-link" href="/portfolio/' + slug + '/?lang=' + lang + '">' + portfolioCopy[lang].open + ' &rarr;</a></article>').join("");
         $("#portfolioAll").textContent = portfolioCopy[lang].all;
         $("#portfolioAll").href = "/portfolio/?lang=" + lang;
         $("#trustList").innerHTML = copy[lang].trust.map(item => `<li>${item}</li>`).join("");
@@ -618,7 +725,6 @@
         removeLangParamFromUrl();
         render(lang);
       }));
-
       function applyLabHandoff() {
         const raw = sessionStorage.getItem("cosmos-lab-handoff");
         if (!raw) return;
@@ -655,57 +761,45 @@
         const cyan = 0x70e4ff;
         const sectionPlans = {
           hero: [
-            { kind: "portal", position: [1.46, .7, -.18], mobile: [.68, -.22, -.3], scale: .68, colors: [blue, darkViolet, cyan, violet] },
-            { kind: "merkaba", position: [1.8, -.7, -.08], mobile: [-.62, .36, -.28], scale: .5, colors: [violet, cyan, purple, blue] },
-            { kind: "nested", position: [-2.7, -1.1, -.24], mobile: [.34, .44, -.42], scale: .34, colors: [purple, blue, cyan, darkViolet] },
-            { kind: "prism", position: [-2.7, .44, -.22], mobile: [-.34, -.46, -.42], scale: .36, colors: [cyan, indigo, violet, purple] }
+            { kind: "philosopher", side: "right", y: .28, z: -.18, scale: .68, colors: [blue, darkViolet, cyan, violet] },
+            { kind: "azoth", side: "left", y: .72, z: -.08, scale: .5, colors: [violet, cyan, purple, blue] }
           ],
           problems: [
-            { kind: "nested", position: [3, -1, -.18], mobile: [.64, .34, -.32], scale: .52, colors: [purple, cyan, indigo, violet] },
-            { kind: "prism", position: [2.2 , 0.8, -.06], mobile: [-.64, -.32, -.28], scale: .58, colors: [blue, violet, cyan, darkViolet] },
-            { kind: "portal", position: [-3, -.6, -.24], mobile: [.3, -.48, -.42], scale: .36, colors: [cyan, purple, blue, violet] },
-            { kind: "merkaba", position: [-3, .52, -.24], mobile: [-.34, .48, -.42], scale: .34, colors: [darkViolet, cyan, indigo, blue] }
+            { kind: "earth", side: "right", y: .28, z: -.18, scale: .52, colors: [purple, cyan, indigo, violet] },
+            { kind: "air", side: "left", y: .74, z: -.06, scale: .58, colors: [blue, violet, cyan, darkViolet] }
           ],
           services: [
-            { kind: "merkaba", position: [-2.1, 1.1, -.08], mobile: [-.62, -.42, -.3], scale: .5, colors: [violet, blue, purple, cyan] },
-            { kind: "portal", position: [1.42, 1, -.18], mobile: [.68, .36, -.34], scale: .56, colors: [purple, cyan, darkViolet, blue] },
-            { kind: "nested", position: [2.1, -1.2, -.28], mobile: [.28, -.5, -.44], scale: .34, colors: [blue, violet, cyan, indigo] },
-            { kind: "prism", position: [-2.05, -0.5, -.24], mobile: [-.32, .46, -.42], scale: .34, colors: [cyan, darkViolet, purple, blue] }
+            { kind: "hermetic", side: "left", y: .3, z: -.08, scale: .5, colors: [violet, blue, purple, cyan] },
+            { kind: "aether", side: "right", y: .2, z: -.18, scale: .56, colors: [purple, cyan, darkViolet, blue] }
           ],
           entry: [
-            { kind: "prism", position: [1.8, .42, -.16], mobile: [.62, .28, -.3], scale: .54, colors: [blue, cyan, violet, purple] },
-            { kind: "nested", position: [-3.6, -.6, -.04], mobile: [-.64, -.34, -.26], scale: .56, colors: [darkViolet, purple, cyan, indigo] },
-            { kind: "merkaba", position: [3.5, 1.3, -.26], mobile: [.34, -.48, -.42], scale: .34, colors: [violet, blue, cyan, purple] },
-            { kind: "portal", position: [-1.42, 1.3, -.24], mobile: [-.32, .46, -.42], scale: .34, colors: [cyan, purple, darkViolet, blue] }
+            { kind: "fire", side: "right", y: .3, z: -.16, scale: .54, colors: [blue, cyan, violet, purple] },
+            { kind: "water", side: "left", y: .72, z: -.04, scale: .56, colors: [darkViolet, purple, cyan, indigo] }
           ],
           process: [
-            { kind: "portal", position: [1.8, .6, -.16], mobile: [-.64, .32, -.32], scale: .56, colors: [cyan, violet, blue, purple] },
-            { kind: "prism", position: [-2.8, -1, -.04], mobile: [.62, -.34, -.28], scale: .5, colors: [purple, blue, darkViolet, cyan] },
-            { kind: "nested", position: [-3, .46, -.24], mobile: [.32, .46, -.42], scale: .34, colors: [blue, cyan, violet, darkViolet] },
-            { kind: "merkaba", position: [2.9, -.48, -.24], mobile: [-.34, -.46, -.42], scale: .34, colors: [purple, indigo, cyan, violet] }
+            { kind: "celestial", side: "right", y: .28, z: -.16, scale: .56, colors: [cyan, violet, blue, purple] },
+            { kind: "philosopher", side: "left", y: .74, z: -.04, scale: .5, colors: [purple, blue, darkViolet, cyan] }
           ],
           stack: [
-            { kind: "nested", position: [1.4, 1.2, -.16], mobile: [.64, .34, -.34], scale: .52, colors: [blue, purple, cyan, violet] },
-            { kind: "merkaba", position: [2.1, -1.15, -.04], mobile: [-.62, -.34, -.28], scale: .5, colors: [cyan, darkViolet, violet, blue] },
-            { kind: "portal", position: [-2.5, -.1, -.26], mobile: [.32, -.48, -.44], scale: .34, colors: [violet, cyan, blue, purple] },
-            { kind: "prism", position: [0, -1.2, -.24], mobile: [-.34, .46, -.42], scale: .34, colors: [purple, blue, darkViolet, cyan] }
+            { kind: "aether", side: "right", y: .28, z: -.16, scale: .52, colors: [blue, purple, cyan, violet] },
+            { kind: "prima", side: "left", y: .72, z: -.04, scale: .5, colors: [cyan, darkViolet, violet, blue] }
           ],
           faq: [
-            { kind: "portal", position: [1.8, .8, -.14], mobile: [.62, .32, -.3], scale: .5, colors: [violet, blue, purple, cyan] },
-            { kind: "nested", position: [-3.1, -1.1, -.06], mobile: [-.62, -.32, -.28], scale: .5, colors: [purple, cyan, indigo, violet] },
-            { kind: "prism", position: [3.2, -.5, -.24], mobile: [.3, -.46, -.42], scale: .34, colors: [blue, darkViolet, cyan, violet] },
-            { kind: "merkaba", position: [-3.2, 1.2, -.24], mobile: [-.32, .46, -.42], scale: .34, colors: [cyan, purple, blue, indigo] }
+            { kind: "water", side: "right", y: .3, z: -.14, scale: .5, colors: [violet, blue, purple, cyan] },
+            { kind: "celestial", side: "left", y: .72, z: -.06, scale: .5, colors: [purple, cyan, indigo, violet] }
           ],
           contact: [
-            { kind: "prism", position: [-3.1, .5, -.16], mobile: [-.62, .26, -.34], scale: .54, colors: [violet, cyan, darkViolet, blue] },
-            { kind: "merkaba", position: [3, -.42, -.06], mobile: [.64, -.34, -.28], scale: .48, colors: [blue, purple, cyan, violet] },
-            { kind: "portal", position: [3.2, 1.2, -.28], mobile: [.32, .46, -.44], scale: .32, colors: [purple, cyan, indigo, blue] },
-            { kind: "nested", position: [-2.9, -1.4, -.24], mobile: [-.32, -.48, -.42], scale: .34, colors: [cyan, violet, darkViolet, purple] }
+            { kind: "hermetic", side: "left", y: .28, z: -.16, scale: .54, colors: [violet, cyan, darkViolet, blue] },
+            { kind: "azoth", side: "right", y: .72, z: -.06, scale: .48, colors: [blue, purple, cyan, violet] }
+          ],
+          portfolio: [
+            { kind: "prima", side: "left", y: .28, z: -.16, scale: .52, colors: [cyan, violet, blue, darkViolet] },
+            { kind: "earth", side: "right", y: .72, z: -.06, scale: .54, colors: [purple, blue, cyan, violet] }
           ]
         };
 
         const state = createRenderer();
-        const sections = [document.querySelector(".hero"), ...["problems", "services", "entry", "process", "stack", "faq", "contact"].map(id => document.getElementById(id))];
+        const sections = [document.querySelector(".hero"), ...["problems", "services", "entry", "process", "stack", "faq", "contact", "portfolio"].map(id => document.getElementById(id))];
         addEventListener("pointermove", event => {
           state.pointer.x = event.clientX;
           state.pointer.y = event.clientY;
@@ -799,7 +893,10 @@
 
         function layerMaterial(config, index) {
           const colors = config.colors;
-          return createCrystalMaterial(colors[index % colors.length], colors[(index + 1) % colors.length], colors[(index + 2) % colors.length]);
+          const key = index % colors.length;
+          config.materials = config.materials || [];
+          if (!config.materials[key]) config.materials[key] = createCrystalMaterial(colors[key], colors[(key + 1) % colors.length], colors[(key + 2) % colors.length]);
+          return config.materials[key];
         }
 
         function addEdges(root, mesh, color = cyan, opacity = .55) {
@@ -845,49 +942,163 @@
           return mesh;
         }
 
-        function createMerkaba(config) {
+        // Ten low-poly artifacts correspond to concepts 01-10 in the selection sheet.
+        function createFireTetraCrown(config) {
           const root = baseGroup(config);
-          crystalMesh(root, new THREE.TetrahedronGeometry(.72, 0), layerMaterial(config, 0), [0, .1, 0], [0, .72, .78]);
-          crystalMesh(root, new THREE.TetrahedronGeometry(.72, 0), layerMaterial(config, 1), [0, -.1, 0], [Math.PI, -.72, -.78]);
-          crystalMesh(root, new THREE.OctahedronGeometry(.48, 1), layerMaterial(config, 2), [0, 0, 0], [.26, 0, .16], [.78, .78, .78]);
-          crystalMesh(root, new THREE.OctahedronGeometry(.2, 0), layerMaterial(config, 3), [0, 0, 0], [.1, .38, .62], [.82, 1.35, .82]);
-          crystalMesh(root, new THREE.CylinderGeometry(.052, .052, 1.4, 6, 1, true), layerMaterial(config, 1), [0, 0, 0], [0, Math.PI / 6, 0]);
-          crystalMesh(root, new THREE.ConeGeometry(.13, .34, 4, 1, true), layerMaterial(config, 2), [0, .78, 0], [0, .78, 0]);
-          crystalMesh(root, new THREE.ConeGeometry(.13, .34, 4, 1, true), layerMaterial(config, 3), [0, -.78, 0], [Math.PI, -.78, 0]);
+          crystalMesh(root, new THREE.TetrahedronGeometry(.68, 0), layerMaterial(config, 0), [0, .12, 0], [.08, .72, .62], [.88, 1.08, .88]);
+          crystalMesh(root, new THREE.TetrahedronGeometry(.5, 0), layerMaterial(config, 1), [0, .04, 0], [Math.PI, -.55, -.65], [.8, 1.05, .8]);
+          crystalMesh(root, new THREE.ConeGeometry(.18, 1.02, 4, 1, true), layerMaterial(config, 2), [0, .05, 0], [0, Math.PI / 4, 0], [.72, 1, .72]);
+          crystalMesh(root, new THREE.OctahedronGeometry(.2, 0), layerMaterial(config, 3), [0, .02, 0], [.2, .4, .1], [.72, 1.9, .72]);
+          const crownShard = new THREE.TetrahedronGeometry(.23, 0);
+          for (let i = 0; i < 4; i++) {
+            const a = Math.PI / 4 + i * Math.PI / 2;
+            crystalMesh(root, crownShard, layerMaterial(config, i + 1), [Math.cos(a) * .54, .1, Math.sin(a) * .54], [.45, -a, .72], [.62, 1.15, .62]);
+          }
+          crystalMesh(root, new THREE.CylinderGeometry(.5, .66, .18, 6), layerMaterial(config, 2), [0, -.7, 0], [0, Math.PI / 6, 0], [1, .7, 1]);
+          crystalMesh(root, new THREE.CylinderGeometry(.36, .5, .14, 6), layerMaterial(config, 3), [0, -.55, 0], [0, 0, 0], [1, .72, 1]);
           return root;
         }
 
-        function createPrismTower(config) {
+        function createEarthCubicVault(config) {
           const root = baseGroup(config);
-          crystalMesh(root, new THREE.CylinderGeometry(.34, .34, 1.22, 6, 1, false), layerMaterial(config, 0), [0, 0, 0], [0, .28, 0]);
-          crystalMesh(root, new THREE.ConeGeometry(.34, .44, 6, 1, false), layerMaterial(config, 1), [0, .83, 0], [0, .28, 0]);
-          crystalMesh(root, new THREE.CylinderGeometry(.5, .66, .18, 6, 1, false), layerMaterial(config, 2), [0, -.72, 0], [0, Math.PI / 6, 0], [1, .72, 1]);
-          crystalMesh(root, new THREE.CylinderGeometry(.36, .5, .16, 6, 1, false), layerMaterial(config, 3), [0, -.56, 0], [0, 0, 0], [.96, .72, .96]);
-          crystalMesh(root, new THREE.OctahedronGeometry(.2, 0), layerMaterial(config, 1), [0, -.02, 0], [.2, .5, 0], [.62, 2.9, .62]);
-          crystalMesh(root, new THREE.ConeGeometry(.15, .72, 5, 1, true), layerMaterial(config, 2), [0, .06, 0], [Math.PI, .22, 0], [.72, 1, .72]);
+          crystalMesh(root, new THREE.BoxGeometry(.92, .92, .92), layerMaterial(config, 0), [0, .02, 0], [.15, .42, .1]);
+          crystalMesh(root, new THREE.BoxGeometry(.64, .64, .64), layerMaterial(config, 1), [0, .02, 0], [-.28, .22, .38]);
+          crystalMesh(root, new THREE.DodecahedronGeometry(.42, 0), layerMaterial(config, 2), [0, .04, 0], [.12, -.32, .2]);
+          crystalMesh(root, new THREE.OctahedronGeometry(.22, 0), layerMaterial(config, 3), [0, .04, 0], [.1, .5, 0], [.72, 1.8, .72]);
+          const pillar = new THREE.BoxGeometry(.12, .72, .12);
+          [[-.48, 0, -.48], [.48, 0, -.48], [-.48, 0, .48], [.48, 0, .48]].forEach((position, i) => {
+            crystalMesh(root, pillar, layerMaterial(config, i + 1), position, [0, i * .22, 0]);
+          });
+          crystalMesh(root, new THREE.BoxGeometry(1.12, .14, .82), layerMaterial(config, 2), [0, -.63, 0], [0, .2, 0]);
+          crystalMesh(root, new THREE.BoxGeometry(.82, .13, 1.02), layerMaterial(config, 3), [0, -.5, 0], [0, -.2, 0]);
           return root;
         }
 
-        function createNestedSigil(config) {
+        function createAirOctaEngine(config) {
           const root = baseGroup(config);
-          crystalMesh(root, new THREE.OctahedronGeometry(.68, 0), layerMaterial(config, 0), [0, 0, 0], [.24, .18, .78], [.76, 1.12, .76]);
-          crystalMesh(root, new THREE.IcosahedronGeometry(.48, 0), layerMaterial(config, 1), [0, 0, 0], [-.2, .44, -.2], [.86, .86, .86]);
-          crystalMesh(root, new THREE.TetrahedronGeometry(.48, 0), layerMaterial(config, 2), [0, 0, 0], [.8, -.34, .42], [.86, .86, .86]);
-          crystalMesh(root, new THREE.TetrahedronGeometry(.28, 0), layerMaterial(config, 3), [0, .02, 0], [-.6, .28, -.72], [.8, .8, .8]);
-          crystalMesh(root, new THREE.CylinderGeometry(.04, .04, 1.32, 4, 1, true), layerMaterial(config, 2), [0, 0, 0], [0, Math.PI / 4, 0]);
-          crystalMesh(root, new THREE.OctahedronGeometry(.18, 0), layerMaterial(config, 1), [0, 0, 0], [.1, .1, .1], [.9, 1.45, .9]);
+          crystalMesh(root, new THREE.OctahedronGeometry(.7, 0), layerMaterial(config, 0), [0, 0, 0], [.18, .28, .42], [.72, 1.35, .72]);
+          crystalMesh(root, new THREE.OctahedronGeometry(.48, 0), layerMaterial(config, 1), [0, 0, 0], [-.26, .5, -.18], [.7, 1.38, .7]);
+          crystalMesh(root, new THREE.OctahedronGeometry(.22, 0), layerMaterial(config, 2), [0, 0, 0], [.1, -.3, .18], [.7, 2.8, .7]);
+          crystalMesh(root, new THREE.CylinderGeometry(.045, .045, 1.55, 4, 1, true), layerMaterial(config, 3), [0, 0, 0], [0, Math.PI / 4, 0]);
+          const fin = new THREE.TetrahedronGeometry(.3, 0);
+          for (let i = 0; i < 4; i++) {
+            const a = i * Math.PI / 2;
+            crystalMesh(root, fin, layerMaterial(config, i), [Math.cos(a) * .56, 0, Math.sin(a) * .56], [a * .25, -a, .72], [.46, 1.25, .34]);
+          }
+          crystalMesh(root, new THREE.ConeGeometry(.16, .38, 4), layerMaterial(config, 1), [0, .83, 0], [0, Math.PI / 4, 0]);
+          crystalMesh(root, new THREE.ConeGeometry(.16, .38, 4), layerMaterial(config, 2), [0, -.83, 0], [Math.PI, Math.PI / 4, 0]);
           return root;
         }
 
-        function createPortalDiamond(config) {
+        function createWaterIcosaBloom(config) {
           const root = baseGroup(config);
-          crystalMesh(root, new THREE.OctahedronGeometry(.62, 1), layerMaterial(config, 0), [0, .1, 0], [.12, .45, 0], [.72, 1.55, .72]);
-          crystalMesh(root, new THREE.ConeGeometry(.42, .92, 4, 1, true), layerMaterial(config, 1), [0, -.08, 0], [Math.PI, .78, 0], [.82, .72, .82]);
-          crystalMesh(root, new THREE.TetrahedronGeometry(.34, 0), layerMaterial(config, 2), [0, .58, 0], [.42, -.18, .6], [.78, .78, .78]);
-          crystalMesh(root, new THREE.TetrahedronGeometry(.3, 0), layerMaterial(config, 3), [0, -.58, 0], [Math.PI - .42, .18, -.6], [.78, .78, .78]);
-          crystalMesh(root, new THREE.CylinderGeometry(.05, .05, 1.48, 4, 1, true), layerMaterial(config, 1), [0, 0, 0], [0, Math.PI / 4, 0]);
-          crystalMesh(root, new THREE.OctahedronGeometry(.2, 0), layerMaterial(config, 2), [-.46, .08, 0], [.28, .28, .2], [.45, 1.15, .45]);
-          crystalMesh(root, new THREE.OctahedronGeometry(.2, 0), layerMaterial(config, 3), [.46, -.04, 0], [-.28, -.28, -.2], [.45, 1.15, .45]);
+          crystalMesh(root, new THREE.IcosahedronGeometry(.52, 0), layerMaterial(config, 0), [0, 0, 0], [.18, .4, -.22]);
+          crystalMesh(root, new THREE.DodecahedronGeometry(.36, 0), layerMaterial(config, 1), [0, 0, 0], [-.3, .18, .32]);
+          crystalMesh(root, new THREE.OctahedronGeometry(.18, 0), layerMaterial(config, 2), [0, 0, 0], [.1, -.4, .2], [.8, 1.7, .8]);
+          const petal = new THREE.TetrahedronGeometry(.3, 0);
+          for (let i = 0; i < 6; i++) {
+            const a = i * Math.PI / 3;
+            crystalMesh(root, petal, layerMaterial(config, i + 1), [Math.cos(a) * .5, Math.sin(a) * .5, 0], [.35 * Math.sin(a), .42 * Math.cos(a), a], [.5, 1.18, .32]);
+          }
+          crystalMesh(root, new THREE.OctahedronGeometry(.24, 0), layerMaterial(config, 3), [0, .64, 0], [.2, .2, .4], [.58, 1.25, .58]);
+          crystalMesh(root, new THREE.OctahedronGeometry(.2, 0), layerMaterial(config, 2), [0, -.62, 0], [-.2, -.2, -.4], [.55, 1.15, .55]);
+          return root;
+        }
+
+        function createAetherDodecaCore(config) {
+          const root = baseGroup(config);
+          crystalMesh(root, new THREE.DodecahedronGeometry(.68, 0), layerMaterial(config, 0), [0, 0, 0], [.18, .34, .12]);
+          crystalMesh(root, new THREE.IcosahedronGeometry(.52, 0), layerMaterial(config, 1), [0, 0, 0], [-.28, .22, -.32]);
+          crystalMesh(root, new THREE.OctahedronGeometry(.4, 0), layerMaterial(config, 2), [0, 0, 0], [.42, -.32, .18], [.84, 1.18, .84]);
+          crystalMesh(root, new THREE.TetrahedronGeometry(.42, 0), layerMaterial(config, 3), [0, .02, 0], [.65, .4, -.58], [.8, .8, .8]);
+          crystalMesh(root, new THREE.TetrahedronGeometry(.38, 0), layerMaterial(config, 1), [0, -.02, 0], [Math.PI - .65, -.4, .58], [.76, .76, .76]);
+          crystalMesh(root, new THREE.OctahedronGeometry(.15, 0), layerMaterial(config, 2), [0, 0, 0], [.1, .2, .3], [.75, 1.65, .75]);
+          const shard = new THREE.OctahedronGeometry(.14, 0);
+          [[.7, 0, 0], [-.7, 0, 0], [0, .7, 0], [0, -.7, 0]].forEach((position, i) => {
+            crystalMesh(root, shard, layerMaterial(config, i), position, [i * .3, i * .2, i * .4], [.48, 1.25, .48]);
+          });
+          return root;
+        }
+
+        function createAzothMerkaba(config) {
+          const root = baseGroup(config);
+          crystalMesh(root, new THREE.TetrahedronGeometry(.72, 0), layerMaterial(config, 0), [0, .08, 0], [0, .72, .78]);
+          crystalMesh(root, new THREE.TetrahedronGeometry(.72, 0), layerMaterial(config, 1), [0, -.08, 0], [Math.PI, -.72, -.78]);
+          crystalMesh(root, new THREE.DodecahedronGeometry(.48, 0), layerMaterial(config, 2), [0, 0, 0], [.2, -.35, .3]);
+          crystalMesh(root, new THREE.OctahedronGeometry(.36, 0), layerMaterial(config, 3), [0, 0, 0], [-.3, .4, -.2], [.82, 1.18, .82]);
+          crystalMesh(root, new THREE.OctahedronGeometry(.16, 0), layerMaterial(config, 1), [0, 0, 0], [.1, .38, .62], [.72, 1.85, .72]);
+          crystalMesh(root, new THREE.CylinderGeometry(.04, .04, 1.42, 4, 1, true), layerMaterial(config, 2), [0, 0, 0], [0, Math.PI / 4, 0]);
+          const shard = new THREE.TetrahedronGeometry(.18, 0);
+          for (let i = 0; i < 4; i++) {
+            const a = i * Math.PI / 2;
+            crystalMesh(root, shard, layerMaterial(config, i + 1), [Math.cos(a) * .68, 0, Math.sin(a) * .68], [.5, -a, .65], [.58, 1.05, .58]);
+          }
+          crystalMesh(root, new THREE.ConeGeometry(.12, .3, 4), layerMaterial(config, 3), [0, .78, 0], [0, Math.PI / 4, 0]);
+          crystalMesh(root, new THREE.ConeGeometry(.12, .3, 4), layerMaterial(config, 0), [0, -.78, 0], [Math.PI, Math.PI / 4, 0]);
+          return root;
+        }
+
+        function createPhilosopherGate(config) {
+          const root = baseGroup(config);
+          crystalMesh(root, new THREE.OctahedronGeometry(.7, 0), layerMaterial(config, 0), [0, .06, 0], [.08, .24, 0], [.72, 1.42, .3]);
+          crystalMesh(root, new THREE.OctahedronGeometry(.52, 0), layerMaterial(config, 1), [0, .06, 0], [-.12, -.3, .08], [.7, 1.45, .32]);
+          crystalMesh(root, new THREE.OctahedronGeometry(.34, 0), layerMaterial(config, 2), [0, .06, 0], [.2, .4, -.1], [.68, 1.5, .36]);
+          crystalMesh(root, new THREE.OctahedronGeometry(.15, 0), layerMaterial(config, 3), [0, .06, 0], [.1, -.2, .2], [.72, 2.1, .72]);
+          crystalMesh(root, new THREE.CylinderGeometry(.04, .04, 1.6, 4, 1, true), layerMaterial(config, 1), [0, .04, 0], [0, Math.PI / 4, 0]);
+          const strut = new THREE.BoxGeometry(.09, 1.22, .09);
+          crystalMesh(root, strut, layerMaterial(config, 2), [-.43, .02, 0], [0, 0, -.35]);
+          crystalMesh(root, strut, layerMaterial(config, 3), [.43, .02, 0], [0, 0, .35]);
+          crystalMesh(root, new THREE.TetrahedronGeometry(.22, 0), layerMaterial(config, 2), [0, .78, 0], [.2, .4, .2]);
+          crystalMesh(root, new THREE.TetrahedronGeometry(.2, 0), layerMaterial(config, 3), [0, -.68, 0], [Math.PI - .2, -.4, -.2]);
+          crystalMesh(root, new THREE.BoxGeometry(.82, .13, .56), layerMaterial(config, 0), [0, -.78, 0], [0, .18, 0]);
+          return root;
+        }
+
+        function createHermeticPrism(config) {
+          const root = baseGroup(config);
+          crystalMesh(root, new THREE.CylinderGeometry(.38, .38, 1.18, 6), layerMaterial(config, 0), [0, 0, 0], [0, .28, 0]);
+          crystalMesh(root, new THREE.CylinderGeometry(.46, .46, 1.3, 6, 1, true), layerMaterial(config, 1), [0, .02, 0], [0, -.24, 0]);
+          crystalMesh(root, new THREE.ConeGeometry(.38, .46, 6), layerMaterial(config, 2), [0, .82, 0], [0, .28, 0]);
+          crystalMesh(root, new THREE.OctahedronGeometry(.2, 0), layerMaterial(config, 3), [0, .02, 0], [.2, .5, 0], [.58, 2.75, .58]);
+          crystalMesh(root, new THREE.ConeGeometry(.14, .72, 5, 1, true), layerMaterial(config, 1), [0, .06, 0], [Math.PI, .22, 0], [.7, 1, .7]);
+          crystalMesh(root, new THREE.CylinderGeometry(.52, .68, .18, 6), layerMaterial(config, 2), [0, -.7, 0], [0, Math.PI / 6, 0], [1, .72, 1]);
+          crystalMesh(root, new THREE.CylinderGeometry(.4, .54, .15, 6), layerMaterial(config, 3), [0, -.54, 0], [0, 0, 0], [1, .74, 1]);
+          const node = new THREE.OctahedronGeometry(.14, 0);
+          [[.48, .18, 0], [-.48, .18, 0], [0, .18, .48], [0, .18, -.48]].forEach((position, i) => {
+            crystalMesh(root, node, layerMaterial(config, i), position, [i * .28, i * .38, 0], [.55, 1.05, .55]);
+          });
+          return root;
+        }
+
+        function createCelestialSigil(config) {
+          const root = baseGroup(config);
+          crystalMesh(root, new THREE.DodecahedronGeometry(.68, 0), layerMaterial(config, 0), [0, 0, 0], [.16, .34, .24]);
+          crystalMesh(root, new THREE.IcosahedronGeometry(.53, 0), layerMaterial(config, 1), [0, 0, 0], [-.24, .38, -.18]);
+          crystalMesh(root, new THREE.OctahedronGeometry(.42, 0), layerMaterial(config, 2), [0, 0, 0], [.4, -.26, .22], [.82, 1.18, .82]);
+          crystalMesh(root, new THREE.TetrahedronGeometry(.43, 0), layerMaterial(config, 3), [0, .02, 0], [.72, .3, -.48], [.82, .82, .82]);
+          crystalMesh(root, new THREE.TetrahedronGeometry(.4, 0), layerMaterial(config, 1), [0, -.02, 0], [Math.PI - .72, -.3, .48], [.78, .78, .78]);
+          crystalMesh(root, new THREE.OctahedronGeometry(.15, 0), layerMaterial(config, 2), [0, 0, 0], [.1, .2, .3], [.7, 1.8, .7]);
+          crystalMesh(root, new THREE.CylinderGeometry(.035, .035, 1.42, 4, 1, true), layerMaterial(config, 3), [0, 0, 0], [0, Math.PI / 4, 0]);
+          const node = new THREE.OctahedronGeometry(.13, 0);
+          [[.72, 0, 0], [-.72, 0, 0], [0, .72, 0], [0, -.72, 0], [0, 0, .72], [0, 0, -.72]].forEach((position, i) => {
+            crystalMesh(root, node, layerMaterial(config, i), position, [i * .24, i * .31, i * .18], [.46, 1.12, .46]);
+          });
+          return root;
+        }
+
+        function createPrimaMateria(config) {
+          const root = baseGroup(config);
+          crystalMesh(root, new THREE.DodecahedronGeometry(.52, 0), layerMaterial(config, 0), [-.12, -.02, 0], [.28, .42, -.2], [.92, 1.25, .84]);
+          crystalMesh(root, new THREE.IcosahedronGeometry(.4, 0), layerMaterial(config, 1), [.28, .12, -.08], [-.4, .18, .5], [.72, 1.2, .78]);
+          crystalMesh(root, new THREE.TetrahedronGeometry(.4, 0), layerMaterial(config, 2), [-.3, -.3, .08], [.64, -.38, .22], [.72, 1.08, .68]);
+          crystalMesh(root, new THREE.OctahedronGeometry(.32, 0), layerMaterial(config, 3), [.04, .48, .02], [-.24, .48, -.36], [.66, 1.35, .7]);
+          crystalMesh(root, new THREE.BoxGeometry(.36, .44, .32), layerMaterial(config, 1), [.18, -.42, -.12], [.38, -.32, .44]);
+          crystalMesh(root, new THREE.OctahedronGeometry(.15, 0), layerMaterial(config, 2), [0, .02, .02], [.12, .3, .18], [.72, 1.75, .72]);
+          const fragment = new THREE.TetrahedronGeometry(.2, 0);
+          [[-.58, .2, .05], [.5, -.18, .16], [.28, .58, -.12], [-.18, -.64, -.08]].forEach((position, i) => {
+            crystalMesh(root, fragment, layerMaterial(config, i + 1), position, [i * .48, -.2 + i * .31, .35 - i * .2], [.48, .92 + i * .08, .44]);
+          });
+          crystalMesh(root, new THREE.ConeGeometry(.12, .52, 5, 1, true), layerMaterial(config, 3), [.08, .04, 0], [.2, -.25, .1], [.7, 1.15, .7]);
           return root;
         }
 
@@ -901,6 +1112,8 @@
             glows: [],
             hover: 0,
             baseScale: config.scale,
+            rawScale: config.scale,
+            placement: config.placement,
             currentAxis: randomAxis(),
             targetAxis: randomAxis(),
             hoverAxis: randomAxis(),
@@ -949,17 +1162,65 @@
           state.groups = [];
           state.meshes = [];
           sectionPlans[sectionKey].forEach((plan, index) => {
-            const mobile = state.layout === "mobile";
             const config = {
-              position: mobile ? plan.mobile : plan.position,
-              scale: plan.scale * (mobile ? .74 : 1),
+              position: [0, 0, plan.z || -.12],
+              scale: plan.scale,
               colors: plan.colors,
+              placement: plan,
               rotation: [(index % 2 ? -.16 : .18), (index % 3 ? .42 : -.35), (index % 2 ? -.1 : .12)]
             };
-            const group = { merkaba: createMerkaba, prism: createPrismTower, nested: createNestedSigil, portal: createPortalDiamond }[plan.kind](config);
+            const builders = {
+              fire: createFireTetraCrown,
+              earth: createEarthCubicVault,
+              air: createAirOctaEngine,
+              water: createWaterIcosaBloom,
+              aether: createAetherDodecaCore,
+              azoth: createAzothMerkaba,
+              philosopher: createPhilosopherGate,
+              hermetic: createHermeticPrism,
+              celestial: createCelestialSigil,
+              prima: createPrimaMateria
+            };
+            const group = builders[plan.kind](config);
             state.scene.add(group);
             state.groups.push(group);
             state.meshes.push(...group.userData.meshes);
+          });
+          placeGroups(state);
+        }
+
+        function placeGroups(state) {
+          if (!state.active || !state.groups.length) return;
+          const sectionRect = state.active.getBoundingClientRect();
+          const contentRect = state.active.querySelector(".wrap").getBoundingClientRect();
+          const leftRail = Math.max(0, contentRect.left - sectionRect.left);
+          const rightRail = Math.max(0, sectionRect.right - contentRect.right);
+          const topRail = Math.max(0, contentRect.top - sectionRect.top);
+          const bottomRail = Math.max(0, sectionRect.bottom - contentRect.bottom);
+          const distance = state.camera.position.z + .12;
+          const worldHeight = 2 * Math.tan(THREE.MathUtils.degToRad(state.camera.fov * .5)) * distance;
+          const worldWidth = worldHeight * state.camera.aspect;
+          const pixelsPerWorld = state.h / worldHeight;
+          const hasSideRails = Math.min(leftRail, rightRail) >= 72;
+          state.groups.forEach((group, index) => {
+            const plan = group.userData.placement;
+            const isLeft = plan.side === "left";
+            const rail = isLeft ? leftRail : rightRail;
+            const nominalRadius = 1.18 * group.userData.rawScale * pixelsPerWorld;
+            let x, y, scaleFactor;
+            if (hasSideRails) {
+              x = isLeft ? rail * .5 : state.w - rail * .5;
+              y = THREE.MathUtils.clamp(plan.y * state.h, 52, state.h - 52);
+              scaleFactor = THREE.MathUtils.clamp((rail * .5 - 10) / nominalRadius, .16, 1);
+            } else {
+              const top = index === 0;
+              const verticalRail = top ? topRail : bottomRail;
+              x = isLeft ? Math.max(28, state.w * .1) : Math.min(state.w - 28, state.w * .9);
+              y = top ? Math.max(22, verticalRail * .5) : state.h - Math.max(22, verticalRail * .5);
+              scaleFactor = THREE.MathUtils.clamp((verticalRail * .5 - 8) / nominalRadius, .14, .48);
+            }
+            group.position.set((x / state.w - .5) * worldWidth, (.5 - y / state.h) * worldHeight, plan.z || -.12);
+            group.userData.baseScale = group.userData.rawScale * scaleFactor;
           });
         }
 
@@ -971,23 +1232,28 @@
             const score = visible ? Math.abs(rect.top + rect.height / 2 - center) : 99999;
             return score < best.score ? { section, score } : best;
           }, { section: targets[0], score: 99999 }).section;
-          const nextKey = next.id || "hero";
+          const nextKey = next.classList.contains("hero") ? "hero" : next.id;
           if (next !== state.active) {
             state.active = next;
             state.active.prepend(state.canvas);
           }
           const rect = state.active.getBoundingClientRect();
-          state.w = Math.max(1, rect.width);
-          state.h = Math.max(1, rect.height);
-          state.renderer.setSize(state.w, state.h, false);
-          state.camera.aspect = state.w / state.h;
-          state.camera.updateProjectionMatrix();
+          const width = Math.max(1, rect.width);
+          const height = Math.max(1, rect.height);
+          if (Math.abs(width - state.w) > .5 || Math.abs(height - state.h) > .5) {
+            state.w = width;
+            state.h = height;
+            state.renderer.setSize(state.w, state.h, false);
+            state.camera.aspect = state.w / state.h;
+            state.camera.updateProjectionMatrix();
+          }
           const layout = state.w < 760 ? "mobile" : "desktop";
           if (nextKey !== state.key || layout !== state.layout) {
             state.key = nextKey;
             state.layout = layout;
             buildSectionScene(nextKey, state);
           }
+          placeGroups(state);
         }
 
         function animate(time, state, targets) {

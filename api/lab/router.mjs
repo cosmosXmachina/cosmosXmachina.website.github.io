@@ -1,7 +1,6 @@
 import { actionCatalog, pythonDemos, validateAction } from "./catalog.mjs";
 import { FixtureAIProvider } from "./fixture-provider.mjs";
 import { OrionFixtureDatabase } from "./orion-db.mjs";
-import { IntegrationPipeline } from "./integration-pipeline.mjs";
 import { SessionStore } from "./session-store.mjs";
 
 const orionFixtures = new OrionFixtureDatabase();
@@ -58,12 +57,7 @@ export function transition(session, demo, action, input) {
   const transitionRules = {
     "document-operations:approve": ["classified"],
     "document-operations:reject": ["classified"],
-    "catalog-intelligence:approve": ["enriched"],
-    "catalog-intelligence:rollback": ["approved"],
-    "operations-hub:advance": ["new", "review", "packing"],
-    "integration-control:retry": ["failed", "dead_letter", "new"],
-    "integration-control:replay": ["dead_letter", "failed", "new"],
-    "lead-appointment:confirm": ["booked"]
+    "operations-hub:advance": ["new", "review", "packing"]
   };
   const transitionKey = demo + ":" + action;
 
@@ -77,15 +71,9 @@ export function transition(session, demo, action, input) {
 
   const nextSteps = {
     classify: "classified",
-    enrich: "enriched",
     approve: "approved",
     reject: "rejected",
-    rollback: "rolled_back",
-    advance: input.next || "review",
-    retry: "processed",
-    replay: "processed",
-    book: "booked",
-    confirm: "confirmed"
+    advance: input.next || "review"
   };
 
   current.step = nextSteps[action] || action;
@@ -152,7 +140,7 @@ export async function registerLabRoutes(app, environment) {
       const state = transition(session, demo, action, input);
 
       let execution;
-      if (pythonDemos.has(demo) && ["classify", "search", "enrich"].includes(action)) {
+      if (pythonDemos.has(demo) && ["classify", "search"].includes(action)) {
         try {
           execution = await executePython(environment, demo, action, input);
         } catch {
@@ -165,10 +153,6 @@ export async function registerLabRoutes(app, environment) {
 
       if (demo === "operations-hub") {
         execution.output.orders = orionFixtures.orders();
-      }
-
-      if (demo === "integration-control") {
-        execution.output.event = new IntegrationPipeline(state).execute(action, input);
       }
 
       return standard({

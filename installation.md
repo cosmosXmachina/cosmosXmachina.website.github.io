@@ -2,6 +2,8 @@
 
 This is the supported setup guide for the cosmosXmachina homepage and Creation Lab. The approved product specification is in creation_lab_plan.md.
 
+The active public release contains demos 01, 02, 03 and 06 only. The other roadmap concepts are not built, served or exposed by the API.
+
 The complete production site requires Nginx, Node.js, and Python. The Node endpoint is required: it provides Gmail SMTP delivery, anonymous lab sessions, workflow validation, and access to the private Python pipelines.
 
 .env is the only application runtime configuration source. Do not add alternate environment-file names, systemd EnvironmentFile entries, JSON configuration, or browser-exposed secrets.
@@ -24,7 +26,6 @@ Production only:
 
 Development or CI only:
 
-- Java 21 and Maven for architecture-fixture
 - Playwright Chromium for browser tests
 
 Not required in production:
@@ -131,13 +132,6 @@ Playwright browsers are installed once with:
 
 ~~~powershell
 npx playwright install chromium
-~~~
-
-Optional Java evidence:
-
-~~~powershell
-Set-Location architecture-fixture
-mvn test
 ~~~
 
 ## Production Deployment

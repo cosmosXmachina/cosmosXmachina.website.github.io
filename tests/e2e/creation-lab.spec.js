@@ -4,18 +4,12 @@ const slugs = [
   "document-operations",
   "operations-hub",
   "knowledge-assistant",
-  "catalog-intelligence",
-  "lead-appointment",
-  "kpi-studio",
-  "integration-control",
-  "architecture-rescue",
-  "workflow-audit",
-  "opportunity-scout"
+  "kpi-studio"
 ];
 
-test("portfolio publishes all ten complete bilingual entries", async ({ page }) => {
+test("portfolio publishes the four active bilingual entries", async ({ page }) => {
   await page.goto("/portfolio/?lang=en");
-  await expect(page.locator("article.demo-card")).toHaveCount(10);
+  await expect(page.locator("article.demo-card")).toHaveCount(4);
   await expect(page.getByText("Synthetic demonstration", { exact: false }).first()).toBeVisible();
   for (const slug of slugs) {
     await expect(page.locator('a[href*="' + slug + '"]')).toHaveCount(1);
@@ -46,15 +40,15 @@ test("document workflow returns deterministic evidence", async ({ page }) => {
 test("homepage exposes the bilingual four-demo portfolio preview", async ({ page }) => {
   await page.goto("/?lang=en");
   await expect(page.locator('a[href="#portfolio"]')).toHaveText("Portfolio");
-  await expect(page.locator("#portfolio h2")).toHaveText("Systems to use, inspect and challenge.");
+  await expect(page.locator("#portfolio h2")).toHaveText("Four systems to use, inspect and challenge.");
   await expect(page.locator("#portfolio article.portfolio-preview")).toHaveCount(4);
 });
 
 test("demo CTA transfers an expiring reviewable summary to contact", async ({ page }) => {
-  await page.goto("/portfolio/workflow-audit/?lang=en");
-  await page.getByRole("button", { name: "Transfer this analysis to contact Next" }).click();
+  await page.goto("/portfolio/document-operations/?lang=en");
+  await page.getByRole("button", { name: "Transfer this case to contact Next" }).click();
   await expect(page).toHaveURL(/\?lang=en#contact$/);
-  await expect(page.locator("#problemInput")).toHaveValue(/Automation is often selected by intuition/);
+  await expect(page.locator("#problemInput")).toHaveValue(/Requests arrive across email and attachments/);
   await expect(page.locator("#formStatus")).toContainText("Review it before sending");
   const handoff = await page.evaluate(() => JSON.parse(sessionStorage.getItem("cosmos-lab-handoff")));
   expect(handoff.expiresAt).toBeGreaterThan(Date.now());

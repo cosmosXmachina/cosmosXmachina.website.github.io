@@ -4,11 +4,12 @@ import { FixtureAIProvider } from "../../api/lab/fixture-provider.mjs";
 
 test("Node provider satisfies the asynchronous contract", async () => {
   const provider = new FixtureAIProvider();
-  const result = await provider.executeDemo("catalog-intelligence", "enrich", { sku: "OR-S7" });
-  assert.equal(result.output.channelStatus, "ready_for_review");
+  const result = await provider.executeDemo("document-operations", "classify", { messageId: "M-204" });
+  assert.equal(result.output.category, "purchase_order");
   assert.equal(result.trace.provider, "fixture");
   assert.equal(result.trace.deterministic, true);
   assert.equal(result.usage.estimatedCost, 0);
+  assert.equal(result.output.fields.orderReference, "NW-8841");
   assert.ok(result.evidence.length > 0);
   assert.match(result.warnings[0], /no external AI/i);
 });

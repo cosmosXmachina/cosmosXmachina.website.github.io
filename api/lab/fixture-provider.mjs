@@ -13,19 +13,13 @@ const fixtures = {
     answer: "Gold customers may request an expedited replacement after serial-number validation.",
     confidence: 0.91,
     citations: ["Service policy v3.2, section 4.1", "Support handbook, identity validation"]
-  },
-  catalog_enrich: {
-    title: "Orion S7 IP67 Field Sensor",
-    bullets: ["IP67 enclosure", "Modbus RTU", "Replaceable M12 connector"],
-    channelStatus: "ready_for_review"
   }
 };
 
 function normalizeTask(demo, action) {
   const aliases = {
     "document-operations:classify": "document_classify",
-    "knowledge-assistant:search": "knowledge_search",
-    "catalog-intelligence:enrich": "catalog_enrich"
+    "knowledge-assistant:search": "knowledge_search"
   };
   return aliases[demo + ":" + action] || demo.replaceAll("-", "_") + "_" + action;
 }
@@ -80,10 +74,6 @@ function evidenceFor(task) {
     knowledge_search: [
       { source: "Service policy v3.2", section: "4.1" },
       { source: "Support handbook", section: "Identity validation" }
-    ],
-    catalog_enrich: [
-      { source: "PIM OR-S7", field: "technical_attributes" },
-      { source: "Channel rules 2026.2", field: "title_and_bullets" }
     ]
   };
   return structuredClone(evidence[task] || []);

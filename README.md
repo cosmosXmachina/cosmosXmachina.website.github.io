@@ -1,100 +1,62 @@
-# cosmosXmachina Website and Creation Lab
+# cosmosXmachina Website
 
-This repository contains the bilingual cosmosXmachina homepage, the public Creation Lab portfolio, ten independent product demonstrations, the Gmail SMTP contact route, and the private deterministic lab services.
+Bilingual 3D website and **cosmosXmachina Creation Lab**. The remote `index.html` remains the canonical homepage; the final section links to four independently designed portfolio demonstrations. Production uses a static Vite build plus required private Node and Python services.
 
-The approved product plan is preserved in creation_lab_plan.md.
+## Current Files
 
-## Public Surface
+- `index.html`: canonical production homepage with the approved Three.js symbol layer.
+- `assets/design-modes.css`: shared styling for five optional design directions.
+- `index-hermetic-observatory.html`, `index-prismatic-glass-atelier.html`, `index-arcane-editorial-codex.html`, `index-digital-cathedral.html`, `index-transmutation-system-map.html`: named preview entry points that redirect to the canonical page with a `design` parameter.
+- `index2D.html`: older non-3D fallback/reference page.
+- `index_temp.html`: scratch/experiment page; ignore it unless intentionally testing something.
+- `assets/`: generated section backgrounds and the shared `cxm-logo.svg` header/favicon mark.
+- `portfolio/`: Creation Lab index and active demos 01, 02, 03 and 06.
+- `api/server.mjs`: required private Node gateway for SMTP, lab sessions and workflow routing.
+- `python_service/`: private deterministic document and retrieval pipelines.
+- `package.json` and `vite.config.js`: the build and test workspace.
+- `AGENTS.md`: short operating guide for future agents.
+- `cosmos_interface.md`: detailed architecture and implementation notes.
+- `installation.md`: dependencies, fresh-machine setup and run/deploy checklist.
 
-- index.html is the canonical homepage. Its Three.js composition, SMTP behavior, language precedence, and contact endpoint remain intact.
-- portfolio/index.html is the Creation Lab index.
-- portfolio/<demo-slug>/ contains the ten complete demonstrations.
-- assets/ contains homepage media and deliberate public portfolio images.
-- dist/ is the only production web root. It is generated and is never committed.
+## Local Preview
 
-Every portfolio system uses Orion Works, a clearly fictional Veneto SME, and synthetic data. Version 1 makes no request to an external AI provider.
+Install the Node and Python dependencies, build `dist/`, and run the three local processes described in `installation.md`:
 
-## Runtime Architecture
-
-Production has three layers:
-
-1. Nginx serves dist/ and proxies /api/*.
-2. api/server.mjs binds to 127.0.0.1:8787 and handles SMTP, sessions, workflow validation, and Node-based demonstrations.
-3. python_service binds to 127.0.0.1:8790 and runs deterministic document, retrieval, and catalog pipelines.
-
-Both services are private loopback processes managed by systemd. The public internet reaches them only through Nginx on the same origin.
-
-The Spring Boot/JUnit project in architecture-fixture is CI evidence for Architecture Rescue Lab. Java is not a production dependency.
-
-## Quick Start
-
-Requirements:
-
-- Node.js 22 or a compatible current LTS release
-- Python 3.11 or newer
-- npm
-- A Gmail account with an app password for real contact delivery
-
-Setup:
-
-~~~powershell
-Copy-Item .env.example .env
+```bash
 npm install
-python -m venv .venv
-.\.venv\Scripts\python -m pip install -r python_service\requirements.txt
 npm run build
-~~~
-
-Start the three local processes in separate terminals:
-
-~~~powershell
-.\.venv\Scripts\python -m uvicorn python_service.app:app --host 127.0.0.1 --port 8790
-npm start
 npm run preview
-~~~
+```
 
-Open http://127.0.0.1:4173/ and http://127.0.0.1:4173/portfolio/.
+The complete local topology also runs `api/server.mjs` on `127.0.0.1:8787` and `python_service/server.py` on `127.0.0.1:8790`.
 
-The ALLOWED_ORIGIN example already permits http://127.0.0.1:4173 and http://localhost:4173.
+## Static Hosting Notes
 
-## Commands
+- Keep asset paths relative, such as `assets/cxm-logo.svg`.
+- File names are case-sensitive on GitHub Pages.
+- The 3D version loads Three.js from the pinned CDN URL documented in `cosmos_interface.md`.
+- GitHub Pages can host only a static preview. It cannot provide Gmail SMTP or the private lab services.
+- The default production deployment builds and serves `dist/` through Nginx on the registered domain.
+- Never publish the repository root, `.env`, private profiles, plans or keys.
+- For a custom domain, add it in **Settings > Pages** and create the DNS records GitHub requests.
 
-~~~text
-npm run build          Build homepage, portfolio, demos, and public assets into dist/
-npm start              Run the private Node gateway on loopback
-npm run preview        Serve dist/ locally
-npm test               Run Vitest, node:test, and pytest
-npm run test:e2e       Run responsive Playwright browser tests
-~~~
+## Contact Form SMTP Endpoint
 
-Run modernization evidence separately when Java and Maven are available:
+`index.html` posts the project intake form to `/api/contact`. The required production endpoint is exposed by `api/server.mjs`, which reuses the SMTP handler in `api/contact.js` and also serves the Creation Lab API.
 
-~~~text
-cd architecture-fixture
-mvn test
-~~~
+Nginx proxies `/api/*` to the private Node service on the same server. If the endpoint is missing or unavailable, the form only falls back to a prepared `mailto:` email; that fallback is not the SMTP mail system.
 
-## Configuration and Privacy
+Create `.env` from `.env.example` and fill these keys on the machine or host that runs `api/contact.js`:
 
-.env is the only runtime configuration source. Create it from .env.example and never commit it.
+```text
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=465
+SMTP_USER=davide.deon@gmail.com
+SMTP_PASS=your_gmail_app_password_without_spaces
+MAIL_FROM=davide.deon@gmail.com
+MAIL_TO=davide.deon@gmail.com
+ALLOWED_ORIGIN=http://127.0.0.1:4173,http://localhost:4173
+PORT=8787
+```
 
-No AI credentials are needed in version 1. LAB_SESSION_SECRET must be at least 24 random characters. PYTHON_LAB_URL must remain a loopback URL.
-
-Never commit or publish:
-
-- .env
-- vash_key or vash_key.pub
-- CV and personal-profile source files
-- planning source files
-- node_modules, .venv, test output, or repository metadata
-
-The build script deliberately copies only index.html, assets/, processed portfolio pages, and the packaged extension source into dist/.
-
-## Documentation
-
-- creation_lab_plan.md: complete approved portfolio plan and locked decisions
-- installation.md: fresh-machine, local, DNS, and production deployment procedure
-- cosmos_interface.md: architecture, interfaces, language rules, and visual boundaries
-- AGENTS.md: repository rules for future implementation work
-
-The old GitHub Pages-only deployment is no longer sufficient for the complete site because SMTP and Creation Lab sessions require the private Node gateway. Use the production procedure in installation.md.
+Never commit the Gmail app password. Use `.env.example` as the template and keep real `.env` files local or deployed only on the endpoint host.

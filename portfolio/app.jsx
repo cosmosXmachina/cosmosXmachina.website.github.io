@@ -9,7 +9,7 @@ const copy = {
   it: {
     title: "Creation Lab",
     eyebrow: "cosmosXmachina / portfolio pubblico",
-    lead: "Dieci sistemi ispezionabili per trasformare problemi operativi ambigui in workflow, decisioni e prove verificabili.",
+    lead: "Quattro sistemi ispezionabili per trasformare problemi operativi ambigui in workflow, decisioni e prove verificabili.",
     all: "Tutti",
     commercial: "Impatto commerciale",
     technical: "Profondita tecnica",
@@ -21,7 +21,7 @@ const copy = {
   en: {
     title: "Creation Lab",
     eyebrow: "cosmosXmachina / public portfolio",
-    lead: "Ten inspectable systems that turn ambiguous operational problems into workflows, decisions and verifiable evidence.",
+    lead: "Four inspectable systems that turn ambiguous operational problems into workflows, decisions and verifiable evidence.",
     all: "All",
     commercial: "Commercial impact",
     technical: "Technical depth",
@@ -41,8 +41,8 @@ function App() {
 
   const visible = useMemo(() => {
     if (filter === "all") return demos;
-    if (filter === "commercial") return demos.filter((demo) => [1, 2, 4, 5, 6, 9].includes(demo.rank));
-    return demos.filter((demo) => [1, 2, 3, 7, 8, 10].includes(demo.rank));
+    if (filter === "commercial") return demos.filter((demo) => [1, 2, 6].includes(demo.rank));
+    return demos.filter((demo) => [1, 2, 3].includes(demo.rank));
   }, [filter]);
 
   function changeLanguage(next) {

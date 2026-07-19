@@ -18,17 +18,8 @@ class DocumentOutput(BaseModel):
     fields: DocumentFields
 
 
-class CatalogOutput(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    title: str = Field(min_length=1, max_length=160)
-    bullets: list[str] = Field(min_length=1, max_length=8)
-    channelStatus: str
-
-
 OUTPUT_SCHEMAS = {
     "document_classify": DocumentOutput,
-    "catalog_enrich": CatalogOutput,
 }
 
 

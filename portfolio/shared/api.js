@@ -21,8 +21,7 @@ async function getSession() {
 function fixtureTask(demo, action) {
   const tasks = {
     "document-operations:classify": "document_classify",
-    "knowledge-assistant:search": "knowledge_search",
-    "catalog-intelligence:enrich": "catalog_enrich"
+    "knowledge-assistant:search": "knowledge_search"
   };
   return tasks[demo + ":" + action] || demo + "_" + action;
 }

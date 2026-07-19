@@ -98,20 +98,4 @@ class FixtureAIProvider:
                 },
                 evidence,
             )
-        if task == "catalog_enrich":
-            return (
-                {
-                    "title": "Orion S7 IP67 Field Sensor",
-                    "bullets": [
-                        "IP67 enclosure",
-                        "Modbus RTU",
-                        "Replaceable M12 connector",
-                    ],
-                    "channelStatus": "ready_for_review",
-                },
-                [
-                    {"source": "PIM OR-S7", "field": "technical_attributes"},
-                    {"source": "Channel rules 2026.2", "field": "title_and_bullets"},
-                ],
-            )
         return ({"status": "completed", "acceptedInputKeys": sorted(input_data)}, [])

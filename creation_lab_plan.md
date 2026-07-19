@@ -51,7 +51,9 @@ Implementation rules:
 - Synthetic demonstration appears prominently wherever an AI-like result is shown.
 - Browser and network tests prove that version 1 makes zero requests to external AI providers.
 
-## Final Ten Demos
+## Roadmap and Active Scope
+
+The roadmap retains the original ten concepts, but the active public release intentionally contains only ranks **1, 2, 3, and 6**. The other six concepts are deferred: they are not included in the Vite build, Portfolio index, API allowlist, tests, or production deployment. Their earlier implementation remains recoverable from Git history if the user approves a later release.
 
 | Rank | Demo | Presentation priority | Independent design and stack |
 | ---: | --- | --- | --- |
@@ -104,11 +106,10 @@ Runtime rules:
 - Build the homepage, Portfolio index, and demos into one dist/ directory.
 - Nginx serves only dist/ and proxies /api/* to the private Node gateway.
 - The Node service handles SMTP, anonymous sessions, Node-based workflows, and routing to the private Python service.
-- The FastAPI service handles deterministic document, retrieval, and catalog pipelines.
+- The FastAPI service handles deterministic document and retrieval pipelines.
 - Both services run under systemd and bind only to loopback.
 - Production requires Node, Python, and Nginx only.
 - Production does not require Docker, PostgreSQL, Redis, Java, or an AI provider.
-- Spring Boot/JUnit evidence is built during development or CI and published only as verified static evidence.
 - .env is the only runtime configuration source. Version 1 contains no AI credentials.
 - Never serve the repository root.
 - Exclude .env, CV/profile sources, business plans, private keys, and development files from dist/.
@@ -122,11 +123,9 @@ Reference documentation:
 
 ## Delivery Order
 
-1. Build the workspace, synthetic company dataset, provider contract, unified API, Portfolio index, homepage preview, and secure dist/ deployment.
-2. Release Operations Hub, Document Operations, and Secure Knowledge Assistant as the first complete portfolio entries.
-3. Add Workflow Audit, KPI Studio, and Lead-to-Appointment.
-4. Add E-commerce Intelligence, Integration Control Room, and Architecture Rescue.
-5. Finish with Browser Opportunity Scout and its packaged extension.
+1. Preserve the remote `index.html` as the authoritative homepage and add Portfolio as its ninth and final section.
+2. Publish Document Operations, Operations Hub, Secure Knowledge Assistant, and KPI Studio.
+3. Keep ranks 4, 5, 7, 8, 9, and 10 deferred until explicitly approved.
 
 No unfinished demo card is published. The Portfolio index shows completed demonstrations only.
 
@@ -135,7 +134,6 @@ No unfinished demo card is published. The Portfolio index shows completed demons
 - Vitest covers frontend logic and the browser fixture provider.
 - node:test covers Node workflows, provider behavior, and session expiry.
 - pytest covers FastAPI deterministic pipelines and provider behavior.
-- JUnit covers the modernization fixture.
 - Playwright covers published workflows in Italian and English.
 - Network assertions prove that version 1 performs no external AI calls.
 - Replay tests ensure identical inputs produce reproducible results.
