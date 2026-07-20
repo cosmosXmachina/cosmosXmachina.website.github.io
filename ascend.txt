@@ -1,0 +1,147 @@
+cosmosXmachina Local Ascend Cheatsheet
+======================================
+
+Use this file to run the complete website locally on Windows. For detailed
+explanations and Linux notes, read installation.md.
+
+
+First-Time Setup
+----------------
+
+Requirements:
+
+- Git
+- Node.js 22.5 or newer
+- npm
+- Python 3.11 or newer
+
+From the repository root in PowerShell:
+
+1. Check versions:
+
+   node --version
+   npm --version
+   python --version
+
+2. Install dependencies:
+
+   npm install
+   python -m venv .venv
+   .\.venv\Scripts\python -m pip install --upgrade pip
+   .\.venv\Scripts\python -m pip install -r python_service\requirements.txt
+
+3. Create the only runtime configuration file:
+
+   Copy-Item .env.example .env
+
+4. Edit .env:
+
+   - Put the Gmail app password without spaces in SMTP_PASS.
+   - Keep ALLOWED_ORIGIN as:
+     http://127.0.0.1:4173,http://localhost:4173
+   - Replace LAB_SESSION_SECRET with at least 24 random characters.
+   - Keep LAB_MODE=fixture and AI_MODE=fixture.
+   - Keep all five AI API key values empty.
+
+5. Install Chromium once for browser tests:
+
+   npx playwright install chromium
+
+
+Run Everything
+--------------
+
+Open three PowerShell terminals in the repository root.
+
+Terminal 1 - private Python pipelines:
+
+   .\.venv\Scripts\python python_service\server.py
+
+Terminal 2 - required Node API, workflows, sessions, and Gmail SMTP:
+
+   npm start
+
+Terminal 3 - build and serve the public dist directory:
+
+   npm run build
+   npm run preview
+
+If PowerShell blocks npm.ps1, use npm.cmd instead:
+
+   npm.cmd start
+   npm.cmd run build
+   npm.cmd run preview
+
+If Vite reports an emitted path containing `../..`, the repository was opened
+through a Windows junction. Change directory to the junction's physical target
+and rerun the build. A normal Git clone does not need this workaround.
+
+
+Open And Check
+--------------
+
+Homepage:
+http://127.0.0.1:4173/
+
+Portfolio:
+http://127.0.0.1:4173/portfolio/
+
+Direct demos:
+http://127.0.0.1:4173/portfolio/document-operations/
+http://127.0.0.1:4173/portfolio/operations-hub/
+http://127.0.0.1:4173/portfolio/knowledge-assistant/
+http://127.0.0.1:4173/portfolio/kpi-studio/
+
+Node health:
+http://127.0.0.1:8787/api/lab/health
+
+Python health:
+http://127.0.0.1:8790/health
+
+Expected lab health behavior:
+
+- mode is fixture
+- externalAI is false
+- demos are document-operations, operations-hub, knowledge-assistant, kpi-studio
+- all five provider targets are selectable but simulated
+
+Test the contact form from the homepage. A real SMTP_PASS is required for Gmail
+delivery. Never put the password in index.html or any committed file.
+
+
+Verification
+------------
+
+Run from the repository root:
+
+   npm test
+   npm run build
+   npm run test:e2e
+
+Current accepted checkpoint:
+
+- 6 frontend tests
+- 15 Node tests
+- 4 Python tests
+- 12 Playwright tests across desktop and mobile
+
+
+Stop Everything
+---------------
+
+Press Ctrl+C once in each of the three terminals. Local .env, node_modules,
+.venv, dist, and test outputs are intentionally ignored by Git.
+
+
+Quick Restart On Later Days
+---------------------------
+
+Terminal 1:
+   .\.venv\Scripts\python python_service\server.py
+
+Terminal 2:
+   npm start
+
+Terminal 3:
+   npm run build
+   npm run preview

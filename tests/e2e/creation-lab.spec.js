@@ -33,8 +33,8 @@ test("every demo is usable and makes no external AI-provider request", async ({ 
 test("document workflow returns deterministic evidence", async ({ page }) => {
   await page.goto("/portfolio/document-operations/?lang=en");
   await page.getByRole("button", { name: "Classify and extract" }).click();
-  await expect(page.getByText("purchase_order")).toBeVisible();
-  await expect(page.getByText("NW-8841", { exact: true })).toBeVisible();
+  await expect(page.getByLabel("Category")).toHaveValue("purchase_order");
+  await expect(page.getByLabel("Order reference")).toHaveValue("NW-8841");
 });
 
 test("homepage exposes the bilingual four-demo portfolio preview", async ({ page }) => {

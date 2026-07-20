@@ -53,25 +53,50 @@ class FixtureAIProvider:
         context: dict[str, Any],
     ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
         if task == "document_classify":
+            fixtures = {
+                "M-204": ("NW-8841", "2026-08-03", 4820, "high"),
+                "M-205": ("AP-7712", "2026-08-12", 2430, "normal"),
+                "M-206": ("AS-1907", "2026-08-06", 7350, "high"),
+                "M-207": ("LC-5520", "2026-08-18", 1920, "normal"),
+                "M-208": ("DA-4402", "", 5260, "high"),
+                "M-209": ("VM-0088", "2026-08-25", 980, "normal"),
+            }
+            reference, requested_date, total, priority = fixtures.get(
+                str(input_data.get("messageId", "M-204")), fixtures["M-204"]
+            )
+            checks = [
+                "Order reference matched",
+                "Total and currency present",
+                (
+                    "Delivery date normalized"
+                    if requested_date
+                    else "Delivery date requires human correction"
+                ),
+            ]
             return (
                 {
                     "category": "purchase_order",
-                    "priority": "high",
+                    "priority": priority,
                     "fields": {
-                        "orderReference": "NW-8841",
-                        "requestedDate": "2026-08-03",
-                        "total": 4820,
+                        "orderReference": reference,
+                        "requestedDate": requested_date,
+                        "total": total,
                         "currency": "EUR",
                     },
+                    "checks": checks,
                 },
                 [
                     {
                         "source": "email",
-                        "excerpt": "Please confirm order NW-8841 for EUR 4,820.",
+                        "excerpt": f"Order {reference} totals EUR {total}.",
                     },
                     {
                         "source": "attachment",
-                        "excerpt": "Requested delivery: 03/08/2026",
+                        "excerpt": (
+                            f"Delivery date normalized: {requested_date}"
+                            if requested_date
+                            else "Invalid delivery date requires review"
+                        ),
                     },
                 ],
             )
@@ -82,6 +107,7 @@ class FixtureAIProvider:
                     {
                         "answer": None,
                         "confidence": 0,
+                        "citations": [],
                         "abstained": True,
                         "reason": "No permitted evidence supports this answer.",
                     },
@@ -94,7 +120,11 @@ class FixtureAIProvider:
                         "after serial-number validation."
                     ),
                     "confidence": 0.91,
+                    "citations": [
+                        f"{item['source']}, {item['section']}" for item in evidence
+                    ],
                     "abstained": False,
+                    "reason": None,
                 },
                 evidence,
             )

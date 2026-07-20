@@ -1,0 +1,164 @@
+cosmosXmachina Production Acension Cheatsheet
+=============================================
+
+This is the default production procedure for Ubuntu/Debian. Nginx is the only
+public process. Node and Python are required private services managed by systemd.
+For explanations and troubleshooting context, read installation.md.
+
+
+Required Topology
+-----------------
+
+Internet -> Nginx ports 80/443
+Nginx / and /portfolio -> /var/www/cosmosXmachina.website.github.io/dist
+Nginx /api/* -> Node at 127.0.0.1:8787
+Node -> Python at 127.0.0.1:8790
+
+Never expose ports 8787 or 8790. Never use the repository root as the Nginx
+web root.
+
+
+One-Time Server Setup
+---------------------
+
+1. Point DNS to the server:
+
+   - A record: @ -> server public IPv4
+   - CNAME: www -> cosmos-x-machina.it
+   - Add AAAA only when stable IPv6 and matching firewall rules exist.
+
+2. Install packages:
+
+   sudo apt update
+   sudo apt install -y git nginx python3 python3-venv python3-pip certbot python3-certbot-nginx
+
+3. Install Node.js 22.5 or newer, then check:
+
+   node --version
+   npm --version
+   python3 --version
+
+4. Clone and install:
+
+   sudo mkdir -p /var/www/cosmosXmachina.website.github.io
+   sudo chown -R "$USER":www-data /var/www/cosmosXmachina.website.github.io
+   git clone https://github.com/cosmosXmachina/cosmosXmachina.website.github.io.git /var/www/cosmosXmachina.website.github.io
+   cd /var/www/cosmosXmachina.website.github.io
+   npm ci
+   python3 -m venv .venv
+   .venv/bin/python -m pip install --upgrade pip
+   .venv/bin/python -m pip install -r python_service/requirements.txt
+
+
+Create Production .env
+----------------------
+
+The project-root .env is the only runtime configuration source:
+
+   cp .env.example .env
+   openssl rand -hex 32
+   nano .env
+
+Required edits:
+
+- SMTP_PASS: real Gmail app password without spaces
+- ALLOWED_ORIGIN=https://cosmos-x-machina.it,https://www.cosmos-x-machina.it
+- PUBLIC_SITE_URL=https://cosmos-x-machina.it
+- LAB_SESSION_SECRET: paste the generated random value
+- LAB_MODE=fixture
+- AI_MODE=fixture
+- Keep OPENAI_API_KEY, GOOGLE_AI_API_KEY, ANTHROPIC_API_KEY, XAI_API_KEY,
+  and OPENROUTER_API_KEY empty.
+
+Protect the file while keeping it readable by the www-data services:
+
+   sudo chown "$USER":www-data .env
+   chmod 640 .env
+
+Do not enable live AI merely by adding keys. Live activation requires a separate
+security and provider-validation pass.
+
+
+Build Public Files
+------------------
+
+   npm run build
+   test -f dist/index.html
+   test -f dist/portfolio/index.html
+   find dist -name '.env*' -o -name 'vash_key*' -o -name '*.md'
+
+The find command must print nothing.
+
+
+Install Required Services
+-------------------------
+
+   sudo cp cosmos-contact.service /etc/systemd/system/cosmos-contact.service
+   sudo cp cosmos-lab-python.service /etc/systemd/system/cosmos-lab-python.service
+   sudo systemctl daemon-reload
+   sudo systemctl enable --now cosmos-lab-python.service
+   sudo systemctl enable --now cosmos-contact.service
+   sudo systemctl status cosmos-lab-python.service --no-pager
+   sudo systemctl status cosmos-contact.service --no-pager
+
+Both units use Restart=always and return automatically after a reboot.
+
+Local health checks:
+
+   curl http://127.0.0.1:8790/health
+   curl http://127.0.0.1:8787/api/lab/health
+
+Expected lab result: fixture mode and externalAI=false.
+
+
+Install Nginx And HTTPS
+-----------------------
+
+   sudo cp cosmos-x-machina.nginx /etc/nginx/sites-available/cosmos-x-machina
+   sudo ln -s /etc/nginx/sites-available/cosmos-x-machina /etc/nginx/sites-enabled/cosmos-x-machina
+   sudo rm -f /etc/nginx/sites-enabled/default
+   sudo nginx -t
+   sudo systemctl reload nginx
+
+Firewall:
+
+   sudo ufw allow OpenSSH
+   sudo ufw allow 'Nginx Full'
+   sudo ufw enable
+
+Do not add firewall rules for 8787 or 8790.
+
+After both domain names resolve to this server:
+
+   sudo certbot --nginx -d cosmos-x-machina.it -d www.cosmos-x-machina.it --redirect
+   sudo certbot renew --dry-run
+
+
+Production Verification
+-----------------------
+
+   curl -I https://cosmos-x-machina.it/
+   curl -I https://cosmos-x-machina.it/portfolio/
+   curl https://cosmos-x-machina.it/api/lab/health
+   journalctl -u cosmos-contact.service -n 50 --no-pager
+   journalctl -u cosmos-lab-python.service -n 50 --no-pager
+
+Then inspect all four demos and send one real message through the contact form.
+
+
+Deploy Future Updates
+---------------------
+
+   cd /var/www/cosmosXmachina.website.github.io
+   git status --short --branch
+   git pull --ff-only
+   npm ci
+   .venv/bin/python -m pip install -r python_service/requirements.txt
+   npm test
+   npm run build
+   sudo systemctl restart cosmos-lab-python.service cosmos-contact.service
+   sudo nginx -t
+   sudo systemctl reload nginx
+
+Repeat the production verification after every update. Keep .env on the server;
+Git ignores it and `git pull` must never replace it.

@@ -32,3 +32,16 @@ test("workflow actions reject invalid state transitions", () => {
   assert.equal(transition(session, "document-operations", "approve", {}).step, "approved");
   assert.throws(() => transition({ states: {} }, "operations-hub", "advance", { next: "deleted" }), /Invalid operations state/);
 });
+
+test("operations state is isolated per order and shipping is role protected", () => {
+  const session = { states: {} };
+  assert.equal(transition(session, "operations-hub", "advance", {
+    orderId: "OW-2418", currentStatus: "review", next: "packing", role: "operations"
+  }).step, "packing");
+  assert.equal(transition(session, "operations-hub", "advance", {
+    orderId: "OW-2420", currentStatus: "blocked", next: "review", role: "operations"
+  }).step, "review");
+  assert.throws(() => transition(session, "operations-hub", "advance", {
+    orderId: "OW-2418", currentStatus: "packing", next: "shipped", role: "sales"
+  }), /cannot mark an order as shipped/i);
+});

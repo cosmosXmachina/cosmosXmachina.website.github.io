@@ -1,0 +1,362 @@
+cosmosXmachina Goal Ledger
+==========================
+
+Purpose
+-------
+
+This file preserves the user's multi-step goals in the user's original words,
+records Codex's interpretation separately, tracks evidence-backed progress, and
+will be completed with the final completion reasoning and action only after the
+full production-readiness audit proves that the goal is complete.
+
+
+Cross-Machine Handoff Snapshot
+------------------------------
+
+Snapshot date: 2026-07-20, Europe/Rome.
+
+Codex task and goal metadata:
+
+- Task/thread ID: 019f0ec8-8e20-7e81-859a-2f9f2a26a721
+- Goal status at handoff: BLOCKED at the user-approved Round 1 stopping point.
+- This is an intentional checkpoint, not a claim that Goal 1 is complete and
+  not an unresolved technical failure.
+- Goal token usage reported by the task: 737202 tokens.
+- Goal elapsed execution time reported by the task: 107990 seconds.
+- The full original goal text is preserved verbatim below. If this exact task
+  cannot be transferred to the other computer, Vash can explicitly create a
+  replacement goal there from that text.
+
+Git state before the handoff commit:
+
+- Repository: https://github.com/cosmosXmachina/cosmosXmachina.website.github.io.git
+- Branch: main
+- Remote baseline before the pending Round 1 commit: origin/main at 56911e8.
+- Local foundation commits already present before the pending Round 1 commit:
+  aee6fe0 (Creation Lab platform) and bb0017d (remote website merge).
+- The authoritative handoff revision is the newest commit that modifies this
+  file. After pulling, identify it with:
+  `git log -1 --oneline -- oroboros.txt`
+
+What is synchronized by Git:
+
+- All tracked source, tests, documentation, service units, Nginx configuration,
+  package lockfile, and the completed Round 1 implementation.
+- Generated dist/, node_modules/, .venv/, test output, and local process state
+  are intentionally not synchronized and must be recreated.
+- .env, Gmail credentials, AI credentials, private keys, CV/profile sources, and
+  the two original planning files are ignored and must never be committed.
+
+State reconstruction order on another computer:
+
+1. Sign into the same OpenAI account and pull the latest main branch.
+2. Open this repository as the Codex project and read, in order: AGENTS.md,
+   cosmos_interface.md, creation_lab_plan.md, this file, and installation.md.
+3. Run `git status --short --branch` and
+   `git log -5 --oneline --decorate`. Do not begin from a dirty or divergent
+   branch without first understanding its changes.
+4. Recreate .env from .env.example. Keep AI_MODE=fixture and all AI key fields
+   empty. Supply the Gmail app password only in the local .env when mail must be
+   tested.
+5. Follow ascend.txt for local startup or acension.txt for the production host.
+6. Run `npm test`, `npm run build`, and `npm run test:e2e` before advancing the
+   maturity rotation.
+7. If this same task is available, resume its blocked goal. If it is not, Vash
+   must explicitly ask the new task to recreate Goal 1 from the verbatim text
+   below and continue after the completed Round 1 checkpoint.
+
+Windows path portability note:
+
+- On the source machine the visible workspace path is a directory junction:
+  `V:\Work\IA\cosmosXmachina website\cosmosXmachina.website.github.io`.
+- Its physical target is
+  `V:\Work\IA\cosmosXmachina\cosmosXmachina_website\cosmosXmachina.website.github.io`.
+- Vite 7 can calculate invalid relative HTML output names when a build starts
+  through that junction. Tests run through either path, but production builds
+  and Playwright should run from the physical target. A normal clone on the
+  other computer will not have this issue.
+
+
+Implementation State Hidden From The Public Interface
+------------------------------------------------------
+
+The following engineering work exists behind the visible Round 1 interfaces
+and is important to preserve when continuing:
+
+- `api/ai/` contains the provider catalogue, task schemas, gateway, and wire
+  adapters for OpenAI, Google Gemini, Anthropic Claude, xAI Grok, and
+  OpenRouter.
+- The provider selector is saved in sessionStorage and sent to the private Node
+  gateway. The public provider catalogue exposes model labels and readiness but
+  never credentials.
+- `AI_MODE=fixture` is the required current mode. In this mode every provider
+  selection uses FixtureAIProvider, trace data records the simulated target,
+  and no provider network transport is called.
+- Live adapters build provider-specific requests and normalize responses. They
+  have only been tested with mocked transports. They have not been tested with
+  real credentials, real billing, current provider model availability, or real
+  provider responses, and live mode must not be enabled as part of Round 1.
+- AI task schemas and business workflow rules remain outside adapters. Current
+  live response parsing proves that a JSON object was returned, but complete
+  runtime JSON-schema validation of live output is still a future hardening
+  item.
+- The Node router keeps document and order workflow state per entity, enforces
+  valid transitions and shipping roles, dispatches deterministic AI-like tasks
+  through AIGateway, and keeps ordinary state changes in rule code.
+- The private Python service prepares deterministic document extraction and
+  permission-filtered knowledge evidence before the Node AI boundary. Node has
+  a fixture fallback if Python is unavailable so the public demo remains
+  explorable, but production topology still requires both services.
+- The browser has a deterministic fallback for static visual exploration. It
+  is not a replacement for the production Node endpoint, session controls, SMTP,
+  or Python pipelines.
+- KPI calculations are isolated in `kpi-engine.js` and executed through a Web
+  Worker. ECharts is the reason the KPI bundle is materially larger than the
+  other demos; the build budget currently accepts it.
+
+Important accepted constraints:
+
+- Publish only demos 01, 02, 03, and 06.
+- Keep `index.html` as the canonical homepage. Do not modify the five named
+  design-variant redirect files.
+- Keep Portfolio as the ninth and final homepage section.
+- Keep every AI-like interaction visibly labelled as synthetic.
+- Keep all calls simulated until Vash explicitly authorizes live activation.
+- Keep Node and Python private on loopback in production; only Nginx is public.
+- Continue using the project-root .env as the only runtime configuration source.
+- Never serve the repository root or copy private source material into dist/.
+
+Known remaining Goal 1 work after the Round 1 checkpoint:
+
+- Run further round-robin maturity passes across all four demos; do not declare a
+  demo finished without a feature, failure-mode, accessibility, responsive,
+  security, and test audit.
+- Harden live-provider output validation, error normalization, timeout/retry and
+  fallback policy, cost controls, trace redaction, and provider contract tests
+  before any live activation.
+- Expand authorization, idempotency, quota, session-expiry, hostile-input,
+  recovery, reduced-motion, keyboard, and responsive end-to-end coverage.
+- Reconcile general documentation that still describes live providers only as a
+  future adapter. The implementation now contains dormant adapters while the
+  release behavior remains fully synthetic.
+- Capture final verified screenshots from each completed interface and place
+  those previews in the four canonical index.html portfolio cards.
+- Perform a final requirement-by-requirement production audit. Goal 1 remains
+  incomplete until that audit passes for all four demos.
+
+Verification at this handoff:
+
+- `npm test`: PASS, with 6 frontend, 15 Node, and 4 Python tests.
+- `npm run build`: PASS from the physical repository path. It generated the
+  Portfolio index and all four active demo HTML targets and passed the build
+  script's forbidden-file and performance-budget checks.
+- `npm run test:e2e`: PASS, 12 Playwright checks across desktop and mobile.
+- Browser tests covered all four published entries, usable demo workflows,
+  deterministic document evidence, homepage links, contact handoff, restricted
+  knowledge abstention, and zero external AI-provider requests.
+
+
+Goal 1 - Original Multi-Step Goal (verbatim)
+----------------------------------------------
+
+The website now contains 4 demos, number 1,2,3 and 6 of the plan. I want you to keep working until they are complete and production ready. They will have fully synthetic data but must be set up for that data to be actually generated by real AI calls. The demos that need AI calls should be setup so that at any time a choice is possible to use openAI, google, anthropics, xai or openrouter for model calls, so I want them all to be setup and available, but for now all calls must still be simulated. When all 4 demos arrive at this maturity point, and in the interface and logic are production worthy and cover all the ideal requirements for the product they represent then the goal is over. If the current architecture or description or list of feature for a demo is limited or lacking you need to add everything needed to make it high quality and decide the things that are not yet decided, or add features that are not currently described. Each demo should be feature rich and mature. Work on advancing to a next step the first, then the second and so on, then after the fourth is done go on and apply the next step to the first and improve them all by another step. Do so until you feel like the first one is ready, at that point remove that one from the iteration and keep improving each one of the remaining 3 in steps like before, keep removing the completed ones until only one is still being worked on. When the last one is complete then terminate the goal. At that point the website will include all 4 completed demos, each of them should be complete in all requirements, production level and although being fully synthetic be already capable of activating any real AI call from any of the described providers. I should be able to access all 4 of them from my website landing page and end up in each demo and navigate it fully. In the main page the portfolio section should include for each demo an image that shows what the demo looks like, think of it like a screenshot of the demo design put in squares where there's a square for each demo. So in the portfolio section of the main page I should see 4 squares or rectangles that each represents a demo and contains both a screenshot like preview of the demo and the demo name and brief description. Modify the main index.html not the 5 variants that have been discarded.
+
+
+Codex Interpretation Of Goal 1
+------------------------------
+
+The required result is not four static mockups. It is four independently
+designed, production-quality interactive demonstrations whose domain logic,
+failure handling, accessibility, responsive behavior, security boundaries,
+tests, deployment topology, and technical evidence are credible enough to be
+inspected as portfolio products.
+
+All public behavior must remain deterministic and synthetic for the current
+release. Model-like tasks must pass through a server-only, provider-neutral
+contract. OpenAI, Google Gemini, Anthropic Claude, xAI Grok, and OpenRouter must
+all have selectable and tested adapters, but fixture mode must prevent every
+external provider request until live mode is deliberately enabled in .env.
+Provider output must never own permissions, schemas, workflow transitions, or
+other business rules.
+
+Work must proceed in round-robin maturity passes across demos 01, 02, 03, and
+06. A demo leaves the rotation only when evidence proves its requirements are
+complete. The canonical index.html must retain the remote-approved homepage and
+receive four real interface screenshot previews. The five discarded homepage
+variants must remain untouched.
+
+
+Goal 1 - Progress And Evidence
+------------------------------
+
+Status: PAUSED AFTER MATURITY ROUND 1 BY THE USER'S LATEST DIRECTION.
+
+The complete long-range objective is preserved here, but no Round 2 or Round 3
+work is part of the current subgoal. Goal 1 is therefore not being misreported
+as fully complete; its completed and accepted stopping point is Round 1.
+
+Completed foundation:
+
+- The public scope is limited to demos 01, 02, 03, and 06.
+- All four demos are linked from the homepage and /portfolio/ index.
+- Each demo has an independent visual identity and a directly usable interface.
+- A server-only AI gateway implements the provider-neutral execute contract.
+- OpenAI, Google Gemini, Anthropic Claude, xAI Grok, and OpenRouter adapters are
+  implemented with isolated credentials, normalized output, usage, evidence,
+  trace, and warnings.
+- .env defaults to AI_MODE=fixture. The public provider catalogue reveals no
+  credentials and all five choices remain simulated.
+- Adapter tests use mocked transport. Fixture-mode tests prove zero network
+  calls, and browser request assertions reject external AI-provider traffic.
+- Deterministic business rules and state transitions are separate from model
+  execution.
+
+Completed Maturity Round 1:
+
+- Document Operations: searchable priority queue, multiple synthetic messages,
+  typed extraction, editable review fields, validation checks, source evidence,
+  approve/reject/reopen controls, decision log, retry state, and provider trace.
+- Operations Hub: per-order state, role-aware transitions, owner assignment,
+  blocker flags, order/task/inventory views, advisory risk briefing, and session
+  audit history.
+- Secure Knowledge Assistant: role-scoped collections, permission-first FTS5
+  retrieval, ranked evidence, source preview, abstention, answer evaluation,
+  feedback, query history, pipeline state, and provider/retrieval trace.
+- KPI Studio: deterministic Web Worker calculation, scope and period controls,
+  formula disclosure, comparison metrics, scenario exploration, data-quality
+  checks, accessible table, CSV export, advisory narrative, and limitations.
+
+Verification completed at the Round 1 checkpoint:
+
+- 6 frontend tests passed.
+- 15 Node tests passed.
+- 4 Python tests passed.
+- The production dist build passed file-exclusion and per-demo performance
+  budgets.
+- Desktop and mobile browser workflows passed across the final validation runs.
+- Runtime health reported fixture mode, externalAI=false, all four demos, and all
+  five provider targets.
+- The local portfolio, Node gateway, and private Python service were made
+  available for visual exploration.
+
+Deferred work if the user later resumes Goal 1 beyond Round 1:
+
+- Complete the remaining advanced maturity and hardening rotations.
+- Expand security, authorization, recovery, accessibility, responsive, and
+  end-to-end coverage to match every published feature.
+- Document the provider activation procedure and operational safeguards.
+- Capture final verified screenshots from the four rendered interfaces.
+- Add those screenshots, names, and descriptions to the four cards in canonical
+  index.html without editing the five discarded variants.
+- Perform the final requirement-by-requirement production audit.
+
+
+Goal 2 - Current Checkpoint Goal (verbatim)
+-------------------------------------------
+
+next time you are blocked signal it, it seemed that you spent 12 hours contributing nothing to the project, would a message from me have woken you up? the new goal is finishing maturity round 1 and making sure there is an interface that is explorable by me on the website so I can at least visually see all the current functionality planned for each demo.
+
+
+Codex Interpretation Of Goal 2
+------------------------------
+
+This introduced an immediate checkpoint inside Goal 1: stop invisible waiting,
+report blockers as soon as they occur, finish one coherent maturity pass across
+all four demos, and leave a running website where the user can personally open
+and explore the controls and planned Round 1 states. A user message would have
+interrupted the stalled tool run, but the correct behavior is to signal the
+blocker without requiring the user to wake the task.
+
+
+Goal 2 - Completion Reasoning And Action
+-----------------------------------------
+
+Status: COMPLETE. This is the current subgoal and the user explicitly directed
+work to stop at Round 1.
+
+Reasoning:
+
+- Every Round 1 feature listed above is present in the rendered interface rather
+  than existing only in documentation or backend code.
+- The four pages were built into dist/, loaded through the production preview,
+  captured at a desktop viewport, and exercised through desktop and mobile
+  browser tests.
+- The portfolio index and direct demo URLs returned HTTP 200 while the Node and
+  Python health endpoints returned ok=true in fixture mode.
+- The provider gateway reported externalAI=false, and browser/network tests
+  observed no external provider request.
+
+Action taken:
+
+- The preview, Node gateway, and private Python service were restarted with the
+  current build and left available on loopback.
+- The user was given the portfolio index and all four direct demo URLs.
+- A concrete blocker-reporting rule was adopted: report a stalled approval,
+  browser, process, or external dependency immediately, while continuing any
+  other work that can still make progress.
+
+
+Final Current-Subgoal Completion Record
+---------------------------------------
+
+Status: COMPLETE - MATURITY ROUND 1.
+
+Completion reasoning:
+
+1. Scope fidelity
+
+   The public portfolio contains exactly demos 01, 02, 03, and 06. Each opens
+   directly into a distinct, usable interface and exposes its problem, workflow,
+   architecture, decisions, failure modes, tests, and relevant service. The
+   canonical homepage and portfolio index link to all four systems. No discarded
+   homepage variant was edited during this work.
+
+2. Round 1 product depth
+
+   Document Operations covers queue triage, deterministic extraction, correction,
+   evidence, validation, and human decisions. Operations Hub covers orders,
+   ownership, blockers, task and inventory views, role-aware transitions, risk
+   briefing, and audit history. Atlas covers permission-first retrieval,
+   citations, abstention, evaluation, feedback, source inspection, and history.
+   KPI Studio covers deterministic worker calculations, scope and period filters,
+   formulas, scenarios, quality checks, accessible data, export, and bounded
+   narrative.
+
+3. Synthetic AI boundary
+
+   The interface exposes OpenAI, Google Gemini, Anthropic Claude, xAI Grok, and
+   OpenRouter as provider targets. The Node gateway owns the credentials and wire
+   adapters. The active .env behavior is fixture mode, health reports
+   externalAI=false, and automated tests prove fixture execution does not call an
+   external provider. Business validation, permissions, and transitions remain
+   outside the provider.
+
+4. Authoritative verification
+
+   The final Round 1 logic run passed 6 frontend tests, 15 Node tests, and 4
+   Python tests. The production build generated all five portfolio HTML targets,
+   enforced forbidden-file exclusions, and kept each bundle within its project
+   budget. Desktop and mobile browser runs covered publication, navigation,
+   disclosure visibility, document extraction, contact handoff, safe abstention,
+   and zero external provider traffic. Four full-page Chromium captures confirmed
+   that the interfaces render as intended. HTTP and health checks returned 200 or
+   ok=true for the portfolio, Node gateway, and private Python service.
+
+5. Remaining risk is outside the locked subgoal
+
+   Later maturity rounds, final homepage screenshot-card integration, and the
+   broader production-completion audit remain documented under Goal 1, but the
+   user explicitly stopped the current work at Round 1. They are deferred work,
+   not hidden omissions from this completion claim.
+
+Completion action:
+
+- Stopped the iteration after Round 1 as instructed.
+- Removed the small partial Round 2 server change that had just begun, restoring
+  a coherent and already tested Round 1 code state.
+- Left the production preview, required Node gateway, and private Python service
+  available on loopback for exploration.
+- Finalized this ledger with the original language, interpretations, evidence,
+  scope boundary, reasoning, and closing action.
+- Future waiting or blocked states must be surfaced immediately instead of
+  relying on a user message to wake or redirect the task.

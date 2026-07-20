@@ -16,6 +16,7 @@ class DocumentOutput(BaseModel):
     category: str
     priority: str
     fields: DocumentFields
+    checks: list[str] = Field(min_length=1)
 
 
 OUTPUT_SCHEMAS = {
