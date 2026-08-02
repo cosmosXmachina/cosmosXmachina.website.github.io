@@ -32,3 +32,19 @@ test("unknown and disallowed providers are rejected before execution", async () 
     /not allowed/i
   );
 });
+
+test("fixture output is validated against the task contract", async () => {
+  const gateway = new AIGateway(fixtureEnvironment);
+  gateway.fixture.execute = async () => ({ output: { category: "broken" }, trace: {}, warnings: [] });
+  await assert.rejects(
+    gateway.execute({ task: "document_classify", input: {} }),
+    (error) => error.code === "PROVIDER_OUTPUT_INVALID"
+  );
+});
+
+test("live mode requires an explicit safety switch", () => {
+  assert.throws(
+    () => new AIGateway({ ...fixtureEnvironment, AI_MODE: "live", OPENAI_API_KEY: "test" }),
+    (error) => error.code === "LIVE_AI_DISABLED"
+  );
+});

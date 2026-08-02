@@ -1,4 +1,4 @@
-import { cp, mkdir, readdir, rm, stat } from "node:fs/promises";
+import { cp, mkdir, readFile, readdir, rm, stat } from "node:fs/promises";
 import { relative, resolve, sep } from "node:path";
 import { build } from "vite";
 
@@ -13,7 +13,7 @@ await cp(assetsSource, resolve(dist, "assets"), {
   recursive: true,
   filter(source) {
     const pathParts = relative(assetsSource, source).split(sep);
-    return !pathParts.includes("concepts");
+    return !pathParts.includes("concepts") && !source.toLowerCase().endsWith(".png");
   }
 });
 await build({ configFile: resolve(root, "vite.config.js") });
@@ -46,7 +46,31 @@ if (forbiddenPublicFiles.length) {
   throw new Error("Forbidden files entered dist/: " + forbiddenPublicFiles.join(", "));
 }
 
-console.log("Built the public site in dist/.");
+const publicFiles = await filesBelow(dist);
+const publicBytes = (await Promise.all(publicFiles.map(async (file) => (await stat(file)).size)))
+  .reduce((total, size) => total + size, 0);
+if (publicBytes > 8 * 1024 * 1024) {
+  throw new Error(`dist/ exceeds its 8 MiB release budget: ${publicBytes} bytes`);
+}
+
+const forbiddenContent = [
+  /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/,
+  /\b(?:api\.openai\.com|generativelanguage\.googleapis\.com|api\.anthropic\.com|api\.x\.ai|openrouter\.ai\/api)\b/i,
+  /\b(?:sk-[A-Za-z0-9_-]{20,}|AIza[0-9A-Za-z_-]{20,})\b/
+];
+for (const file of publicFiles.filter((path) => /\.(?:css|html|js|json|map|svg|txt)$/i.test(path))) {
+  const contents = await readFile(file, "utf8");
+  if (forbiddenContent.some((pattern) => pattern.test(contents))) {
+    throw new Error(`Forbidden secret or provider-network content entered dist/: ${relative(dist, file)}`);
+  }
+}
+
+for (const file of publicFiles.filter((path) => /assets[\\/]portfolio[\\/].+\.jpg$/i.test(path))) {
+  const size = (await stat(file)).size;
+  if (size > 250 * 1024) throw new Error(`${relative(dist, file)} exceeds the 250 KiB preview budget`);
+}
+
+console.log(`Built the public site in dist/ (${(publicBytes / 1024 / 1024).toFixed(2)} MiB).`);
 
 async function filesBelow(directory) {
   const entries = await readdir(directory, { withFileTypes: true });

@@ -28,6 +28,43 @@ const responses = {
       { source: "Service policy v3.2", section: "4.1 Expedited replacement" },
       { source: "Support handbook", section: "Identity and serial validation" }
     ]
+  },
+  operations_risk_brief: {
+    output: {
+      headline: "Delivery promise is exposed to a control-unit stock constraint.", riskLevel: "high",
+      reasons: ["Order value exceeds EUR 7,000", "Control-unit stock is below the replenishment guardrail"],
+      nextActions: ["Confirm reserved stock", "Ask Sales to review the promised date"]
+    }, evidence: []
+  },
+  knowledge_evaluate: {
+    output: { supported: true, citationCoverage: 1, policyPassed: true, findings: ["Every material claim maps to permitted evidence", "No restricted collection was accessed"] }, evidence: []
+  },
+  kpi_narrative: {
+    output: {
+      summary: "Revenue is rising while margin remains above the operating guardrail.",
+      signals: ["Export revenue added EUR 8k since March", "Gross margin is 2.4 points above guardrail"],
+      actions: ["Review control-unit stock before September", "Validate export lead times weekly"],
+      limitations: ["Synthetic six-month sample", "No seasonality adjustment"]
+    }, evidence: []
+  }
+};
+
+const italian = {
+  knowledge_search: {
+    answer: "I clienti Gold possono richiedere una sostituzione accelerata dopo la verifica del numero di serie.",
+    citations: ["Policy assistenza v3.2, sezione 4.1", "Manuale supporto, verifica identita"]
+  },
+  operations_risk_brief: {
+    headline: "La promessa di consegna e esposta a un vincolo sulle scorte delle unita di controllo.",
+    reasons: ["Il valore dell'ordine supera EUR 7.000", "Le scorte delle unita di controllo sono sotto la soglia di riordino"],
+    nextActions: ["Confermare le scorte riservate", "Chiedere a Sales di verificare la data promessa"]
+  },
+  knowledge_evaluate: { findings: ["Ogni affermazione sostanziale e collegata a evidenze consentite", "Nessuna raccolta riservata e stata consultata"] },
+  kpi_narrative: {
+    summary: "I ricavi crescono mentre il margine resta sopra la soglia operativa.",
+    signals: ["I ricavi export sono cresciuti di EUR 8k da marzo", "Il margine lordo e 2,4 punti sopra la soglia"],
+    actions: ["Verificare le scorte delle unita di controllo prima di settembre", "Controllare ogni settimana i tempi di consegna export"],
+    limitations: ["Campione sintetico di sei mesi", "Nessuna correzione per la stagionalita"]
   }
 };
 
@@ -40,16 +77,21 @@ const documentFixtures = {
 };
 
 function responseFor(task, input) {
-  if (task !== "document_classify" || !documentFixtures[input?.messageId]) return responses[task];
+  if (task !== "document_classify") {
+    const response = structuredClone(responses[task]);
+    if (input?.language === "it" && italian[task]) Object.assign(response.output, italian[task]);
+    return response;
+  }
+  if (!documentFixtures[input?.messageId]) return responses[task];
   const [orderReference, requestedDate, total, priority] = documentFixtures[input.messageId];
   return {
     output: {
       category: "purchase_order",
       priority,
       fields: { orderReference, requestedDate, total, currency: "EUR" },
-      checks: requestedDate
-        ? ["Order reference matched", "Total and currency present", "Delivery date normalized"]
-        : ["Order reference matched", "Total and currency present", "Delivery date requires human correction"]
+      checks: input.language === "it"
+        ? ["Riferimento ordine verificato", "Totale e valuta presenti", requestedDate ? "Data di consegna normalizzata" : "La data di consegna richiede una correzione umana"]
+        : ["Order reference matched", "Total and currency present", requestedDate ? "Delivery date normalized" : "Delivery date requires human correction"]
     },
     evidence: [
       { source: "email", excerpt: "Order " + orderReference + " totals EUR " + total + "." },
@@ -92,7 +134,9 @@ export class FixtureAIProvider {
         task,
         deterministic: true
       },
-      warnings: ["Synthetic demonstration: " + targetProvider + " is simulated and no external AI provider was called."]
+      warnings: [input?.language === "it"
+        ? "Dimostrazione sintetica: " + targetProvider + " e simulato e non e stato contattato alcun provider AI esterno."
+        : "Synthetic demonstration: " + targetProvider + " is simulated and no external AI provider was called."]
     };
   }
 }

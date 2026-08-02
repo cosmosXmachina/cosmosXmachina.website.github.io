@@ -68,6 +68,12 @@ LAB_MODE=fixture
 LAB_SESSION_SECRET=replace_with_at_least_24_random_characters
 PYTHON_LAB_URL=http://127.0.0.1:8790
 PYTHON_LAB_PORT=8790
+AI_MODE=fixture
+AI_DEFAULT_PROVIDER=openai
+AI_ALLOWED_PROVIDERS=openai,google,anthropic,xai,openrouter
+AI_REQUEST_TIMEOUT_MS=12000
+AI_MAX_OUTPUT_TOKENS=1200
+AI_LIVE_ENABLED=false
 ~~~
 
 Production ALLOWED_ORIGIN:
@@ -82,7 +88,7 @@ Generate LAB_SESSION_SECRET on the server:
 openssl rand -hex 32
 ~~~
 
-Version 1 has no AI credential. Never put an AI key in browser code or dist/.
+Version 1 has no AI credential and must keep `AI_MODE=fixture` with `AI_LIVE_ENABLED=false`. The five dormant provider adapters are mock-tested only. Never put an AI key in browser code or dist/.
 
 ## Local Setup
 
@@ -95,6 +101,8 @@ python -m venv .venv
 .\.venv\Scripts\python -m pip install -r python_service\requirements.txt
 npm run build
 ~~~
+
+Run `npm run optimize:images` only when the editable PNG background sources change. It regenerates the canonical WebP assets and social-preview JPEG with the installed Playwright Chromium runtime.
 
 Start these commands in three terminals:
 
@@ -118,7 +126,7 @@ Open:
 
 The homepage and demos are served from dist/. The Node and Python services remain private on 127.0.0.1.
 
-The browser demos contain a deterministic fixture fallback for static preview, but the Node gateway and Python process must both run when testing the production topology.
+The browser demos contain a deterministic fixture fallback only under `npm run dev:fixtures`. Normal development and production builds expose backend failures; the Node gateway and Python process must both run when testing the production topology.
 
 ## Local Tests
 

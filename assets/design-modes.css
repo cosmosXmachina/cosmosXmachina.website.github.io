@@ -110,7 +110,7 @@ html[data-design="prismatic-glass-atelier"] .section {
 html[data-design="prismatic-glass-atelier"] .hero::before {
   background:
     linear-gradient(105deg, rgba(248, 251, 255, .86), rgba(227, 231, 255, .48) 48%, rgba(242, 248, 255, .7)),
-    url("section-entry-light.png") center / cover no-repeat;
+    url("section-entry-light.webp") center / cover no-repeat;
 }
 html[data-design="prismatic-glass-atelier"] .section::before {
   background:
@@ -242,7 +242,7 @@ html[data-design="arcane-editorial-codex"] .section {
 html[data-design="arcane-editorial-codex"] .hero::before {
   background:
     linear-gradient(90deg, rgba(247, 248, 252, .93), rgba(230, 234, 248, .72)),
-    url("section-problems-light.png") center / cover no-repeat;
+    url("section-problems-light.webp") center / cover no-repeat;
 }
 html[data-design="arcane-editorial-codex"] .section::before {
   background:

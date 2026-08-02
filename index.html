@@ -10,7 +10,7 @@
     <meta property="og:title" content="cosmosXmachina | Custom software and AI automation">
     <meta property="og:description" content="Bilingual software engineering, custom business tools, dashboards, APIs, AI assistants and digital products from Treviso.">
     <meta property="og:type" content="website">
-    <meta property="og:image" content="assets/cosmos-hero.png">
+    <meta property="og:image" content="https://cosmos-x-machina.it/assets/cosmos-hero-og.jpg">
     <meta name="cosmos-contact-endpoint" content="/api/contact">
     <script>
       (() => {
@@ -181,15 +181,15 @@
       .lang button { cursor: pointer; background: transparent; }
       .lang button[aria-pressed="true"] { color: var(--text); background: linear-gradient(135deg, var(--violet), var(--blue)); }
 
-      .hero { --bg-img: url("assets/cosmos-hero.png"); min-height: calc(100svh - 72px); display: grid; align-items: center; }
-      #problems { --bg-img: url("assets/section-problems-light.png"); }
-      #services { --bg-img: url("assets/section-services.png"); }
-      #entry { --bg-img: url("assets/section-entry-light.png"); }
-      #process { --bg-img: url("assets/section-process.png"); }
-      #stack { --bg-img: url("assets/section-stack-light.png"); }
-      #faq { --bg-img: url("assets/section-faq.png"); }
-      #contact { --bg-img: url("assets/section-contact-light.png"); }
-      #portfolio { --bg-img: url("assets/section-portfolio.png"); }
+      .hero { --bg-img: url("assets/cosmos-hero.webp"); min-height: calc(100svh - 72px); display: grid; align-items: center; }
+      #problems { --bg-img: url("assets/section-problems-light.webp"); }
+      #services { --bg-img: url("assets/section-services.webp"); }
+      #entry { --bg-img: url("assets/section-entry-light.webp"); }
+      #process { --bg-img: url("assets/section-process.webp"); }
+      #stack { --bg-img: url("assets/section-stack-light.webp"); }
+      #faq { --bg-img: url("assets/section-faq.webp"); }
+      #contact { --bg-img: url("assets/section-contact-light.webp"); }
+      #portfolio { --bg-img: url("assets/section-portfolio.webp"); }
 
       .hero-inner { padding: 86px 0 48px; display: grid; gap: 34px; }
       .hero-copy { max-width: 950px; display: grid; gap: 20px; }
@@ -314,7 +314,18 @@
       .card, details, .contact-card { padding: 20px; }
       .card h3, details h3, .contact-card h3 { margin: 0 0 8px; line-height: 1.18; }
       .card p, details p { margin: 0; }
-      .portfolio-preview { min-height: 238px; padding-bottom: 66px; }
+      .portfolio-preview { min-height: 430px; padding-bottom: 66px; overflow: hidden; }
+      .portfolio-preview .portfolio-media {
+        width: calc(100% + 40px);
+        height: clamp(190px, 25vw, 320px);
+        aspect-ratio: 16 / 9;
+        display: block;
+        margin: -20px -20px 18px;
+        border-bottom: 1px solid rgba(112, 228, 255, .22);
+        object-fit: cover;
+        object-position: center;
+        background: var(--deep);
+      }
       .portfolio-preview .number { color: var(--cyan); border-color: rgba(112, 228, 255, .46); }
       .portfolio-preview .preview-link {
         position: absolute;
@@ -518,7 +529,7 @@
           <div class="section-head"><span class="eyebrow" id="portfolioKicker"></span><h2 id="portfolioTitle"></h2><p id="portfolioText"></p></div>
           <div class="grid grid-2" id="portfolioGrid"></div>
           <p class="portfolio-disclosure" id="portfolioDisclosure"></p>
-          <div class="portfolio-actions"><a class="btn primary" id="portfolioAll" href="/portfolio/"></a></div>
+          <div class="portfolio-actions"><a class="btn primary" id="portfolioAll" href="/portfolio/" target="_blank" rel="noopener"></a></div>
         </div>
       </section>
     </main>
@@ -646,7 +657,7 @@
         $("#portfolioTitle").textContent = portfolioCopy[lang].title;
         $("#portfolioText").textContent = portfolioCopy[lang].text;
         $("#portfolioDisclosure").textContent = portfolioCopy[lang].disclosure;
-        $("#portfolioGrid").innerHTML = portfolioCopy[lang].items.map(([rank, title, text, slug]) => '<article class="card portfolio-preview"><span class="number">' + rank + '</span><h3>' + title + '</h3><p>' + text + '</p><a class="preview-link" href="/portfolio/' + slug + '/?lang=' + lang + '">' + portfolioCopy[lang].open + ' &rarr;</a></article>').join("");
+        $("#portfolioGrid").innerHTML = portfolioCopy[lang].items.map(([rank, title, text, slug]) => '<article class="card portfolio-preview"><img class="portfolio-media" src="assets/portfolio/' + slug + '.jpg" alt="' + title + '" width="1440" height="960" loading="lazy" decoding="async"><span class="number">' + rank + '</span><h3>' + title + '</h3><p>' + text + '</p><a class="preview-link" href="/portfolio/' + slug + '/?lang=' + lang + '" target="_blank" rel="noopener">' + portfolioCopy[lang].open + ' &rarr;</a></article>').join("");
         $("#portfolioAll").textContent = portfolioCopy[lang].all;
         $("#portfolioAll").href = "/portfolio/?lang=" + lang;
         $("#trustList").innerHTML = copy[lang].trust.map(item => `<li>${item}</li>`).join("");

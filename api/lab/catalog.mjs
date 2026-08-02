@@ -1,6 +1,6 @@
 export const actionCatalog = {
   "document-operations": ["classify", "approve", "reject", "reopen"],
-  "operations-hub": ["advance", "assign", "flag", "brief"],
+  "operations-hub": ["advance", "assign", "flag", "note", "brief"],
   "knowledge-assistant": ["search", "evaluate", "feedback"],
   "kpi-studio": ["calculate", "compare", "brief"]
 };

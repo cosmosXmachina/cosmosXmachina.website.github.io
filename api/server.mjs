@@ -1,47 +1,66 @@
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 import { createRequire } from "node:module";
+import { pathToFileURL } from "node:url";
+import { resolve } from "node:path";
 import { allowedOrigins, loadEnv } from "./env.mjs";
+import { errorPayload, normalizeError } from "./errors.mjs";
 import { registerLabRoutes } from "./lab/router.mjs";
 
 const require = createRequire(import.meta.url);
 const contactHandler = require("./contact.js");
-const environment = loadEnv();
-const origins = allowedOrigins(environment);
-const app = Fastify({
-  logger: false,
-  bodyLimit: 64 * 1024,
-  requestTimeout: 12000
-});
 
-await app.register(cors, {
-  origin(origin, callback) {
-    if (!origin || !origins.length || origins.includes(origin)) callback(null, true);
-    else callback(new Error("Origin not allowed"), false);
-  },
-  methods: ["GET", "POST", "OPTIONS"],
-  allowedHeaders: ["content-type", "accept", "x-lab-session"]
-});
+export async function buildServer(environment = loadEnv()) {
+  const origins = allowedOrigins(environment);
+  const production = String(environment.NODE_ENV).toLowerCase() === "production";
+  const app = Fastify({
+    logger: false,
+    bodyLimit: 64 * 1024,
+    requestTimeout: 12_000,
+    trustProxy: false
+  });
 
-app.post("/api/contact", async (request, reply) => {
-  reply.hijack();
-  await contactHandler(
-    {
-      method: request.method,
-      headers: request.headers,
-      body: request.body
+  await app.register(cors, {
+    origin(origin, callback) {
+      if (!origin) return callback(null, true);
+      if (origins.includes(origin)) return callback(null, true);
+      if (!production && /^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/.test(origin)) return callback(null, true);
+      return callback(null, false);
     },
-    reply.raw
-  );
-});
+    methods: ["GET", "POST", "OPTIONS"],
+    allowedHeaders: ["content-type", "accept", "x-lab-session", "x-idempotency-key"]
+  });
 
-await registerLabRoutes(app, environment);
+  app.addHook("onSend", async (_request, reply, payload) => {
+    reply.header("X-Content-Type-Options", "nosniff");
+    reply.header("X-Frame-Options", "DENY");
+    reply.header("Referrer-Policy", "no-referrer");
+    reply.header("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+    return payload;
+  });
 
-app.setErrorHandler((error, request, reply) => {
-  const status = error.statusCode && error.statusCode < 500 ? error.statusCode : 400;
-  reply.code(status).send({ ok: false, error: status === 400 ? error.message : "Request failed" });
-});
+  app.post("/api/contact", async (request, reply) => {
+    reply.hijack();
+    await contactHandler({ method: request.method, headers: request.headers, body: request.body }, reply.raw);
+  });
 
-const port = Number(environment.PORT || 8787);
-await app.listen({ host: "127.0.0.1", port });
-console.log("cosmosXmachina gateway listening on http://127.0.0.1:" + port);
+  await registerLabRoutes(app, environment);
+
+  app.setErrorHandler((error, request, reply) => {
+    const normalized = normalizeError(error);
+    reply.code(normalized.status).send(errorPayload(normalized, request.id));
+  });
+  return app;
+}
+
+async function start() {
+  const environment = loadEnv();
+  const app = await buildServer(environment);
+  const port = Number(environment.PORT || 8787);
+  await app.listen({ host: "127.0.0.1", port });
+  console.log(`cosmosXmachina gateway listening on http://127.0.0.1:${port}`);
+}
+
+if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
+  await start();
+}

@@ -21,6 +21,7 @@ Use these files in order:
 - `index.html` is the production 3D version and canonical homepage inherited from `origin/main`.
 - Portfolio is the ninth and final homepage section, after Contact, so the existing eight-background sequence remains unchanged.
 - The Portfolio index publishes only demos 01, 02, 03 and 06. Deferred demos must not appear in Vite inputs, API allowlists or public cards.
+- Homepage demo cards and the `Enter Creation Lab` action open a newly selected browser tab with `target="_blank" rel="noopener"`; the header Portfolio link remains an in-page anchor.
 - `assets/design-modes.css` contains five approved visual preview modes selected by `?design=<slug>`; the named `index-*.html` files are thin redirect entry points and must not duplicate the site implementation.
 - `index2D.html` is the older non-3D fallback/reference version.
 - `index_temp.html` is scratch/experiment space and can be ignored unless the user explicitly asks about it.
@@ -28,6 +29,8 @@ Use these files in order:
 - `index.html` may load Three.js as a pinned CDN ES module for the approved 3D layer.
 - Approved contact backend: `api/server.mjs`, which mounts the existing `api/contact.js` SMTP handler and the lab routes. It reads the project `.env` file only. Never put Gmail app passwords or SMTP secrets in browser code or committed files.
 - Production requires the Node gateway and private Python service under systemd, with Nginx serving only `dist/` and proxying `/api/*` to loopback.
+- Public AI behavior is fixture-only. Dormant OpenAI, Google, Anthropic, xAI and OpenRouter adapters are contract-tested with mocked transports; live calls require both `AI_MODE=live` and `AI_LIVE_ENABLED=true` and remain prohibited until the user explicitly approves activation.
+- Browser fixtures are development-only (`npm run dev:fixtures`). Production builds must expose service failures and must never silently substitute browser fixtures.
 - Do not add further frameworks, analytics, AI providers or form backends without user approval.
 - If a new technology is approved, update both this file and `cosmos_interface.md`.
 - The About/Profile section has been removed and must not be reintroduced unless requested.
@@ -61,6 +64,7 @@ The 3D version should use solid procedural sacred-geometry structures layered be
 - On hover, use raycasting to increase glow and speed up metallic rainbow interference, without adding ray-burst geometry.
 - Rotate objects with randomized changing axes/directions every few seconds; do not return to a single fixed vertical spin.
 - Cards, accordions, contact panels and major text clusters should gain a restrained glow/shine response plus a visible but controlled panel-background color shift on hover while preserving readability and layout stability.
+- Runtime section backgrounds use optimized WebP assets. Keep source PNGs editable, regenerate with `npm run optimize:images`, and preserve the build's distribution, secret and asset budgets.
 
 ## Maintenance Rules
 
@@ -71,3 +75,4 @@ The 3D version should use solid procedural sacred-geometry structures layered be
 - Preserve accessibility basics: semantic sections, readable contrast, focus states, mobile-first layout and reduced-motion support.
 - When changing visual style, start with CSS variables and section background assignments in `index.html`.
 - When changing content, update the bilingual `copy` object in `index.html`; only mirror to `index2D.html` if the user explicitly wants the fallback version maintained.
+- During an active Codex goal, report goal tokens used, remaining budget and elapsed time at major checkpoints. Treat account-level weekly usage as user-reported because it is not programmatically available, and surface any blocking tool or approval state immediately.

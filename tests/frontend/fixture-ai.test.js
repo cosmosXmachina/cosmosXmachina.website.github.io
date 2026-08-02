@@ -33,4 +33,15 @@ describe("FixtureAIProvider contract", () => {
     expect(fetchSpy).not.toHaveBeenCalled();
     fetchSpy.mockRestore();
   });
+
+  it("returns Italian task copy when the validated language requests it", async () => {
+    const result = await new FixtureAIProvider().execute({
+      task: "kpi_narrative",
+      schema: {},
+      context: {},
+      input: { language: "it" }
+    });
+    expect(result.output.summary).toContain("ricavi");
+    expect(result.warnings[0]).toContain("Dimostrazione sintetica");
+  });
 });

@@ -46,8 +46,9 @@ Implementation rules:
 
 - FixtureAIProvider uses versioned synthetic responses and deterministic rules.
 - Classification, extraction schemas, validation, permissions, and workflow transitions stay outside the provider.
-- A future live provider is selected through configuration without changing demo interfaces or business workflows.
-- Every future provider must pass the same contract tests.
+- Dormant OpenAI, Google Gemini, Anthropic Claude, xAI Grok and OpenRouter adapters implement the same provider-neutral contract and are tested only through mocked transports.
+- Fixture mode is the release behavior. Live mode requires the explicit `AI_LIVE_ENABLED=true` safety switch plus credentials and remains prohibited until separately approved.
+- Provider output is schema-validated and bounded; transport errors, timeouts, retries and trace redaction are normalized at the server boundary.
 - Synthetic demonstration appears prominently wherever an AI-like result is shown.
 - Browser and network tests prove that version 1 makes zero requests to external AI providers.
 
@@ -95,15 +96,18 @@ Standard response:
 
 Runtime rules:
 
-- Anonymous sessions expire after 30 minutes.
+- Anonymous role-bound sessions are HMAC-signed, bounded to 2,000 active records, expire after 30 minutes and allow 25 successful actions.
+- State-changing requests require idempotency keys. Failed operations roll back state and do not consume quota; duplicate requests replay their original result.
 - Visitor content is not persisted or written to logs.
 - Unknown demos/actions, oversized requests, hostile HTML, and invalid state transitions are rejected.
 - Arbitrary uploads, arbitrary URL fetching, scraping, and automatic proposal sending are excluded from version 1.
+- Browser fixtures are available only in the explicit development fixture mode. Production-mode API failures remain visible and recoverable in the interface.
 
 ## Build and Deployment
 
 - Use one npm workspace and lockfile, with each demo as an independent build target and CSS bundle.
 - Build the homepage, Portfolio index, and demos into one dist/ directory.
+- Canonical section backgrounds are generated from retained PNG sources into optimized WebP files with `npm run optimize:images`; the public build excludes superseded PNGs.
 - Nginx serves only dist/ and proxies /api/* to the private Node gateway.
 - The Node service handles SMTP, anonymous sessions, Node-based workflows, and routing to the private Python service.
 - The FastAPI service handles deterministic document and retrieval pipelines.
@@ -131,7 +135,7 @@ No unfinished demo card is published. The Portfolio index shows completed demons
 
 ## Verification
 
-- Vitest covers frontend logic and the browser fixture provider.
+- Vitest covers frontend logic and the explicitly enabled development browser fixture provider.
 - node:test covers Node workflows, provider behavior, and session expiry.
 - pytest covers FastAPI deterministic pipelines and provider behavior.
 - Playwright covers published workflows in Italian and English.
@@ -142,6 +146,7 @@ No unfinished demo card is published. The Portfolio index shows completed demons
 - Responsive verification targets approximately 360, 768, 1024, and 1440 pixels.
 - Demo framework bundles stay out of the homepage.
 - Every demo has an individual performance budget.
+- The build rejects private files, secret-like content, external provider endpoints, oversized screenshot previews and a public distribution above 8 MiB.
 - AGENTS.md, cosmos_interface.md, README.md, and installation.md describe the workspace, dependencies, build, systemd units, and Nginx configuration.
 
 ## Locked Decisions

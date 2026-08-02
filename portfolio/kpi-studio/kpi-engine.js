@@ -1,5 +1,14 @@
 export function calculateKpis(records, scope = "all", months = 6) {
+  if (!Array.isArray(records) || !records.length) throw new TypeError("KPI records are required");
+  if (!["all", "italy", "export"].includes(scope)) throw new RangeError("Unsupported KPI scope");
+  if (!Number.isInteger(months) || months < 1 || months > records.length) throw new RangeError("Invalid KPI period");
   const selected = records.slice(-months).map((record) => ({ month: record.month, ...record[scope] }));
+  for (const item of selected) {
+    for (const key of ["revenue", "cogs", "delivered", "onTime", "returned", "shipped"]) {
+      if (!Number.isFinite(Number(item[key])) || Number(item[key]) < 0) throw new TypeError(`Invalid KPI value: ${key}`);
+    }
+    if (item.onTime > item.delivered || item.returned > item.shipped) throw new RangeError("KPI numerator exceeds denominator");
+  }
   const previous = records.slice(-(months * 2), -months).map((record) => ({ month: record.month, ...record[scope] }));
   const sum = (items, key) => items.reduce((total, item) => total + Number(item[key] || 0), 0);
   const revenue = sum(selected, "revenue");

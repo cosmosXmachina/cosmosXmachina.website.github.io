@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 import { getPreferredProvider, getProviders, runAction, setPreferredProvider } from "../shared/api.js";
 import { disclosure, modeLabel } from "../shared/disclosure.js";
 import { sendToContact } from "../shared/handoff.js";
-import { getLanguage, setDocumentLanguage, withLanguage } from "../shared/i18n.js";
+import { errorText, getLanguage, setDocumentLanguage, withLanguage } from "../shared/i18n.js";
 import "./style.css";
 
 type Message = {
@@ -35,6 +35,9 @@ const copy = {
     inbox: "Coda documenti", inspect: "Documento e controlli", classify: "Classifica ed estrai", approve: "Approva", reject: "Rifiuta", reopen: "Riapri revisione",
     result: "Risultato proposto", evidence: "Evidenze", checks: "Controlli di validazione", activity: "Registro decisioni", contact: "Porta questo caso nel modulo contatti",
     all: "Tutti", priority: "Priorita alta", pending: "Da elaborare", noResults: "Nessun documento corrisponde ai filtri.", saveHint: "I campi restano modificabili finche un operatore non approva.",
+    back: "Torna al Creation Lab", providerTarget: "Provider simulato", liveMode: "Modalita provider live", syntheticMode: "Simulazione provider sintetica", queueAria: "Riepilogo coda", searchQueue: "Cerca nella coda", searchPlaceholder: "ID, mittente, oggetto", filterAria: "Filtro coda", running: "Pipeline deterministica in esecuzione...", pipelineError: "Errore pipeline", retry: "Riprova", from: "Da", subjectLabel: "Oggetto", pdfMeta: "2 pagine / documento sintetico", humanGate: "Verifica umana", idleTitle: "Pronto per un replay deterministico", idleBody: "Seleziona un elemento e avvia la classificazione. Nulla viene salvato e nessuna azione a valle e automatica.", correctFields: "Correggi i campi evidenziati prima di approvare.", fieldError: "Riferimento, data ISO valida, totale positivo e valuta a tre lettere sono obbligatori.", sourceBound: "legato alla fonte", sessionOnly: "solo sessione", evidencePending: "Le evidenze appaiono dopo l'estrazione.", queueOpened: "Elemento della coda aperto", technicalTrace: "Traccia tecnica", next: "Continua", earlier: "prima", now: "ora", pass: "OK", statusIdle: "non elaborato", statusRunning: "in esecuzione", statusClassified: "classificato", statusApproved: "approvato", statusRejected: "rifiutato", statusError: "errore",
+    stats: [["Ricevuti oggi", "6 in questa simulazione"], ["Da verificare", "passaggio umano"], ["Priorita alta", "rischio consegna o valore"], ["Gestione mediana", "minuti sintetici"]],
+    fields: ["Categoria", "Priorita", "Riferimento ordine", "Data richiesta", "Totale", "Valuta"],
     sections: [["Problema", "Le richieste arrivano tra email e allegati, richiedono reinserimento manuale e nascondono le eccezioni."], ["Workflow", "Acquisizione controllata, classificazione, estrazione tipizzata, validazione e approvazione umana."], ["Architettura", "React e TypeScript nel client; gateway provider neutrale; pipeline FastAPI/Pydantic privata."], ["Decisioni", "Schema e regole restano fuori dal provider. Nessun allegato arbitrario e nessuna azione automatica."], ["Failure modes", "Campi mancanti, date incoerenti, documenti ambigui e servizi non disponibili producono stati espliciti."], ["Test", "Contratti provider, replay, limiti richiesta, HTML ostile, transizioni e zero chiamate esterne in fixture mode."], ["Servizio rilevante", "Automazione AI e workflow documentali con supervisione."]]
   },
   en: {
@@ -42,9 +45,18 @@ const copy = {
     inbox: "Document queue", inspect: "Document and controls", classify: "Classify and extract", approve: "Approve", reject: "Reject", reopen: "Reopen review",
     result: "Proposed result", evidence: "Evidence", checks: "Validation checks", activity: "Decision log", contact: "Transfer this case to contact",
     all: "All", priority: "High priority", pending: "Unprocessed", noResults: "No documents match these filters.", saveHint: "Fields stay editable until a human approves the record.",
+    back: "Back to Creation Lab", providerTarget: "Simulated provider", liveMode: "Live provider mode", syntheticMode: "Synthetic provider simulation", queueAria: "Queue summary", searchQueue: "Search queue", searchPlaceholder: "ID, sender, subject", filterAria: "Queue filter", running: "Running deterministic pipeline...", pipelineError: "Pipeline error", retry: "Retry", from: "From", subjectLabel: "Subject", pdfMeta: "2 pages / synthetic fixture", humanGate: "Human review gate", idleTitle: "Ready for deterministic replay", idleBody: "Select a queue item and run classification. Nothing is persisted and no downstream action is automatic.", correctFields: "Correct the highlighted fields before approval.", fieldError: "Reference, valid ISO date, positive total and three-letter currency are required.", sourceBound: "source-bound", sessionOnly: "session only", evidencePending: "Evidence appears after extraction.", queueOpened: "Queue item opened", technicalTrace: "Technical trace", next: "Next", earlier: "earlier", now: "now", pass: "PASS", statusIdle: "unprocessed", statusRunning: "running", statusClassified: "classified", statusApproved: "approved", statusRejected: "rejected", statusError: "error",
+    stats: [["Received today", "6 in this fixture"], ["Needs review", "human checkpoint"], ["High priority", "delivery or value risk"], ["Median handling", "synthetic minutes"]],
+    fields: ["Category", "Priority", "Order reference", "Requested date", "Total", "Currency"],
     sections: [["Problem", "Requests arrive across email and attachments, require manual re-entry and hide exceptions."], ["Workflow", "Controlled intake, classification, typed extraction, validation and human approval."], ["Architecture", "React and TypeScript client; provider-neutral gateway; private FastAPI/Pydantic pipeline."], ["Decisions", "Schemas and rules stay outside the provider. No arbitrary attachments and no automatic actions."], ["Failure modes", "Missing fields, invalid dates, ambiguous documents and unavailable services produce explicit states."], ["Tests", "Provider contracts, replay, request limits, hostile HTML, transitions and zero external calls in fixture mode."], ["Relevant service", "Supervised AI automation and document workflows."]]
   }
 };
+
+function validateFields(fields: Fields | null) {
+  if (!fields) return false;
+  const date = /^\d{4}-\d{2}-\d{2}$/.test(fields.requestedDate) && !Number.isNaN(Date.parse(fields.requestedDate + "T00:00:00Z"));
+  return Boolean(fields.orderReference.trim() && date && fields.total > 0 && /^[A-Z]{3}$/.test(fields.currency));
+}
 
 function App() {
   const language = getLanguage();
@@ -60,14 +72,15 @@ function App() {
   const [fields, setFields] = useState<Fields | null>(null);
   const [activity, setActivity] = useState<Record<string, string[]>>({});
   const [error, setError] = useState("");
+  const [busyAction, setBusyAction] = useState("");
   setDocumentLanguage(language, text.title + " | Creation Lab");
 
   useEffect(() => {
     getProviders().then((catalog) => {
       setProviders(catalog.providers.filter((item: Provider) => item.selectable));
       setMode(catalog.mode);
-    });
-  }, []);
+    }).catch((failure) => setError(errorText(failure, language, text.pipelineError)));
+  }, [text.pipelineError]);
 
   const visible = useMemo(() => messages.filter((message) => {
     const matchesFilter = filter === "all" || (filter === "priority" && message.priority === "high") || (filter === "pending" && !statuses[message.id]);
@@ -97,37 +110,56 @@ function App() {
     setStatuses((current) => ({ ...current, [selected.id]: "running" }));
     setError("");
     try {
-      const payload = await runAction("document-operations", "classify", { messageId: selected.id, body: selected.body }, provider);
+      const payload = await runAction("document-operations", "classify", { messageId: selected.id, body: selected.body, language }, provider);
       const result = payload.result.execution || payload.result;
       setExecution(result.output ? result : result.execution || result);
       setFields(result.output?.fields || null);
       setStatuses((current) => ({ ...current, [selected.id]: "classified" }));
-      addActivity(selected.id, (language === "en" ? "Extracted with " : "Estratto con ") + provider + " (simulated)");
+      addActivity(selected.id, (language === "en" ? "Extracted with " : "Estratto con ") + provider + (language === "en" ? " (simulated)" : " (simulato)"));
     } catch (failure) {
       setStatuses((current) => ({ ...current, [selected.id]: "error" }));
-      setError(failure instanceof Error ? failure.message : "Pipeline failed");
+      setError(errorText(failure, language, text.pipelineError));
     }
   }
 
   async function decide(action: "approve" | "reject" | "reopen") {
+    if (action === "approve" && !validateFields(fields)) {
+      setError(text.correctFields);
+      return;
+    }
+    setBusyAction(action);
+    setError("");
     try {
-      await runAction("document-operations", action, { messageId: selected.id, fields }, provider);
+      await runAction("document-operations", action, { messageId: selected.id, fields, language }, provider);
       const next = action === "reopen" ? "classified" : action === "approve" ? "approved" : "rejected";
       setStatuses((current) => ({ ...current, [selected.id]: next }));
-      addActivity(selected.id, action + " / human review");
+      const actionLabel = language === "it" ? { approve: "approvato", reject: "rifiutato", reopen: "riaperto" }[action] : action;
+      addActivity(selected.id, actionLabel + (language === "it" ? " / verifica umana" : " / human review"));
     } catch (failure) {
-      setError(failure instanceof Error ? failure.message : "Decision failed");
-    }
+      setError(errorText(failure, language, text.pipelineError));
+    } finally { setBusyAction(""); }
   }
 
   const output = execution?.output;
   const decisionLocked = status === "approved" || status === "rejected";
-  const checks = output?.checks || ["Schema fields typed", "Source excerpts retained", "Human decision required"];
+  const fieldsValid = validateFields(fields);
+  const rawChecks = output?.checks || ["Schema fields typed", "Source excerpts retained", "Human decision required"];
+  const checkTranslations: Record<string, string> = {
+    "Order reference matched": "Riferimento ordine verificato",
+    "Total and currency present": "Totale e valuta presenti",
+    "Delivery date normalized": "Data di consegna normalizzata",
+    "Delivery date requires human correction": "La data di consegna richiede una correzione umana",
+    "Schema fields typed": "Campi dello schema tipizzati",
+    "Source excerpts retained": "Estratti delle fonti conservati",
+    "Human decision required": "Decisione umana obbligatoria"
+  };
+  const checks = rawChecks.map((check: string) => language === "it" ? checkTranslations[check] || check : check);
+  const statusLabel = { idle: text.statusIdle, running: text.statusRunning, classified: text.statusClassified, approved: text.statusApproved, rejected: text.statusRejected, error: text.statusError }[status] || status;
 
   return (
     <>
       <header className="topbar">
-        <a href={withLanguage("/portfolio/", language)}>Back / Creation Lab</a>
+        <a href={withLanguage("/portfolio/", language)}>{text.back}</a>
         <strong>ORION / OPS-01</strong>
         <span className="mode">{modeLabel(language)}</span>
       </header>
@@ -135,34 +167,34 @@ function App() {
         <section className="hero">
           <div><p className="kicker">cosmosXmachina Creation Lab / 01</p><h1>{text.title}</h1><p>{text.subtitle}</p></div>
           <div className="run-config">
-            <label>Provider target<select value={provider} onChange={(event) => chooseProvider(event.target.value)}>{providers.map((item) => <option value={item.id} key={item.id}>{item.label} / {item.model}</option>)}</select></label>
-            <span>{mode === "live" ? "Live provider mode" : "Synthetic provider simulation"}</span>
+            <label>{text.providerTarget}<select value={provider} onChange={(event) => chooseProvider(event.target.value)}>{providers.map((item) => <option value={item.id} key={item.id}>{item.label} / {item.model}</option>)}</select></label>
+            <span>{mode === "live" ? text.liveMode : text.syntheticMode}</span>
           </div>
           <small>{disclosure(language)}</small>
         </section>
 
-        <section className="queue-summary" aria-label="Queue summary">
-          <article><span>Received today</span><strong>24</strong><small>6 in this fixture</small></article>
-          <article><span>Needs review</span><strong>{messages.filter((message) => !statuses[message.id] || statuses[message.id] === "classified").length}</strong><small>human checkpoint</small></article>
-          <article><span>High priority</span><strong>{messages.filter((message) => message.priority === "high").length}</strong><small>delivery or value risk</small></article>
-          <article><span>Median handling</span><strong>02:14</strong><small>synthetic minutes</small></article>
+        <section className="queue-summary" aria-label={text.queueAria}>
+          <article><span>{text.stats[0][0]}</span><strong>24</strong><small>{text.stats[0][1]}</small></article>
+          <article><span>{text.stats[1][0]}</span><strong>{messages.filter((message) => !statuses[message.id] || statuses[message.id] === "classified").length}</strong><small>{text.stats[1][1]}</small></article>
+          <article><span>{text.stats[2][0]}</span><strong>{messages.filter((message) => message.priority === "high").length}</strong><small>{text.stats[2][1]}</small></article>
+          <article><span>{text.stats[3][0]}</span><strong>02:14</strong><small>{text.stats[3][1]}</small></article>
         </section>
 
         <section className="workstation" aria-label={text.title}>
           <aside className="inbox">
             <div className="panel-title"><h2>{text.inbox}</h2><span>{visible.length}</span></div>
-            <label className="search"><span>Search queue</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="ID, sender, subject" /></label>
-            <div className="segments" role="group" aria-label="Queue filter">
-              {[["all", text.all], ["priority", text.priority], ["pending", text.pending]].map(([value, label]) => <button className={filter === value ? "active" : ""} onClick={() => setFilter(value)} key={value}>{label}</button>)}
+            <label className="search"><span>{text.searchQueue}</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={text.searchPlaceholder} /></label>
+            <div className="segments" role="group" aria-label={text.filterAria}>
+              {[["all", text.all], ["priority", text.priority], ["pending", text.pending]].map(([value, label]) => <button aria-pressed={filter === value} className={filter === value ? "active" : ""} onClick={() => setFilter(value)} key={value}>{label}</button>)}
             </div>
             <div className="message-list">
               {!visible.length && <p className="empty-list">{text.noResults}</p>}
               {visible.map((message) => (
-                <button key={message.id} className={selected.id === message.id ? "selected" : ""} onClick={() => chooseMessage(message)}>
-                  <span className={"priority-dot " + message.priority} aria-label={message.priority + " priority"} />
+                <button key={message.id} aria-current={selected.id === message.id ? "true" : undefined} className={selected.id === message.id ? "selected" : ""} onClick={() => chooseMessage(message)}>
+                  <span className={"priority-dot " + message.priority} aria-label={message.priority === "high" ? text.priority : text.statusIdle} />
                   <span className="sender">{message.sender}</span><time>{message.time}</time>
                   <strong>{message.subject}</strong>
-                  <small>{message.attachment}</small><em>{statuses[message.id] || "unprocessed"}</em>
+                  <small>{message.attachment}</small><em>{statuses[message.id] ? ({ classified: text.statusClassified, approved: text.statusApproved, rejected: text.statusRejected, running: text.statusRunning, error: text.statusError }[statuses[message.id]] || statuses[message.id]) : text.statusIdle}</em>
                 </button>
               ))}
             </div>
@@ -171,43 +203,44 @@ function App() {
           <div className="document">
             <div className="document-head">
               <div><span>{selected.id} / {selected.date} / {selected.attachment}</span><h2>{text.inspect}</h2></div>
-              <button className="primary" onClick={classify} disabled={status === "running"}>{status === "running" ? "Running deterministic pipeline..." : text.classify}</button>
+              <button className="primary" onClick={classify} disabled={status === "running"}>{status === "running" ? text.running : text.classify}</button>
             </div>
-            {error && <div className="error" role="alert"><strong>Pipeline error</strong><span>{error}</span><button onClick={classify}>Retry</button></div>}
+            {error && <div className="error" role="alert"><strong>{text.pipelineError}</strong><span>{error}</span><button onClick={classify}>{text.retry}</button></div>}
             <div className="review-grid">
               <article className="paper">
-                <div className="mail-meta"><span>From</span><strong>{selected.sender}</strong><span>Subject</span><strong>{selected.subject}</strong></div>
+                <div className="mail-meta"><span>{text.from}</span><strong>{selected.sender}</strong><span>{text.subjectLabel}</span><strong>{selected.subject}</strong></div>
                 <p>{selected.body}</p>
-                <div className="attachment"><span>PDF</span><div><strong>{selected.attachment}</strong><small>2 pages / synthetic fixture</small></div></div>
+                <div className="attachment"><span>PDF</span><div><strong>{selected.attachment}</strong><small>{text.pdfMeta}</small></div></div>
               </article>
               <section className="result" aria-live="polite">
-                <div className="result-head"><div><span>Human review gate</span><h3>{text.result}</h3></div><em className={"state " + status}>{status}</em></div>
-                {!output || !fields ? <div className="idle-state"><strong>Ready for deterministic replay</strong><p>Select a queue item and run classification. Nothing is persisted and no downstream action is automatic.</p></div> : <>
+                <div className="result-head"><div><span>{text.humanGate}</span><h3>{text.result}</h3></div><em className={"state " + status}>{statusLabel}</em></div>
+                {!output || !fields ? <div className="idle-state"><strong>{text.idleTitle}</strong><p>{text.idleBody}</p></div> : <>
                   <div className="field-grid">
-                    <label>Category<input value={output.category} readOnly /></label>
-                    <label>Priority<input value={output.priority} readOnly /></label>
-                    <label>Order reference<input value={fields.orderReference} disabled={decisionLocked} onChange={(event) => setFields({ ...fields, orderReference: event.target.value })} /></label>
-                    <label>Requested date<input type="date" value={fields.requestedDate} disabled={decisionLocked} onChange={(event) => setFields({ ...fields, requestedDate: event.target.value })} /></label>
-                    <label>Total<input type="number" value={fields.total} disabled={decisionLocked} onChange={(event) => setFields({ ...fields, total: Number(event.target.value) })} /></label>
-                    <label>Currency<input value={fields.currency} maxLength={3} disabled={decisionLocked} onChange={(event) => setFields({ ...fields, currency: event.target.value.toUpperCase() })} /></label>
+                    <label>{text.fields[0]}<input value={output.category} readOnly /></label>
+                    <label>{text.fields[1]}<input value={output.priority} readOnly /></label>
+                    <label>{text.fields[2]}<input value={fields.orderReference} aria-invalid={!fields.orderReference.trim()} disabled={decisionLocked} onChange={(event) => setFields({ ...fields, orderReference: event.target.value })} /></label>
+                    <label>{text.fields[3]}<input type="date" value={fields.requestedDate} aria-invalid={!fieldsValid} disabled={decisionLocked} onChange={(event) => setFields({ ...fields, requestedDate: event.target.value })} /></label>
+                    <label>{text.fields[4]}<input type="number" min="0.01" value={fields.total} aria-invalid={fields.total <= 0} disabled={decisionLocked} onChange={(event) => setFields({ ...fields, total: Number(event.target.value) })} /></label>
+                    <label>{text.fields[5]}<input value={fields.currency} aria-invalid={!/^[A-Z]{3}$/.test(fields.currency)} maxLength={3} disabled={decisionLocked} onChange={(event) => setFields({ ...fields, currency: event.target.value.toUpperCase() })} /></label>
                   </div>
+                  {!fieldsValid && <p className="edit-hint" role="status">{text.fieldError}</p>}
                   <p className="edit-hint">{text.saveHint}</p>
-                  <div className="actions">{decisionLocked ? <button onClick={() => decide("reopen")}>{text.reopen}</button> : <><button onClick={() => decide("reject")}>{text.reject}</button><button className="primary" onClick={() => decide("approve")}>{text.approve}</button></>}</div>
+                  <div className="actions">{decisionLocked ? <button onClick={() => decide("reopen")} disabled={Boolean(busyAction)}>{text.reopen}</button> : <><button onClick={() => decide("reject")} disabled={Boolean(busyAction)}>{text.reject}</button><button className="primary" onClick={() => decide("approve")} disabled={!fieldsValid || Boolean(busyAction)}>{text.approve}</button></>}</div>
                 </>}
               </section>
             </div>
 
             <div className="inspection-panels">
-              <section><div className="mini-head"><h3>{text.checks}</h3><span>{checks.length}/{checks.length}</span></div><ul className="checks">{checks.map((check: string) => <li key={check}><span>PASS</span>{check}</li>)}</ul></section>
-              <section><div className="mini-head"><h3>{text.evidence}</h3><span>source-bound</span></div><ul className="evidence-list">{(execution?.evidence || []).map((item: any, index: number) => <li key={index}><strong>{item.source}</strong><q>{item.excerpt || item.section}</q></li>)}{!execution?.evidence?.length && <li>Evidence appears after extraction.</li>}</ul></section>
-              <section><div className="mini-head"><h3>{text.activity}</h3><span>session only</span></div><ol className="timeline">{(activity[selected.id] || ["Queue item opened"]).map((item, index) => <li key={index}><time>{index ? "earlier" : "now"}</time>{item}</li>)}</ol></section>
+              <section><div className="mini-head"><h3>{text.checks}</h3><span>{checks.length}/{checks.length}</span></div><ul className="checks">{checks.map((check: string) => <li key={check}><span>{text.pass}</span>{check}</li>)}</ul></section>
+              <section><div className="mini-head"><h3>{text.evidence}</h3><span>{text.sourceBound}</span></div><ul className="evidence-list">{(execution?.evidence || []).map((item: any, index: number) => <li key={index}><strong>{item.source}</strong><q>{item.excerpt || item.section}</q></li>)}{!execution?.evidence?.length && <li>{text.evidencePending}</li>}</ul></section>
+              <section><div className="mini-head"><h3>{text.activity}</h3><span>{text.sessionOnly}</span></div><ol className="timeline">{(activity[selected.id] || [text.queueOpened]).map((item, index) => <li key={index}><time>{index ? text.earlier : text.now}</time>{item}</li>)}</ol></section>
             </div>
-            {execution && <details className="trace"><summary>Technical trace</summary><pre>{JSON.stringify(execution.trace, null, 2)}</pre></details>}
+            {execution && <details className="trace"><summary>{text.technicalTrace}</summary><pre>{JSON.stringify(execution.trace, null, 2)}</pre></details>}
           </div>
         </section>
 
         <section className="evidence-grid">{text.sections.map(([title, body]) => <article key={title}><h2>{title}</h2><p>{body}</p></article>)}</section>
-        <button className="contact" onClick={() => sendToContact({ demo: text.title, summary: text.sections[0][1] + " " + text.sections[1][1], language })}>{text.contact} Next</button>
+        <button className="contact" onClick={() => sendToContact({ demo: text.title, summary: text.sections[0][1] + " " + text.sections[1][1], language })}>{text.contact} {text.next}</button>
       </main>
     </>
   );

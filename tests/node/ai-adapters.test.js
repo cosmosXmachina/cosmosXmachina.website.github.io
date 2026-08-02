@@ -57,3 +57,39 @@ for (const provider of Object.keys(bodies)) {
 test("live mode refuses to initialize without the provider credential", () => {
   assert.throws(() => new LiveAIProvider("openai", {}, async () => {}), /OPENAI_API_KEY/);
 });
+
+test("adapter retries one transient response and never exposes its body", async () => {
+  let calls = 0;
+  const adapter = new LiveAIProvider("openai", environment, async () => {
+    calls += 1;
+    return calls === 1
+      ? new Response("sensitive upstream failure", { status: 503 })
+      : new Response(JSON.stringify(bodies.openai), { status: 200 });
+  });
+  const definition = taskDefinition("knowledge_evaluate");
+  const result = await adapter.execute({
+    task: "knowledge_evaluate",
+    description: definition.description,
+    schema: definition.schema,
+    schemaId: definition.id,
+    input: {}
+  });
+  assert.equal(calls, 2);
+  assert.equal(result.output.supported, true);
+});
+
+test("adapter normalizes malformed and unavailable provider failures", async () => {
+  const malformed = new LiveAIProvider("openai", environment, async () => new Response("not-json", { status: 200 }));
+  await assert.rejects(malformed.execute({ task: "x", schema: {}, input: {} }), (error) => error.code === "PROVIDER_RESPONSE_INVALID");
+
+  let calls = 0;
+  const unavailable = new LiveAIProvider("openai", environment, async () => {
+    calls += 1;
+    throw new Error("credential-shaped secret must not escape");
+  });
+  await assert.rejects(
+    unavailable.execute({ task: "x", schema: {}, input: {} }),
+    (error) => error.code === "PROVIDER_UNAVAILABLE" && !error.message.includes("credential-shaped")
+  );
+  assert.equal(calls, 2);
+});

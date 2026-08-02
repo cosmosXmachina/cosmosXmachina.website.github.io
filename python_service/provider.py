@@ -42,7 +42,11 @@ class FixtureAIProvider:
                 "deterministic": True,
             },
             warnings=[
-                "Synthetic demonstration: no external AI provider was called."
+                (
+                    "Dimostrazione sintetica: non e stato contattato alcun provider AI esterno."
+                    if input.get("language") == "it"
+                    else "Synthetic demonstration: no external AI provider was called."
+                )
             ],
         )
 
@@ -52,6 +56,7 @@ class FixtureAIProvider:
         input_data: dict[str, Any],
         context: dict[str, Any],
     ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+        italian = input_data.get("language") == "it"
         if task == "document_classify":
             fixtures = {
                 "M-204": ("NW-8841", "2026-08-03", 4820, "high"),
@@ -64,15 +69,19 @@ class FixtureAIProvider:
             reference, requested_date, total, priority = fixtures.get(
                 str(input_data.get("messageId", "M-204")), fixtures["M-204"]
             )
-            checks = [
-                "Order reference matched",
-                "Total and currency present",
-                (
-                    "Delivery date normalized"
-                    if requested_date
-                    else "Delivery date requires human correction"
-                ),
-            ]
+            checks = (
+                [
+                    "Riferimento ordine verificato",
+                    "Totale e valuta presenti",
+                    "Data di consegna normalizzata" if requested_date else "La data di consegna richiede una correzione umana",
+                ]
+                if italian
+                else [
+                    "Order reference matched",
+                    "Total and currency present",
+                    "Delivery date normalized" if requested_date else "Delivery date requires human correction",
+                ]
+            )
             return (
                 {
                     "category": "purchase_order",
@@ -88,14 +97,14 @@ class FixtureAIProvider:
                 [
                     {
                         "source": "email",
-                        "excerpt": f"Order {reference} totals EUR {total}.",
+                        "excerpt": (f"L'ordine {reference} ha un totale di EUR {total}." if italian else f"Order {reference} totals EUR {total}."),
                     },
                     {
                         "source": "attachment",
                         "excerpt": (
-                            f"Delivery date normalized: {requested_date}"
+                            (f"Data di consegna normalizzata: {requested_date}" if italian else f"Delivery date normalized: {requested_date}")
                             if requested_date
-                            else "Invalid delivery date requires review"
+                            else ("La data di consegna non valida richiede una verifica" if italian else "Invalid delivery date requires review")
                         ),
                     },
                 ],
@@ -109,15 +118,20 @@ class FixtureAIProvider:
                         "confidence": 0,
                         "citations": [],
                         "abstained": True,
-                        "reason": "No permitted evidence supports this answer.",
+                        "reason": (
+                            "Nessuna evidenza consentita supporta questa risposta."
+                            if italian
+                            else "No permitted evidence supports this answer."
+                        ),
                     },
                     evidence,
                 )
             return (
                 {
                     "answer": (
-                        "Gold customers may request an expedited replacement "
-                        "after serial-number validation."
+                        "I clienti Gold possono richiedere una sostituzione accelerata dopo la verifica del numero di serie."
+                        if italian
+                        else "Gold customers may request an expedited replacement after serial-number validation."
                     ),
                     "confidence": 0.91,
                     "citations": [

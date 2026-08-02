@@ -17,15 +17,16 @@ export function loadEnv(file = resolve(".env")) {
   try {
     source = readFileSync(file, "utf8");
   } catch (error) {
-    if (error.code === "ENOENT") return {};
+    if (error.code === "ENOENT") return { ...process.env };
     throw error;
   }
 
-  return source.split(/\r?\n/).reduce((environment, line) => {
+  const fileEnvironment = source.split(/\r?\n/).reduce((environment, line) => {
     const match = line.trim().match(/^(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$/);
     if (match && !line.trim().startsWith("#")) environment[match[1]] = parseValue(match[2]);
     return environment;
   }, {});
+  return { ...fileEnvironment, ...process.env };
 }
 
 export function allowedOrigins(environment) {

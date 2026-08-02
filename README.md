@@ -9,7 +9,7 @@ Bilingual 3D website and **cosmosXmachina Creation Lab**. The remote `index.html
 - `index-hermetic-observatory.html`, `index-prismatic-glass-atelier.html`, `index-arcane-editorial-codex.html`, `index-digital-cathedral.html`, `index-transmutation-system-map.html`: named preview entry points that redirect to the canonical page with a `design` parameter.
 - `index2D.html`: older non-3D fallback/reference page.
 - `index_temp.html`: scratch/experiment page; ignore it unless intentionally testing something.
-- `assets/`: generated section backgrounds and the shared `cxm-logo.svg` header/favicon mark.
+- `assets/`: editable generated background sources, optimized runtime WebP files, verified demo previews and the shared `cxm-logo.svg` header/favicon mark.
 - `portfolio/`: Creation Lab index and active demos 01, 02, 03 and 06.
 - `api/server.mjs`: required private Node gateway for SMTP, lab sessions and workflow routing.
 - `python_service/`: private deterministic document and retrieval pipelines.
@@ -24,6 +24,7 @@ Install the Node and Python dependencies, build `dist/`, and run the three local
 
 ```bash
 npm install
+npm run optimize:images
 npm run build
 npm run preview
 ```
@@ -37,6 +38,7 @@ The complete local topology also runs `api/server.mjs` on `127.0.0.1:8787` and `
 - The 3D version loads Three.js from the pinned CDN URL documented in `cosmos_interface.md`.
 - GitHub Pages can host only a static preview. It cannot provide Gmail SMTP or the private lab services.
 - The default production deployment builds and serves `dist/` through Nginx on the registered domain.
+- Homepage demo cards and `Enter Creation Lab` open their destination in a new selected tab; the homepage remains open in its original tab.
 - Never publish the repository root, `.env`, private profiles, plans or keys.
 - For a custom domain, add it in **Settings > Pages** and create the DNS records GitHub requests.
 

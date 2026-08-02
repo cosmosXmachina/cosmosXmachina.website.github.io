@@ -13,7 +13,7 @@ This file documents the architecture, technologies, visual system and implementa
 - Scratch/experiment file: `index_temp.html`, ignored unless explicitly needed
 - Asset folder: `assets/`
 - Creation Lab: `portfolio/` with active demos 01, 02, 03 and 06
-- Build workspace: `package.json`, `vite.config.js`, `scripts/build.mjs`
+- Build workspace: `package.json`, `vite.config.js`, `scripts/build.mjs`, `scripts/optimize-images.mjs`
 - Private services: `api/server.mjs` and `python_service/server.py`
 - README: `README.md` documents GitHub Pages publishing
 - Installation guide: `installation.md` documents dependencies, fresh-machine setup and contact endpoint deployment
@@ -23,7 +23,7 @@ This file documents the architecture, technologies, visual system and implementa
 - Current base tech stack: HTML, CSS, vanilla JavaScript, React, Vite, Node, FastAPI and static image assets
 - Additional approved technology for `index.html`: Three.js loaded as a pinned CDN ES module
 - Approved backend: `api/server.mjs`, mounting the Gmail SMTP handler, anonymous lab sessions and deterministic workflow routes using the project `.env` file
-- Production build command: `npm run build`; analytics and external AI providers remain unapproved
+- Production build command: `npm run build`; background regeneration command: `npm run optimize:images`; analytics and live external AI remain unapproved
 
 Any new technology beyond the static stack, the approved `index.html` Three.js layer and the approved contact endpoint must be approved by the user first, then documented in both `AGENTS.md` and this file.
 
@@ -57,7 +57,7 @@ The page currently contains these sections:
 10. Portfolio / Creation Lab preview
 11. Footer
 
-The About/Profile section remains intentionally removed. Portfolio is deliberately the ninth and final major section after Contact, preserving the remote site's original eight-background order and adding one new dark background at `assets/section-portfolio.png`.
+The About/Profile section remains intentionally removed. Portfolio is deliberately the ninth and final major section after Contact, preserving the remote site's original eight-background order and adding one new dark background at `assets/section-portfolio.webp`.
 
 ## File Variants
 
@@ -149,6 +149,8 @@ Initial language selection is resolved before `render()` with this priority:
 
 The header language buttons still call `render(lang)`, but first remove only the `lang` URL parameter with `history.replaceState`, preserving other query parameters and the hash. Manual button choice therefore overrides URL language and becomes the new saved preference.
 
+Homepage Portfolio cards and the `Enter Creation Lab` action use `target="_blank" rel="noopener"`, so their destination opens as the selected new tab while the homepage remains available in its original tab. The header Portfolio link intentionally remains `href="#portfolio"` and scrolls within the homepage.
+
 The form submit handler:
 
 - prevents default submission
@@ -158,6 +160,26 @@ The form submit handler:
 - posts the intake fields to `CONTACT_ENDPOINT` as JSON
 - shows bilingual sending/success/fallback status text
 - opens a `mailto:` URL with encoded subject and body if the SMTP endpoint is unavailable
+
+## Creation Lab Runtime Architecture
+
+The active public demos are Document Operations, Orion Operations Hub, Secure Knowledge Assistant and KPI Studio. Each is an independent Vite entry and visual system. Shared code is limited to API contracts, localization, fixture data, knowledge policy and contact handoff.
+
+Local and production topology:
+
+```text
+browser -> Vite/Nginx static dist/
+        -> /api/* -> Node Fastify gateway on 127.0.0.1:8787
+                     -> deterministic Python service on 127.0.0.1:8790
+```
+
+The Node gateway mounts SMTP, signed anonymous lab sessions, request validation, authoritative workflow state and the provider-neutral AI gateway. Sessions are role-bound in server memory, HMAC-signed, capped at 2,000 active records, expire after 30 minutes and permit 25 successful actions. Mutations require an idempotency key; execution is serialized per session, failed work rolls back without consuming quota, and a duplicate key replays its original result.
+
+`AI_MODE=fixture` is the only approved release behavior. OpenAI, Google Gemini, Anthropic Claude, xAI Grok and OpenRouter adapters are present behind the same contract and tested with mocked transports. Live execution additionally requires `AI_LIVE_ENABLED=true`; it must not be enabled without explicit user approval. Provider output is schema-validated and bounded, transport errors are normalized, retries are limited, and traces are redacted. No API keys or provider endpoints enter browser bundles.
+
+Browser fixtures are enabled only by Vite development mode plus `fixtures` mode or `VITE_BROWSER_FIXTURES=true`. Use `npm run dev:fixtures` for a static exploratory fallback. Normal development and production builds expose service errors instead of silently masking a missing gateway or Python pipeline.
+
+`scripts/e2e-stack.mjs` launches the real local Vite, Node and Python topology for Playwright. The browser matrix runs at 360, 768, 1024 and 1440 pixels and covers both languages, workflows, authorization, citations, validation, expired-session recovery, new-tab navigation, reduced motion and forbidden external AI traffic.
 
 ## Visual System
 
@@ -185,31 +207,34 @@ Header branding and the `sizes="any"` browser favicon in `index.html` both use `
 
 ## Background Asset System
 
-Each major section has its own generated raster background image. These are blended with CSS gradients and sacred-geometry overlays through `::before` and `::after` pseudo-elements. Sections alternate dark/light by page position: dark on hero, services, process and FAQ; light on problems, entry offers, stack and contact. The overlays preserve readability while letting the image remain visibly present, and there are no borders between major sections.
+Each major section has its own generated raster background image. These are blended with CSS gradients and sacred-geometry overlays through `::before` and `::after` pseudo-elements. Sections alternate dark/light by page position: dark on hero, services, process, FAQ and Portfolio; light on problems, entry offers, stack and contact. The overlays preserve readability while letting the image remain visibly present, and there are no borders between major sections.
 
 Current assets:
 
-- `assets/cosmos-hero.png` for the hero
-- `assets/section-problems-light.png` for problems
-- `assets/section-services.png` for services
-- `assets/section-entry-light.png` for entry offers
-- `assets/section-process.png` for process
-- `assets/section-stack-light.png` for technologies
-- `assets/section-faq.png` for FAQ
-- `assets/section-contact-light.png` for contact
+- `assets/cosmos-hero.webp` for the hero
+- `assets/section-problems-light.webp` for problems
+- `assets/section-services.webp` for services
+- `assets/section-entry-light.webp` for entry offers
+- `assets/section-process.webp` for process
+- `assets/section-stack-light.webp` for technologies
+- `assets/section-faq.webp` for FAQ
+- `assets/section-contact-light.webp` for contact
+- `assets/section-portfolio.webp` for Portfolio
+- `assets/portfolio/*.jpg` for the four verified demo screenshots
 - `assets/concepts/cxm-symbol-concepts-01.png` is the numbered ten-object, three-view source sheet for the current procedural artifact families; it remains a design reference and is not loaded by the website
 
 Section assignments are declared in CSS:
 
 ```css
-.hero { --bg-img: url("assets/cosmos-hero.png"); }
-#problems { --bg-img: url("assets/section-problems-light.png"); }
-#services { --bg-img: url("assets/section-services.png"); }
-#entry { --bg-img: url("assets/section-entry-light.png"); }
-#process { --bg-img: url("assets/section-process.png"); }
-#stack { --bg-img: url("assets/section-stack-light.png"); }
-#faq { --bg-img: url("assets/section-faq.png"); }
-#contact { --bg-img: url("assets/section-contact-light.png"); }
+.hero { --bg-img: url("assets/cosmos-hero.webp"); }
+#problems { --bg-img: url("assets/section-problems-light.webp"); }
+#services { --bg-img: url("assets/section-services.webp"); }
+#entry { --bg-img: url("assets/section-entry-light.webp"); }
+#process { --bg-img: url("assets/section-process.webp"); }
+#stack { --bg-img: url("assets/section-stack-light.webp"); }
+#faq { --bg-img: url("assets/section-faq.webp"); }
+#contact { --bg-img: url("assets/section-contact-light.webp"); }
+#portfolio { --bg-img: url("assets/section-portfolio.webp"); }
 ```
 
 Desktop uses CSS `background-attachment: fixed` when supported to create a light parallax feeling between sections. Mobile uses normal scrolling for compatibility and performance.
@@ -250,7 +275,8 @@ Current accessibility decisions:
 Performance notes:
 
 - The deployed frontend is static output, but the complete product requires the private Node gateway for Gmail SMTP and lab sessions plus FastAPI for deterministic document/retrieval pipelines.
-- Background images are large PNG files. If performance becomes an issue, convert them to optimized WebP/AVIF while keeping fallbacks or updating references.
+- Editable PNG backgrounds remain source assets; `npm run optimize:images` generates the nine runtime WebP files and compact Open Graph JPEG. The canonical background payload is about 2 MiB, roughly 90% smaller than its PNG sources.
+- `scripts/build.mjs` excludes source PNGs and concepts from `dist/`, caps the complete distribution at 8 MiB, enforces per-bundle and screenshot budgets, and rejects private files, secret-like tokens or provider-network endpoints.
 - No analytics are loaded; the only approved external frontend script is the pinned Three.js ES module.
 
 ## Future Evolution

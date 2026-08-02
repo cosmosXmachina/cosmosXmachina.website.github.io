@@ -12,7 +12,7 @@ const interpreter = candidates.find((candidate) =>
 
 const result = spawnSync(
   interpreter,
-  ["-m", "pytest", "python_service/tests"],
+  ["-m", "pytest", "-p", "no:cacheprovider", "python_service/tests"],
   { stdio: "inherit" }
 );
 

@@ -61,8 +61,8 @@ function App() {
           <span>cosmosXmachina</span>
         </a>
         <div className="language" role="group" aria-label="Language">
-          <button className={language === "it" ? "active" : ""} onClick={() => changeLanguage("it")}>IT</button>
-          <button className={language === "en" ? "active" : ""} onClick={() => changeLanguage("en")}>EN</button>
+          <button aria-pressed={language === "it"} className={language === "it" ? "active" : ""} onClick={() => changeLanguage("it")}>IT</button>
+          <button aria-pressed={language === "en"} className={language === "en" ? "active" : ""} onClick={() => changeLanguage("en")}>EN</button>
         </div>
       </header>
 
@@ -83,7 +83,7 @@ function App() {
                 ["commercial", text.commercial],
                 ["technical", text.technical]
               ].map(([value, label]) => (
-                <button key={value} className={filter === value ? "active" : ""} onClick={() => setFilter(value)}>
+                <button key={value} aria-pressed={filter === value} className={filter === value ? "active" : ""} onClick={() => setFilter(value)}>
                   {label}
                 </button>
               ))}
@@ -97,7 +97,7 @@ function App() {
                 <p className="service">{demo.service[language]}</p>
                 <h3>{demo.title[language]}</h3>
                 <p>{demo.summary[language]}</p>
-                <a href={withLanguage("/portfolio/" + demo.slug + "/", language)}>
+                <a href={withLanguage("/portfolio/" + demo.slug + "/", language)} target="_blank" rel="noopener">
                   {text.open}<span aria-hidden="true"> Next</span>
                 </a>
               </article>

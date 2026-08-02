@@ -19,8 +19,19 @@ class DocumentOutput(BaseModel):
     checks: list[str] = Field(min_length=1)
 
 
+class KnowledgeOutput(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    answer: str | None
+    confidence: float = Field(ge=0, le=1)
+    citations: list[str]
+    abstained: bool
+    reason: str | None
+
+
 OUTPUT_SCHEMAS = {
     "document_classify": DocumentOutput,
+    "knowledge_search": KnowledgeOutput,
 }
 
 

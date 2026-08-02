@@ -360,3 +360,81 @@ Completion action:
   scope boundary, reasoning, and closing action.
 - Future waiting or blocked states must be surfaced immediately instead of
   relying on a user message to wake or redirect the task.
+
+
+Goal 3 - Recreated Production-Ready Closure
+--------------------------------------------
+
+Status: LOCAL RELEASE CANDIDATE COMPLETE; THE COMMIT CONTAINING THIS RECORD IS
+THE RELEASE CANDIDATE TO PUSH TO ORIGIN/MAIN.
+
+Reconstruction metadata:
+
+- Current Codex task/thread: 019e2b68-a640-7b42-a145-2592da006759.
+- Source task: 019f0ec8-8e20-7e81-859a-2f9f2a26a721.
+- Handoff baseline: commit 2824c3e on main.
+- Explicit goal budget: 1,700,000 tokens.
+- Scope: demos 01, 02, 03 and 06 plus canonical index.html.
+- Release behavior: AI_MODE=fixture, with zero live provider calls.
+- Publication boundary: commit and push origin/main only. No SSH, SFTP,
+  production-server modification or live production test belongs to this goal.
+- Discarded homepage variants, index_temp.html, index3d.html, index2D.html and
+  deferred demos were not modified.
+- The untracked personal notes quasi solo video.md and riassunti.md remain
+  untouched and are excluded from the release commit.
+
+Objective reconstructed from the approved goal:
+
+Resume Goal 1 at the completed Round 1 checkpoint, finish the four active demos
+and canonical homepage as a locally verified production-ready release, retain
+mocked contract-ready adapters for OpenAI, Google, Anthropic, xAI and OpenRouter,
+harden shared API/security/recovery behavior, complete bilingual UX and
+accessibility, add four verified homepage screenshots, reconcile documentation,
+run the full local topology, build a secret-free dist/, and commit and push main
+without deploying to the production machine.
+
+Closure implementation:
+
+- Added schema validation, normalized API errors, provider timeouts/retries,
+  output bounds, trace redaction and the explicit AI_LIVE_ENABLED safety switch.
+- Added signed role-bound bounded sessions, rate controls, atomic workflow state,
+  idempotent mutation replay, quota rollback on failure and session recovery.
+- Made browser fixtures explicitly development-only. Normal development and
+  production expose service failures instead of silently substituting fixtures.
+- Completed bilingual controls, validation, errors, status copy, accessibility
+  attributes, reduced-motion behavior and responsive behavior in all four demos.
+- Captured four real completed-interface previews and integrated them into the
+  canonical homepage. Demo cards and Enter Creation Lab open a newly selected
+  tab while preserving the homepage tab and language.
+- Converted nine canonical backgrounds from 19.9 MiB of PNG sources to 1.99 MiB
+  of runtime WebP assets. Source PNGs remain editable but are excluded from dist/.
+- Added a full local Vite/Node/Python harness, corrected CI dependency order, and
+  enforced bundle, preview, total-distribution, secret and provider-network gates.
+- Reconciled AGENTS.md, cosmos_interface.md, creation_lab_plan.md, README.md and
+  installation.md with the release architecture and operating rules.
+
+Final local verification evidence:
+
+- Clean npm ci: 156 packages installed from package-lock.json.
+- npm audit: 0 vulnerabilities.
+- Python requirements: pinned environment satisfied; pip check found no broken
+  requirements.
+- Frontend: 7/7 Vitest checks passed.
+- Node: 31/31 node:test checks passed.
+- Python: 6/6 pytest checks passed.
+- Browser: 56/56 Playwright checks passed across 360, 768, 1024 and 1440 pixel
+  viewports, including both new-tab paths, workflows, permission failures,
+  citations, recovery, reduced motion and forbidden external AI traffic.
+- Production build: PASS; 3.69 MiB dist/, within the 8 MiB total budget and all
+  per-bundle/preview limits, with no forbidden private file, secret-like token or
+  external provider endpoint.
+- Repository audit: no tracked key or .env file, no discarded variant change,
+  no release-source secret match, and git diff --check passed.
+
+Goal-token telemetry at this closure checkpoint:
+
+- Used: 1,153,721 tokens.
+- Remaining: 546,279 tokens.
+- Elapsed: 5,338 seconds.
+- Account-level weekly allowance remains user-reported and separate from goal
+  telemetry because it cannot be queried by this task.
