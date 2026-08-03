@@ -3,15 +3,37 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="icon" href="assets/cxm-logo.svg" type="image/svg+xml" sizes="any">
+    <meta name="author" content="Davide Deon">
+    <meta id="metaRobots" name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">
+    <link id="canonicalUrl" rel="canonical" href="https://cosmos-x-machina.it/">
+    <link rel="alternate" hreflang="it" href="https://cosmos-x-machina.it/?lang=it">
+    <link rel="alternate" hreflang="en" href="https://cosmos-x-machina.it/?lang=en">
+    <link rel="alternate" hreflang="x-default" href="https://cosmos-x-machina.it/">
+    <link rel="icon" href="/assets/cxm-logo.svg" type="image/svg+xml" sizes="any">
+    <link rel="preload" as="image" href="/assets/cosmos-hero.webp" type="image/webp" fetchpriority="high">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="dns-prefetch" href="//cdn.jsdelivr.net">
     <title>cosmosXmachina | Software su misura, AI e automazioni</title>
     <meta name="description" content="cosmosXmachina crea software su misura, automazioni AI, dashboard, integrazioni, siti operativi e prodotti digitali per PMI, studi professionali, e-commerce e attività locali.">
     <meta name="theme-color" content="#0b1026">
-    <meta property="og:title" content="cosmosXmachina | Custom software and AI automation">
-    <meta property="og:description" content="Bilingual software engineering, custom business tools, dashboards, APIs, AI assistants and digital products from Treviso.">
+    <meta property="og:title" content="cosmosXmachina | Software su misura, AI e automazioni">
+    <meta property="og:description" content="Software su misura, automazioni AI, dashboard, API e prodotti digitali per PMI e professionisti, da Treviso.">
     <meta property="og:type" content="website">
+    <meta property="og:site_name" content="cosmosXmachina">
+    <meta property="og:url" content="https://cosmos-x-machina.it/">
+    <meta property="og:locale" content="it_IT">
+    <meta property="og:locale:alternate" content="en_US">
     <meta property="og:image" content="https://cosmos-x-machina.it/assets/cosmos-hero-og.jpg">
+    <meta property="og:image:width" content="1716">
+    <meta property="og:image:height" content="916">
+    <meta property="og:image:alt" content="cosmosXmachina, software e automazione attraverso geometrie digitali alchemiche">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="cosmosXmachina | Software su misura, AI e automazioni">
+    <meta name="twitter:description" content="Software su misura, automazioni AI, dashboard, API e prodotti digitali per PMI e professionisti, da Treviso.">
+    <meta name="twitter:image" content="https://cosmos-x-machina.it/assets/cosmos-hero-og.jpg">
+    <meta name="twitter:image:alt" content="cosmosXmachina, software e automazione attraverso geometrie digitali alchemiche">
     <meta name="cosmos-contact-endpoint" content="/api/contact">
+    <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":["ProfessionalService","Organization"],"@id":"https://cosmos-x-machina.it/#organization","name":"cosmosXmachina","legalName":"Davide Deon","url":"https://cosmos-x-machina.it/","email":"davide.deon@gmail.com","vatID":"IT05637720268","logo":{"@type":"ImageObject","url":"https://cosmos-x-machina.it/assets/cxm-logo.svg","width":96,"height":96},"image":"https://cosmos-x-machina.it/assets/cosmos-hero-og.jpg","founder":{"@id":"https://cosmos-x-machina.it/#davide-deon"},"sameAs":["https://www.linkedin.com/in/vash-vacuum/"],"areaServed":[{"@type":"City","name":"Treviso"},{"@type":"AdministrativeArea","name":"Veneto"},{"@type":"Country","name":"Italy"}],"knowsLanguage":["it","en"],"serviceType":["Custom software development","AI automation","Internal business tools","Data dashboards and reporting","API integrations","E-commerce automation","Website development","Software maintenance"]},{"@type":"Person","@id":"https://cosmos-x-machina.it/#davide-deon","name":"Davide Deon","url":"https://cosmos-x-machina.it/","email":"davide.deon@gmail.com","jobTitle":"Software engineer and digital automation consultant","worksFor":{"@id":"https://cosmos-x-machina.it/#organization"},"sameAs":["https://www.linkedin.com/in/vash-vacuum/"]},{"@type":"WebSite","@id":"https://cosmos-x-machina.it/#website","url":"https://cosmos-x-machina.it/","name":"cosmosXmachina","inLanguage":["it","en"],"publisher":{"@id":"https://cosmos-x-machina.it/#organization"}}]}</script>
     <script>
       (() => {
         const modes = ["hermetic-observatory", "prismatic-glass-atelier", "arcane-editorial-codex", "digital-cathedral", "transmutation-system-map"];
@@ -417,6 +439,9 @@
       .form-status { min-height: 1.4em; margin: 0; color: var(--faint); font-size: .92rem; }
       .form-status[data-tone="success"] { color: var(--cyan); }
       .form-status[data-tone="error"] { color: #c9c3ef; }
+      .privacy-note { margin: 0; color: var(--faint); font-size: .84rem; line-height: 1.55; }
+      .privacy-note a, .footer a { color: var(--cyan); text-underline-offset: 4px; }
+      .light-section .privacy-note a { color: #115d8d; }
       .footer { padding: 34px 0; border-top: 1px solid var(--line); color: var(--faint); }
       .footer .wrap { display: flex; justify-content: space-between; gap: 18px; flex-wrap: wrap; }
 
@@ -501,6 +526,7 @@
             <ul class="contact-links">
               <li><span data-i18n="contact.emailLabel">Email:</span> <a id="emailLink" href="mailto:davide.deon@gmail.com">davide.deon@gmail.com</a></li>
               <li><span data-i18n="contact.linkedinLabel">LinkedIn:</span> <a id="linkedinLink" href="https://www.linkedin.com/in/vash-vacuum/">vash-vacuum</a></li>
+              <li><span data-i18n="contact.vatLabel">P. IVA:</span> <span>05637720268</span></li>
             </ul>
             <ul class="trust-list" id="trustList"></ul>
           </div>
@@ -517,6 +543,7 @@
               <label><span data-i18n="form.tools">Strumenti usati oggi</span><input name="tools" id="toolsInput"></label>
               <label><span data-i18n="form.problem">Problema / risultato desiderato</span><textarea name="problem" id="problemInput" required></textarea></label>
               <label class="hp-field" aria-hidden="true"><span>Company</span><input name="company" tabindex="-1" autocomplete="off"></label>
+              <p class="privacy-note"><span data-i18n="form.privacyPrefix">Inviando il modulo, confermi di aver letto la</span> <a id="privacyFormLink" href="/privacy.html?lang=it" data-i18n="form.privacyLink">informativa privacy</a>.</p>
               <button class="btn primary" type="submit" data-i18n="form.submit">Invia richiesta</button>
               <p class="form-status" id="formStatus" role="status" aria-live="polite"></p>
             </form>
@@ -534,7 +561,7 @@
       </section>
     </main>
 
-    <footer class="footer"><div class="wrap"><span>cosmosXmachina</span><span data-i18n="footer.text"></span></div></footer>
+    <footer class="footer"><div class="wrap"><span>cosmosXmachina</span><span data-i18n="footer.text"></span><span data-i18n="footer.vat"></span><a id="privacyFooterLink" href="/privacy.html?lang=it" data-i18n="footer.privacy">Privacy e tecnologie locali</a></div></footer>
 
     <script>
       const CONTACT_EMAIL = "davide.deon@gmail.com";
@@ -542,6 +569,21 @@
       const LINKEDIN = {
         it: "https://www.linkedin.com/in/vash-vacuum/",
         en: "https://www.linkedin.com/in/vash-vacuum/?locale=en_US"
+      };
+      const SITE_URL = "https://cosmos-x-machina.it/";
+      const SEO = {
+        it: {
+          title: "cosmosXmachina | Software su misura, AI e automazioni",
+          description: "Software su misura, automazioni AI, dashboard, API e prodotti digitali per PMI, professionisti ed e-commerce, progettati da Treviso.",
+          imageAlt: "cosmosXmachina, software e automazione attraverso geometrie digitali alchemiche",
+          locale: "it_IT"
+        },
+        en: {
+          title: "cosmosXmachina | Custom software and AI automation",
+          description: "Custom software, AI automation, dashboards, APIs and digital products for SMEs, professionals and e-commerce businesses, built from Treviso.",
+          imageAlt: "cosmosXmachina custom software and automation through digital alchemical geometry",
+          locale: "en_US"
+        }
       };
       const copy = {
         it: {
@@ -554,10 +596,10 @@
           process: { kicker: "Metodo", title: "Da audit a prototipo, poi implementazione e continuità.", text: "Un processo leggero ma serio: capire il workflow, costruire qualcosa di utile, testarlo, consegnarlo e mantenerlo vivo.", items: [["Discovery e perimetro", "Chiarisco obiettivo, utenti, dati, strumenti esistenti, vincoli e valore atteso."], ["Audit o prototipo", "Creo una roadmap o un proof of value per verificare utilità e fattibilità."], ["Implementazione", "Sviluppo software, integrazioni, AI, dashboard o automazioni con cicli brevi."], ["Test e consegna", "Controllo flussi, errori, casi limite, privacy, documentazione e passaggio operativo."], ["Manutenzione", "Monitoraggio, fix, piccoli miglioramenti e nuove automazioni quando il sistema cresce."]] },
           stack: { kicker: "Stack operativo", title: "Tecnologia solo dopo il valore.", text: "Lo stack è ampio, ma viene scelto in base al problema: velocità, affidabilità, manutenzione e ritorno operativo.", groups: [["Linguaggi", "Python, JavaScript, TypeScript, SQL, HTML, CSS"], ["Frontend", "React, Next.js, Vue, Tailwind CSS, UI responsive, dashboard e componenti"], ["Backend", "Node.js, Express, FastAPI, Django, Flask, REST API, webhook, job, auth e ruoli"], ["Database", "PostgreSQL, MySQL/MariaDB, SQLite, MongoDB, Redis, Supabase, Firebase"], ["AI/LLM", "OpenAI API, Claude, Gemini, Groq, OpenRouter, LangChain, LlamaIndex, RAG, agenti"], ["Automazione e dati", "n8n, Make, Zapier, Python custom, Pandas, NumPy, CSV/Excel, KPI report"], ["Piattaforme/devops", "Shopify, WooCommerce, WordPress, Google Workspace, Microsoft 365, Slack, Teams, Docker, GitHub, Linux, VPS"]] },
           faq: { kicker: "FAQ", title: "Domande prima di aprire il portale.", items: [["Lavori solo su progetti AI?", "No. Lavoro sia su AI sia su software generale. L'obiettivo è scegliere lo strumento giusto per ridurre lavoro manuale e creare valore operativo."], ["Da dove si parte?", "Di solito da una breve discovery, poi da audit, prototipo o MVP a seconda di urgenza, dati disponibili e rischio tecnico."], ["Puoi lavorare con aziende locali?", "Sì. La base è Treviso, con focus naturale su Veneto, Nord Italia e clienti italiani, ma lavoro anche in inglese per progetti internazionali."], ["Come gestisci dati e AI?", "I sistemi AI possono includere revisione umana, limiti chiari, logging e attenzione a privacy, dati e responsabilità professionali."]] },
-          contact: { kicker: "Contatto", title: "Descrivi il workflow che vuoi trasformare.", text: "Scrivi il processo, il problema software o l'automazione che vuoi migliorare. Posso aiutarti a definire il perimetro e scegliere la soluzione utile più veloce.", emailLabel: "Email:", linkedinLabel: "LinkedIn:" },
+          contact: { kicker: "Contatto", title: "Descrivi il workflow che vuoi trasformare.", text: "Scrivi il processo, il problema software o l'automazione che vuoi migliorare. Posso aiutarti a definire il perimetro e scegliere la soluzione utile più veloce.", emailLabel: "Email:", linkedinLabel: "LinkedIn:", vatLabel: "P. IVA:" },
           trust: ["AI con revisione umana dove serve.", "Dati trattati con attenzione e confini chiari.", "Privacy, legale e fiscale sempre da verificare con professionisti quando necessario."],
-          form: { name: "Nome", email: "Email", type: "Tipo di progetto", budget: "Budget indicativo", tools: "Strumenti usati oggi", problem: "Problema / risultato desiderato", submit: "Invia richiesta", sending: "Invio in corso...", success: "Messaggio inviato. Ti risponderò appena possibile.", fallback: "Il server email non ha risposto. Apro una email già compilata.", subject: "Richiesta progetto cosmosXmachina", types: ["Audit automazione", "Web app / mini CRM", "Dashboard / report", "Assistente AI", "Integrazione API", "Sito / booking / CRM", "E-commerce", "Manutenzione", "MVP / prodotto digitale"], budgets: ["Da definire", "Meno di 1.500 EUR", "1.500 - 5.000 EUR", "5.000 - 10.000 EUR", "10.000+ EUR"], toolsPlaceholder: "Excel, email, CRM, Shopify, WooCommerce, Google Workspace...", problemPlaceholder: "Descrivi cosa succede oggi, cosa dovrebbe succedere e quali risultati vuoi ottenere." },
-          footer: { text: "Software, AI automation e strumenti digitali da Treviso." }
+          form: { name: "Nome", email: "Email", type: "Tipo di progetto", budget: "Budget indicativo", tools: "Strumenti usati oggi", problem: "Problema / risultato desiderato", privacyPrefix: "Inviando il modulo, confermi di aver letto la", privacyLink: "informativa privacy", submit: "Invia richiesta", sending: "Invio in corso...", success: "Messaggio inviato. Ti risponderò appena possibile.", fallback: "Il server email non ha risposto. Apro una email già compilata.", subject: "Richiesta progetto cosmosXmachina", types: ["Audit automazione", "Web app / mini CRM", "Dashboard / report", "Assistente AI", "Integrazione API", "Sito / booking / CRM", "E-commerce", "Manutenzione", "MVP / prodotto digitale"], budgets: ["Da definire", "Meno di 1.500 EUR", "1.500 - 5.000 EUR", "5.000 - 10.000 EUR", "10.000+ EUR"], toolsPlaceholder: "Excel, email, CRM, Shopify, WooCommerce, Google Workspace...", problemPlaceholder: "Descrivi cosa succede oggi, cosa dovrebbe succedere e quali risultati vuoi ottenere." },
+          footer: { text: "Software, AI automation e strumenti digitali da Treviso.", vat: "P. IVA 05637720268", privacy: "Privacy e tecnologie locali" }
         },
         en: {
           nav: { home: "Home", services: "Services", process: "Process", stack: "Stack", contact: "Contact", portfolio: "Portfolio" },
@@ -569,10 +611,10 @@
           process: { kicker: "Process", title: "From audit to prototype, then implementation and continuity.", text: "A lightweight but serious process: understand the workflow, build something useful, test it, hand it off and keep it alive.", items: [["Discovery and scope", "Clarify goals, users, data, existing tools, constraints and expected value."], ["Audit or prototype", "Create a roadmap or proof of value to verify usefulness and feasibility."], ["Implementation", "Build software, integrations, AI, dashboards or automations in short cycles."], ["Testing and handoff", "Check flows, errors, edge cases, privacy, documentation and operational transfer."], ["Maintenance", "Monitoring, fixes, small improvements and new automations as the system grows."]] },
           stack: { kicker: "Operating stack", title: "Technology after business value.", text: "The stack is broad, but each project chooses tools for speed, reliability, maintainability and operational return.", groups: [["Languages", "Python, JavaScript, TypeScript, SQL, HTML, CSS"], ["Frontend", "React, Next.js, Vue, Tailwind CSS, responsive UI, dashboards and components"], ["Backend", "Node.js, Express, FastAPI, Django, Flask, REST APIs, webhooks, jobs, auth and roles"], ["Databases", "PostgreSQL, MySQL/MariaDB, SQLite, MongoDB, Redis, Supabase, Firebase"], ["AI/LLM", "OpenAI API, Claude, Gemini, Groq, OpenRouter, LangChain, LlamaIndex, RAG, agents"], ["Automation and data", "n8n, Make, Zapier, custom Python, Pandas, NumPy, CSV/Excel, KPI reports"], ["Platforms/devops", "Shopify, WooCommerce, WordPress, Google Workspace, Microsoft 365, Slack, Teams, Docker, GitHub, Linux, VPS"]] },
           faq: { kicker: "FAQ", title: "Questions before opening the portal.", items: [["Do you only work on AI projects?", "No. I work on both AI and general software projects. The goal is choosing the right tool to reduce manual work and create operational value."], ["Where does a project start?", "Usually with a short discovery, then an audit, prototype or MVP depending on urgency, available data and technical risk."], ["Can you work with local companies?", "Yes. I am based in Treviso, with a natural focus on Veneto, Northern Italy and Italian clients, while also working in English for international projects."], ["How do you handle data and AI?", "AI systems can include human review, clear limits, logging and careful handling of privacy, data and professional responsibility."]] },
-          contact: { kicker: "Contact", title: "Describe the workflow you want to transform.", text: "Tell me about the process, software problem or automation you want to improve. I can help define the scope and choose the fastest useful solution.", emailLabel: "Email:", linkedinLabel: "LinkedIn:" },
+          contact: { kicker: "Contact", title: "Describe the workflow you want to transform.", text: "Tell me about the process, software problem or automation you want to improve. I can help define the scope and choose the fastest useful solution.", emailLabel: "Email:", linkedinLabel: "LinkedIn:", vatLabel: "Italian VAT no.:" },
           trust: ["Human review where AI needs it.", "Careful data handling and clear boundaries.", "Privacy, legal and tax topics should be reviewed with qualified professionals when needed."],
-          form: { name: "Name", email: "Email", type: "Project type", budget: "Indicative budget", tools: "Tools used today", problem: "Problem / desired outcome", submit: "Send request", sending: "Sending...", success: "Message sent. I will reply as soon as possible.", fallback: "The mail server did not respond. Opening a prepared email instead.", subject: "cosmosXmachina project request", types: ["Automation audit", "Web app / mini CRM", "Dashboard / report", "AI assistant", "API integration", "Website / booking / CRM", "E-commerce", "Maintenance", "MVP / digital product"], budgets: ["To define", "Less than EUR 1,500", "EUR 1,500 - 5,000", "EUR 5,000 - 10,000", "EUR 10,000+"], toolsPlaceholder: "Excel, email, CRM, Shopify, WooCommerce, Google Workspace...", problemPlaceholder: "Describe what happens today, what should happen, and which outcome you want." },
-          footer: { text: "Software, AI automation and digital tools from Treviso." }
+          form: { name: "Name", email: "Email", type: "Project type", budget: "Indicative budget", tools: "Tools used today", problem: "Problem / desired outcome", privacyPrefix: "By submitting the form, you confirm that you have read the", privacyLink: "privacy notice", submit: "Send request", sending: "Sending...", success: "Message sent. I will reply as soon as possible.", fallback: "The mail server did not respond. Opening a prepared email instead.", subject: "cosmosXmachina project request", types: ["Automation audit", "Web app / mini CRM", "Dashboard / report", "AI assistant", "API integration", "Website / booking / CRM", "E-commerce", "Maintenance", "MVP / digital product"], budgets: ["To define", "Less than EUR 1,500", "EUR 1,500 - 5,000", "EUR 5,000 - 10,000", "EUR 10,000+"], toolsPlaceholder: "Excel, email, CRM, Shopify, WooCommerce, Google Workspace...", problemPlaceholder: "Describe what happens today, what should happen, and which outcome you want." },
+          footer: { text: "Software, AI automation and digital tools from Treviso.", vat: "Italian VAT no. 05637720268", privacy: "Privacy and local technologies" }
         }
       };
 
@@ -580,8 +622,8 @@
         it: {
           kicker: "Creation Lab",
           title: "Quattro sistemi da usare, ispezionare e mettere alla prova.",
-          text: "Dimostrazioni indipendenti costruite attorno alla PMI fittizia Orion Works, ognuna con un'identità professionale scelta per il problema.",
-          disclosure: "Progetti autonomi con dati sintetici, non risultati ottenuti per clienti reali. La versione attuale non invia richieste a provider AI esterni.",
+          text: "Dimostrazioni di prodotto costruite attorno alla PMI fittizia Orion Works, ognuna con un'identità professionale scelta per il problema.",
+          disclosure: "Scenari professionali con dati sintetici, non risultati ottenuti per clienti reali. La versione attuale non invia richieste a provider AI esterni.",
           open: "Apri la demo",
           all: "Entra nel Creation Lab",
           items: [
@@ -594,8 +636,8 @@
         en: {
           kicker: "Creation Lab",
           title: "Four systems to use, inspect and challenge.",
-          text: "Independent demonstrations built around fictional Veneto SME Orion Works, each with a professional identity selected for the problem.",
-          disclosure: "Self-directed projects using synthetic data, not real-client results. The current version makes no requests to external AI providers.",
+          text: "Product demonstrations built around fictional Veneto SME Orion Works, each with a professional identity selected for the problem.",
+          disclosure: "Professional scenarios using synthetic data, not real-client results. The current version makes no requests to external AI providers.",
           open: "Open demo",
           all: "Enter the Creation Lab",
           items: [
@@ -645,9 +687,31 @@
         history.replaceState(history.state, "", `${url.pathname}${url.search}${url.hash}`);
       }
 
+      function updateMetadata(lang) {
+        const seo = SEO[lang];
+        const requestedLang = langFromUrl();
+        const canonical = SITE_URL + (requestedLang ? `?lang=${requestedLang}` : "");
+        const set = (selector, value) => { const node = $(selector); if (node) node.content = value; };
+        document.title = seo.title;
+        $("#canonicalUrl").href = canonical;
+        $("#metaRobots").content = document.documentElement.dataset.design
+          ? "noindex,follow"
+          : "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1";
+        set('meta[name="description"]', seo.description);
+        set('meta[property="og:title"]', seo.title);
+        set('meta[property="og:description"]', seo.description);
+        set('meta[property="og:url"]', canonical);
+        set('meta[property="og:locale"]', seo.locale);
+        set('meta[property="og:locale:alternate"]', lang === "it" ? "en_US" : "it_IT");
+        set('meta[property="og:image:alt"]', seo.imageAlt);
+        set('meta[name="twitter:title"]', seo.title);
+        set('meta[name="twitter:description"]', seo.description);
+        set('meta[name="twitter:image:alt"]', seo.imageAlt);
+      }
+
       function render(lang) {
         document.documentElement.lang = lang;
-        document.title = lang === "it" ? "cosmosXmachina | Software su misura, AI e automazioni" : "cosmosXmachina | Custom software and AI automation";
+        updateMetadata(lang);
         $$("[data-i18n]").forEach(node => { const value = get(node.dataset.i18n, lang); if (typeof value === "string") node.textContent = value; });
         $("#runes").innerHTML = copy[lang].runes.map(([title, text]) => `<div class="rune"><strong>${title}</strong><span>${text}</span></div>`).join("");
         $("#problemGrid").innerHTML = copy[lang].problems.items.map(([title, text]) => card(title, text)).join("");
@@ -670,6 +734,8 @@
         $("#problemInput").placeholder = copy[lang].form.problemPlaceholder;
         $("#linkedinLink").href = LINKEDIN[lang];
         $("#linkedinLink").textContent = lang === "it" ? "Profilo LinkedIn italiano" : "English LinkedIn profile";
+        $("#privacyFormLink").href = "/privacy.html?lang=" + lang;
+        $("#privacyFooterLink").href = "/privacy.html?lang=" + lang;
         $$("[data-lang-switch]").forEach(button => button.setAttribute("aria-pressed", button.dataset.langSwitch === lang));
         localStorage.setItem("cosmos-lang", lang);
       }

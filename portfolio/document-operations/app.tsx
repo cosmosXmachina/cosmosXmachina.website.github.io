@@ -73,7 +73,13 @@ function App() {
   const [activity, setActivity] = useState<Record<string, string[]>>({});
   const [error, setError] = useState("");
   const [busyAction, setBusyAction] = useState("");
-  setDocumentLanguage(language, text.title + " | Creation Lab");
+  setDocumentLanguage(language, {
+    title: text.title + " | Creation Lab",
+    description: text.subtitle,
+    path: "/portfolio/document-operations/",
+    image: "/assets/portfolio/document-operations.jpg",
+    imageAlt: text.title + " / cosmosXmachina Creation Lab"
+  });
 
   useEffect(() => {
     getProviders().then((catalog) => {

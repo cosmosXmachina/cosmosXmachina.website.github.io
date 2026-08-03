@@ -2,6 +2,8 @@ import { resolve } from "node:path";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
+const apiTarget = process.env.VITE_API_TARGET || "http://127.0.0.1:8787";
+
 const pages = {
   portfolio: "portfolio/index.html",
   documentOperations: "portfolio/document-operations/index.html",
@@ -16,7 +18,7 @@ export default defineConfig({
     host: "127.0.0.1",
     port: 4173,
     proxy: {
-      "/api": "http://127.0.0.1:8787"
+      "/api": apiTarget
     }
   },
   build: {

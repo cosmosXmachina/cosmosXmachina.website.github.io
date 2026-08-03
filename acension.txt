@@ -21,6 +21,16 @@ web root.
 One-Time Server Setup
 ---------------------
 
+Preferred autonomous procedure after the repository files are present:
+
+   cd /var/www/cosmosXmachina.website.github.io
+   sudo bash deploy-production.sh
+
+The script performs the dependency installation, full frontend/Node/Python and
+Playwright test suite, checked build activation, systemd/Nginx setup and health
+verification described below. It preserves .env and can be rerun for updates.
+The remaining manual steps are reference and troubleshooting material.
+
 1. Point DNS to the server:
 
    - A record: @ -> server public IPv4

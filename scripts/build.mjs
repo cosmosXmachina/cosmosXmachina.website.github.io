@@ -3,12 +3,19 @@ import { relative, resolve, sep } from "node:path";
 import { build } from "vite";
 
 const root = resolve(".");
-const dist = resolve(root, "dist");
+const dist = resolve(root, process.env.DIST_DIR || "dist");
+const relativeDist = relative(root, dist);
+if (!relativeDist || relativeDist.startsWith(".." + sep) || relativeDist === "..") {
+  throw new Error("DIST_DIR must resolve to a directory inside the repository.");
+}
 const assetsSource = resolve(root, "assets");
 
 await rm(dist, { recursive: true, force: true });
 await mkdir(dist, { recursive: true });
 await cp(resolve(root, "index.html"), resolve(dist, "index.html"));
+await cp(resolve(root, "privacy.html"), resolve(dist, "privacy.html"));
+await cp(resolve(root, "robots.txt"), resolve(dist, "robots.txt"));
+await cp(resolve(root, "sitemap.xml"), resolve(dist, "sitemap.xml"));
 await cp(assetsSource, resolve(dist, "assets"), {
   recursive: true,
   filter(source) {
@@ -16,7 +23,7 @@ await cp(assetsSource, resolve(dist, "assets"), {
     return !pathParts.includes("concepts") && !source.toLowerCase().endsWith(".png");
   }
 });
-await build({ configFile: resolve(root, "vite.config.js") });
+await build({ configFile: resolve(root, "vite.config.js"), build: { outDir: dist, emptyOutDir: false } });
 
 const assetsDirectory = resolve(dist, "assets");
 const assets = await readdir(assetsDirectory);
@@ -40,7 +47,7 @@ for (const file of assets) {
 
 const forbiddenPublicFiles = (await filesBelow(dist)).filter((file) => {
   const name = file.split(/[\\/]/).at(-1).toLowerCase();
-  return /^(\.env|vash_key)/.test(name) || /\.(md|txt|doc|docx|pem|key)$/.test(name);
+  return /^(\.env|vash_key)/.test(name) || (name !== "robots.txt" && /\.(md|txt|doc|docx|pem|key)$/.test(name));
 });
 if (forbiddenPublicFiles.length) {
   throw new Error("Forbidden files entered dist/: " + forbiddenPublicFiles.join(", "));
@@ -70,7 +77,7 @@ for (const file of publicFiles.filter((path) => /assets[\\/]portfolio[\\/].+\.jp
   if (size > 250 * 1024) throw new Error(`${relative(dist, file)} exceeds the 250 KiB preview budget`);
 }
 
-console.log(`Built the public site in dist/ (${(publicBytes / 1024 / 1024).toFixed(2)} MiB).`);
+console.log(`Built the public site in ${relativeDist.replaceAll("\\", "/")}/ (${(publicBytes / 1024 / 1024).toFixed(2)} MiB).`);
 
 async function filesBelow(directory) {
   const entries = await readdir(directory, { withFileTypes: true });

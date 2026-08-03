@@ -53,7 +53,13 @@ function App() {
   const [logs, setLogs] = useState({});
   const [note, setNote] = useState(initialOrders[0].note);
   const [busy, setBusy] = useState("");
-  setDocumentLanguage(language, text.title + " | Creation Lab");
+  setDocumentLanguage(language, {
+    title: text.title + " | Creation Lab",
+    description: text.subtitle,
+    path: "/portfolio/operations-hub/",
+    image: "/assets/portfolio/operations-hub.jpg",
+    imageAlt: text.title + " / cosmosXmachina Creation Lab"
+  });
 
   useEffect(() => {
     getProviders()

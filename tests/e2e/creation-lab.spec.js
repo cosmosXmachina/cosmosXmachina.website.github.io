@@ -56,6 +56,37 @@ test("homepage exposes the bilingual four-demo portfolio preview", async ({ page
   await expect(page.locator("#portfolioAll")).toHaveAttribute("rel", "noopener");
 });
 
+test("privacy notice documents cookie-free aggregate measurement without a consent banner", async ({ page }) => {
+  await navigate(page, "/?lang=en");
+  await expect(page.locator("#privacyFormLink")).toHaveText("privacy notice");
+  await expect(page.locator("#privacyFooterLink")).toHaveAttribute("href", "/privacy.html?lang=en");
+
+  await navigate(page, "/privacy.html?lang=en");
+  await expect(page.locator("article:not([hidden]) h1")).toHaveText("Privacy and local technologies.");
+  await expect(page.getByText("No profiling cookies.", { exact: false })).toBeVisible();
+  await expect(page.getByRole("button", { name: /accept|reject/i })).toHaveCount(0);
+  expect(await page.evaluate(() => document.cookie)).toBe("");
+
+  await page.getByRole("button", { name: "IT" }).click();
+  await expect(page).not.toHaveURL(/(?:\?|&)lang=/);
+  await expect(page.locator("article:not([hidden]) h1")).toHaveText("Privacy e tecnologie locali.");
+});
+
+test("language URLs expose matching canonical, social, and alternate metadata", async ({ page }) => {
+  await navigate(page, "/?lang=en");
+  await expect(page).toHaveTitle("cosmosXmachina | Custom software and AI automation");
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", "https://cosmos-x-machina.it/?lang=en");
+  await expect(page.locator('meta[property="og:locale"]')).toHaveAttribute("content", "en_US");
+  await expect(page.locator('link[hreflang="it"]')).toHaveAttribute("href", "https://cosmos-x-machina.it/?lang=it");
+
+  await navigate(page, "/portfolio/document-operations/?lang=it");
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", "https://cosmos-x-machina.it/portfolio/document-operations/?lang=it");
+  await expect(page.locator('meta[name="description"]')).toHaveAttribute("content", /Posta in ingresso/);
+
+  await navigate(page, "/?design=hermetic-observatory&lang=en");
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", "noindex,follow");
+});
+
 test("demo CTA transfers an expiring reviewable summary to contact", async ({ page }) => {
   await navigate(page, "/portfolio/document-operations/?lang=en");
   await page.getByRole("button", { name: "Transfer this case to contact Next" }).click();

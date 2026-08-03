@@ -51,6 +51,15 @@ From the repository root in PowerShell:
 Run Everything
 --------------
 
+One-command foreground runner (recommended):
+
+   npm run serve:local
+
+This starts Python, the Node gateway and Vite together. Open
+http://127.0.0.1:4173/ and press Ctrl+C once to stop all three.
+
+Manual three-terminal startup remains available below.
+
 Open three PowerShell terminals in the repository root.
 
 Terminal 1 - private Python pipelines:

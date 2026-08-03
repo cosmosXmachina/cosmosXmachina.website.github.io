@@ -4,6 +4,10 @@ import { resolve } from "node:path";
 
 const children = [];
 let stopping = false;
+const localProfile = process.argv.includes("--local");
+const sitePort = Number(process.env.E2E_SITE_PORT || 4173);
+const nodePort = Number(process.env.E2E_NODE_PORT || 8787);
+const pythonPort = Number(process.env.E2E_PYTHON_PORT || 8790);
 
 function start(command, args, environment = {}) {
   const child = spawn(command, args, {
@@ -54,25 +58,28 @@ const python = process.platform === "win32"
   : resolve(".venv", "bin", "python");
 if (!existsSync(python)) throw new Error("Create .venv and install python_service/requirements.txt before E2E tests.");
 
-start(python, ["-m", "uvicorn", "python_service.app:app", "--host", "127.0.0.1", "--port", "8790"], {
+start(python, ["-m", "uvicorn", "python_service.app:app", "--host", "127.0.0.1", "--port", String(pythonPort)], {
   PYTHONUNBUFFERED: "1"
 });
-await waitFor("http://127.0.0.1:8790/health");
+await waitFor(`http://127.0.0.1:${pythonPort}/health`);
 
 start(process.execPath, ["api/server.mjs"], {
-  NODE_ENV: "test",
-  PORT: "8787",
+  NODE_ENV: localProfile ? "development" : "test",
+  PORT: String(nodePort),
   AI_MODE: "fixture",
   LAB_SESSION_SECRET: "local-e2e-session-secret-change-me",
   LAB_SESSION_RATE_LIMIT: "500",
-  ALLOWED_ORIGIN: "http://127.0.0.1:4173",
-  PYTHON_LAB_URL: "http://127.0.0.1:8790"
+  ALLOWED_ORIGIN: `http://127.0.0.1:${sitePort}`,
+  PYTHON_LAB_URL: `http://127.0.0.1:${pythonPort}`
 });
-await waitFor("http://127.0.0.1:8787/api/lab/health");
+await waitFor(`http://127.0.0.1:${nodePort}/api/lab/health`);
 
-start(process.execPath, ["node_modules/vite/bin/vite.js", "--host", "127.0.0.1", "--port", "4173", "--strictPort"], {
-  VITE_BROWSER_FIXTURES: "false"
+start(process.execPath, ["node_modules/vite/bin/vite.js", "--host", "127.0.0.1", "--port", String(sitePort), "--strictPort"], {
+  VITE_BROWSER_FIXTURES: "false",
+  VITE_API_TARGET: `http://127.0.0.1:${nodePort}`
 });
-await waitFor("http://127.0.0.1:4173/portfolio/");
-console.log("Local Creation Lab E2E stack is ready.");
+await waitFor(`http://127.0.0.1:${sitePort}/portfolio/`);
+console.log(localProfile
+  ? `cosmosXmachina is ready at http://127.0.0.1:${sitePort}/ (Ctrl+C stops all services).`
+  : "Local Creation Lab E2E stack is ready.");
 await new Promise(() => {});

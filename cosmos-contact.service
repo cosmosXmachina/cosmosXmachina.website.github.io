@@ -9,7 +9,20 @@ ExecStart=/usr/bin/node /var/www/cosmosXmachina.website.github.io/api/server.mjs
 Restart=always
 RestartSec=5
 User=www-data
+Group=www-data
 Environment=NODE_ENV=production
+UMask=0027
+NoNewPrivileges=true
+PrivateDevices=true
+PrivateTmp=true
+ProtectControlGroups=true
+ProtectHome=read-only
+ProtectKernelModules=true
+ProtectKernelTunables=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/cosmos-analytics
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+RestrictSUIDSGID=true
 
 [Install]
 WantedBy=multi-user.target

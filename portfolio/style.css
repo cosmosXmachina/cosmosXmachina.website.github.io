@@ -82,7 +82,8 @@ h1 { margin: 10px 0 20px; font-family: Georgia, "Times New Roman", serif; font-s
 }
 .manifesto p { margin: 0; max-width: 740px; }
 .manifesto a { color: #fff; }
-footer { padding: 28px 4vw; background: #171716; color: #bbb; font-size: .82rem; }
+footer { display: flex; justify-content: space-between; gap: 18px; flex-wrap: wrap; padding: 28px 4vw; background: #171716; color: #bbb; font-size: .82rem; }
+footer a { color: #fff; text-underline-offset: 4px; }
 @media (max-width: 760px) {
   .intro { min-height: 420px; }
   h1 { font-size: 4rem; }

@@ -15,8 +15,9 @@ const copy = {
     technical: "Profondita tecnica",
     open: "Apri il sistema",
     home: "Torna al sito",
+    privacy: "Privacy e tecnologie locali",
     note: "Ogni demo ha una propria identita professionale. Condivide solo dati sintetici, contratti e criteri di sicurezza.",
-    footer: "Progettato e costruito da Vash, Davide Deon."
+    footer: "Progettato e costruito da Vash, Davide Deon / P. IVA 05637720268."
   },
   en: {
     title: "Creation Lab",
@@ -27,8 +28,9 @@ const copy = {
     technical: "Technical depth",
     open: "Open system",
     home: "Back to site",
+    privacy: "Privacy and local technologies",
     note: "Every demo has its own professional identity. Only synthetic data, contracts and safety criteria are shared.",
-    footer: "Designed and built by Vash, Davide Deon."
+    footer: "Designed and built by Vash, Davide Deon / Italian VAT no. 05637720268."
   }
 };
 
@@ -37,7 +39,13 @@ function App() {
   const [language, setLanguage] = useState(initialLanguage);
   const [filter, setFilter] = useState("all");
   const text = copy[language];
-  setDocumentLanguage(language, "Creation Lab | cosmosXmachina");
+  setDocumentLanguage(language, {
+    title: "Creation Lab | cosmosXmachina",
+    description: text.lead,
+    path: "/portfolio/",
+    image: "/assets/cosmos-hero-og.jpg",
+    imageAlt: language === "it" ? "Creation Lab di cosmosXmachina" : "cosmosXmachina Creation Lab"
+  });
 
   const visible = useMemo(() => {
     if (filter === "all") return demos;
@@ -111,7 +119,7 @@ function App() {
         </section>
       </main>
 
-      <footer>{text.footer}</footer>
+      <footer><span>{text.footer}</span><a href={withLanguage("/privacy.html", language)}>{text.privacy}</a></footer>
     </>
   );
 }

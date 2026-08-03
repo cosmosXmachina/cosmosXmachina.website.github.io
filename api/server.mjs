@@ -6,6 +6,7 @@ import { resolve } from "node:path";
 import { allowedOrigins, loadEnv } from "./env.mjs";
 import { errorPayload, normalizeError } from "./errors.mjs";
 import { registerLabRoutes } from "./lab/router.mjs";
+import { createVisitAnalytics } from "./visit-analytics.mjs";
 
 const require = createRequire(import.meta.url);
 const contactHandler = require("./contact.js");
@@ -56,8 +57,22 @@ export async function buildServer(environment = loadEnv()) {
 async function start() {
   const environment = loadEnv();
   const app = await buildServer(environment);
+  const analytics = createVisitAnalytics(environment);
   const port = Number(environment.PORT || 8787);
-  await app.listen({ host: "127.0.0.1", port });
+  await analytics.start();
+  try {
+    await app.listen({ host: "127.0.0.1", port });
+  } catch (error) {
+    await analytics.close();
+    throw error;
+  }
+  const stop = async () => {
+    await app.close();
+    await analytics.close();
+    process.exit(0);
+  };
+  process.once("SIGINT", stop);
+  process.once("SIGTERM", stop);
   console.log(`cosmosXmachina gateway listening on http://127.0.0.1:${port}`);
 }
 

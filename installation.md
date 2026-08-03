@@ -1,5 +1,33 @@
 # Installation and Deployment
 
+## Production Machine: Start Here
+
+This is the handoff procedure for a person or Codex agent operating inside the uploaded repository on the Ubuntu/Debian production machine.
+
+1. Read `AGENTS.md` and `cosmos_interface.md`, then confirm the shell is in the repository root containing `deploy-production.sh`, `package-lock.json` and `.env.example`.
+2. Preserve an existing project-root `.env`; never replace it with the template. On a first installation, either let the script create it or copy `.env.example` to `.env` first and enter the real Gmail app password in `SMTP_PASS`.
+3. Run the autonomous installer from the repository root:
+
+   ~~~bash
+   sudo bash deploy-production.sh
+   ~~~
+
+4. Do not report success until the script reaches `Production installation completed`. Before that message it installs OS, Node and Python dependencies; preserves/configures `.env`; runs all frontend, Node, Python and four-viewport Playwright tests; builds and scans an isolated release; activates `dist/`; installs and enables systemd services; configures Nginx, SEO files and aggregate visit statistics; and verifies the private and public routes.
+5. If the script fails, use the reported line plus:
+
+   ~~~bash
+   journalctl -u cosmos-contact.service -u cosmos-lab-python.service -n 100 --no-pager
+   nginx -t
+   ~~~
+
+   Fix the cause and rerun the same idempotent script. It keeps `.env` and uses the tracked Nginx merger to preserve an existing TLS certificate configuration while refreshing managed delivery and visit-count rules.
+6. On a first deployment, point DNS to the server and run the Certbot command printed by the script. Ports `8787` and `8790` must remain private; only Nginx should be public.
+7. Verify `https://cosmos-x-machina.it/`, `/privacy.html`, `/portfolio/`, all four demos, `/robots.txt`, `/sitemap.xml` and one real contact-form submission. The release remains `AI_MODE=fixture` and `AI_LIVE_ENABLED=false`.
+
+For later code uploads, run `sudo bash deploy-production.sh` again. The script always validates the complete uploaded revision before it restarts the persistent services, and keeps the previous `dist/` in `.dist.previous` for manual rollback diagnosis.
+
+Uploading or pulling repository source alone does **not** activate that revision. Nginx continues serving the existing `dist/`, and the already-running Node/Python processes keep their previously loaded code until the installer builds, swaps and restarts them. Do not manually replace only `dist/`: a new frontend paired with old private services is an unverified mixed release.
+
 This is the supported setup guide for the cosmosXmachina homepage and Creation Lab. The approved product specification is in creation_lab_plan.md.
 
 The active public release contains demos 01, 02, 03 and 06 only. The other roadmap concepts are not built, served or exposed by the API.
@@ -23,6 +51,7 @@ Production only:
 - Nginx
 - systemd
 - Certbot for HTTPS
+- `iproute2` for the private UDP listener verification
 
 Development or CI only:
 
@@ -74,12 +103,19 @@ AI_ALLOWED_PROVIDERS=openai,google,anthropic,xai,openrouter
 AI_REQUEST_TIMEOUT_MS=12000
 AI_MAX_OUTPUT_TOKENS=1200
 AI_LIVE_ENABLED=false
+VISIT_ANALYTICS_ENABLED=false
+VISIT_ANALYTICS_HOST=127.0.0.1
+VISIT_ANALYTICS_PORT=5514
+VISIT_ANALYTICS_FILE=/var/lib/cosmos-analytics/visits-daily.jsonl
+VISIT_ANALYTICS_TIMEZONE=Europe/Rome
+VISIT_ANALYTICS_RETENTION_DAYS=400
 ~~~
 
-Production ALLOWED_ORIGIN:
+Production overrides:
 
 ~~~text
 ALLOWED_ORIGIN=https://cosmos-x-machina.it,https://www.cosmos-x-machina.it
+VISIT_ANALYTICS_ENABLED=true
 ~~~
 
 Generate LAB_SESSION_SECRET on the server:
@@ -153,6 +189,8 @@ Internet
       -> /api/* to 127.0.0.1:8787
           -> Node SMTP, sessions, and workflows
           -> private Python pipelines at 127.0.0.1:8790
+      -> successful document events over UDP 127.0.0.1:5514
+          -> hourly in-memory dedupe, then identifier-free daily JSONL
 ~~~
 
 Do not expose ports 8787 or 8790 in the firewall. Do not serve the repository root.
@@ -224,6 +262,12 @@ The command should print nothing.
 
 The tracked units are cosmos-contact.service and cosmos-lab-python.service.
 
+Create the protected aggregate-statistics directory before starting the Node unit when installing manually:
+
+~~~bash
+sudo install -d -o www-data -g www-data -m 0750 /var/lib/cosmos-analytics
+~~~
+
 ~~~bash
 sudo cp cosmos-contact.service /etc/systemd/system/cosmos-contact.service
 sudo cp cosmos-lab-python.service /etc/systemd/system/cosmos-lab-python.service
@@ -253,7 +297,9 @@ sudo nginx -t
 sudo systemctl reload nginx
 ~~~
 
-Nginx serves only dist/ and is the sole public route to /api/*. It does not proxy the repository, .env, profiles, plans, or keys.
+Nginx serves only `dist/` and is the sole public route to `/api/*`. It redirects `www` to the apex domain, compresses text, applies conservative asset caching and sends document events only to the private loopback aggregate collector. The vhost does not write an IP-bearing access log and never serves the repository, `.env`, profiles, plans or keys.
+
+The autonomous installer uses `scripts/configure-nginx-site.mjs` instead of blindly overwriting an existing TLS file. On repeat runs it retains Certbot directives, replaces only marked cosmosXmachina delivery blocks and verifies the resulting configuration with `nginx -t`.
 
 ### 6. Firewall and HTTPS
 
@@ -276,32 +322,40 @@ sudo certbot renew --dry-run
 
 Certbot adds the HTTPS server and HTTP-to-HTTPS redirect to the installed Nginx configuration.
 
-### 7. Production Verification
+### 7. Search Engine Discovery
+
+The code ships complete metadata, `robots.txt` and `sitemap.xml`; account verification cannot be automated safely. After the first public deployment:
+
+1. Add `cosmos-x-machina.it` as a Domain property in Google Search Console and verify it with the DNS TXT record Google provides.
+2. Submit `https://cosmos-x-machina.it/sitemap.xml` and inspect `/`, `/?lang=it`, `/?lang=en`, `/portfolio/` and one demo URL.
+3. Add the domain in Bing Webmaster Tools, either by importing the verified Search Console property or using Bing's DNS verification, then submit the same sitemap.
+4. Recheck indexing after major content changes. Do not add verification secrets to public HTML when DNS verification is available.
+
+### 8. Production Verification
 
 ~~~bash
 curl -I https://cosmos-x-machina.it/
 curl -I https://cosmos-x-machina.it/portfolio/
+curl https://cosmos-x-machina.it/robots.txt
+curl https://cosmos-x-machina.it/sitemap.xml
 curl https://cosmos-x-machina.it/api/lab/health
+ss -lun | grep 127.0.0.1:5514
 journalctl -u cosmos-contact.service -n 50 --no-pager
 journalctl -u cosmos-lab-python.service -n 50 --no-pager
+sudo -u www-data npm run report:visits -- --days 7
 ~~~
 
-Use the live contact form for the final SMTP check. Visitor content is not intentionally logged; do not add request-body logging.
+Run the report command from the repository root. It prints daily records and a seven-day total; the current hour appears only after it closes. Use the live contact form for the final SMTP check. Request bodies, query strings, user agents and visitor identifiers are not logged; do not add them.
 
 ## Updating Production
 
 ~~~bash
 cd /var/www/cosmosXmachina.website.github.io
 git pull --ff-only
-npm ci
-.venv/bin/python -m pip install -r python_service/requirements.txt
-npm run build
-sudo systemctl restart cosmos-lab-python.service cosmos-contact.service
-sudo nginx -t
-sudo systemctl reload nginx
+sudo bash deploy-production.sh
 ~~~
 
-Verify the homepage, Portfolio index, one Node workflow, one Python workflow, and contact delivery after every deployment.
+The script tests before activating, atomically swaps `dist/`, refreshes services and Nginx, and preserves `.env`. Verify the homepage, Portfolio index, one Node workflow, one Python workflow, statistics listener and contact delivery after every deployment.
 
 ## Security Checklist
 
@@ -310,6 +364,8 @@ Verify the homepage, Portfolio index, one Node workflow, one Python workflow, an
 - Only Nginx listens publicly.
 - Node listens on 127.0.0.1:8787.
 - Python listens on 127.0.0.1:8790.
+- The aggregate collector listens only on UDP 127.0.0.1:5514 and `/var/lib/cosmos-analytics` is writable only by the service account.
+- Daily visit records contain counts only; IP addresses and hashes must never be written.
 - The repository root is never an Nginx root.
 - Gmail SMTP uses an app password, not the main account password.
 - Version 1 has no AI key and no external AI traffic.

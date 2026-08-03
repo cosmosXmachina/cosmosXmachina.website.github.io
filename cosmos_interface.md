@@ -7,6 +7,8 @@ This file documents the architecture, technologies, visual system and implementa
 ## Current Build
 
 - Main file: `index.html`
+- Privacy and browser-storage notice: `privacy.html`
+- Search discovery files: `robots.txt` and `sitemap.xml`
 - Optional visual-mode stylesheet: `assets/design-modes.css`
 - Five named visual preview entry files: `index-hermetic-observatory.html`, `index-prismatic-glass-atelier.html`, `index-arcane-editorial-codex.html`, `index-digital-cathedral.html`, `index-transmutation-system-map.html`
 - Legacy/reference 2D file: `index2D.html`
@@ -15,15 +17,17 @@ This file documents the architecture, technologies, visual system and implementa
 - Creation Lab: `portfolio/` with active demos 01, 02, 03 and 06
 - Build workspace: `package.json`, `vite.config.js`, `scripts/build.mjs`, `scripts/optimize-images.mjs`
 - Private services: `api/server.mjs` and `python_service/server.py`
-- README: `README.md` documents GitHub Pages publishing
+- Private aggregate visit counter: `api/visit-analytics.mjs`; report command: `npm run report:visits -- --days 7`
+- README: `README.md` summarizes local preview, static-host limitations and the Nginx production release
 - Installation guide: `installation.md` documents dependencies, fresh-machine setup and contact endpoint deployment
+- Autonomous production installer: `deploy-production.sh`; it installs dependencies, runs the complete isolated test topology, builds to `.dist.next`, activates `dist/`, installs systemd/Nginx configuration and verifies health while preserving `.env` and existing TLS
 - Hosting target: Nginx serving only `dist/`, with `/api/*` proxied to private loopback services
 - Architecture: canonical remote-first homepage plus a multi-page Creation Lab production build
 - Languages: Italian and English, switched client-side
 - Current base tech stack: HTML, CSS, vanilla JavaScript, React, Vite, Node, FastAPI and static image assets
 - Additional approved technology for `index.html`: Three.js loaded as a pinned CDN ES module
 - Approved backend: `api/server.mjs`, mounting the Gmail SMTP handler, anonymous lab sessions and deterministic workflow routes using the project `.env` file
-- Production build command: `npm run build`; background regeneration command: `npm run optimize:images`; analytics and live external AI remain unapproved
+- Production build command: `npm run build`; background regeneration command: `npm run optimize:images`; browser/third-party analytics and live external AI remain unapproved
 
 Any new technology beyond the static stack, the approved `index.html` Three.js layer and the approved contact endpoint must be approved by the user first, then documented in both `AGENTS.md` and this file.
 
@@ -36,6 +40,9 @@ Real contacts currently wired into the site:
 - Email: `davide.deon@gmail.com`
 - Italian LinkedIn: `https://www.linkedin.com/in/vash-vacuum/`
 - English LinkedIn: `https://www.linkedin.com/in/vash-vacuum/?locale=en_US`
+- Italian VAT number: `05637720268` (`IT05637720268` in structured data)
+
+The VAT number appears in the homepage Contact section, the legal footer, the Creation Lab footer and the homepage `ProfessionalService` JSON-LD record. Public authorship is Davide Deon/Vash; no customer-facing page may imply that the site or demos were AI-coded. References to synthetic data and simulated providers explain demo behavior only.
 
 The contact form posts JSON to `CONTACT_ENDPOINT`, which defaults to `/api/contact`. The Gmail SMTP mail system requires `api/contact.js` to be running on a Node/serverless host. The endpoint reads the project `.env` file and sends through Gmail SMTP with `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM`, `MAIL_TO`, `ALLOWED_ORIGIN` and `PORT`. Gmail app passwords must never be committed or placed in browser JavaScript.
 
@@ -61,7 +68,7 @@ The About/Profile section remains intentionally removed. Portfolio is deliberate
 
 ## File Variants
 
-`index.html` is the canonical production homepage and includes the approved Three.js solid sacred-geometry layer. GitHub Pages serves this file at the site root.
+`index.html` is the canonical production homepage and includes the approved Three.js solid sacred-geometry layer. The production Nginx build serves it at the site root; GitHub Pages can host only the static preview without private Lab or SMTP services.
 
 `index2D.html` is the older non-3D fallback/reference page. Do not treat it as the main implementation unless the user asks to restore or maintain the 2D version.
 
@@ -149,6 +156,20 @@ Initial language selection is resolved before `render()` with this priority:
 
 The header language buttons still call `render(lang)`, but first remove only the `lang` URL parameter with `history.replaceState`, preserving other query parameters and the hash. Manual button choice therefore overrides URL language and becomes the new saved preference.
 
+## Search And Metadata Architecture
+
+The existing public routes implement the low-complexity technical SEO layer without creating new sales pages or articles:
+
+- `robots.txt` allows public documents, excludes `/api/`, and declares the sitemap.
+- `sitemap.xml` lists the homepage, Creation Lab, four demos and privacy notice with Italian, English and `x-default` alternates.
+- Each public page has a canonical URL, `hreflang` links, a localized title and description, Open Graph/Twitter metadata, favicon and indexable robots policy.
+- The parameter-free URL is the automatic-language `x-default`; valid `?lang=it` and `?lang=en` variants self-canonicalize after rendering.
+- `?design=<slug>` and the five named design entry files remain `noindex,follow` and canonicalize to the homepage so experiments cannot become duplicate search results.
+- Homepage JSON-LD truthfully describes the Organization/ProfessionalService, Davide Deon and the WebSite. Lab routes use breadcrumb JSON-LD only; do not invent ratings, prices, clients or outcomes.
+- `assets/cosmos-hero-og.jpg` is the primary social image; each demo uses its verified screenshot. The homepage preloads its WebP hero and preconnects only to the pinned Three.js CDN.
+
+Search Console and Bing verification are account/DNS actions, not runtime code. After deployment, submit `https://cosmos-x-machina.it/sitemap.xml` and inspect the root plus both language variants as documented in `installation.md`.
+
 Homepage Portfolio cards and the `Enter Creation Lab` action use `target="_blank" rel="noopener"`, so their destination opens as the selected new tab while the homepage remains available in its original tab. The header Portfolio link intentionally remains `href="#portfolio"` and scrolls within the homepage.
 
 The form submit handler:
@@ -161,6 +182,23 @@ The form submit handler:
 - shows bilingual sending/success/fallback status text
 - opens a `mailto:` URL with encoded subject and body if the SMTP endpoint is unavailable
 
+## Privacy, Cookies, Storage And Visit Counts
+
+`privacy.html` is a bilingual Article 13-style notice linked from the homepage footer, the Creation Lab footer and the acknowledgement beside the contact-form submit button. The acknowledgement confirms that the notice was presented; it is not a consent checkbox because contact requests are handled as user-requested pre-contractual steps rather than marketing consent.
+
+The current release sets no first-party cookies and uses no browser/third-party analytics, advertising, profiling, fingerprinting or tracking pixels. It uses only documented functional storage:
+
+- `cosmos-lang` in `localStorage` persists the requested language until changed or removed
+- `cosmos-lab-provider` in `sessionStorage` persists a simulated provider choice for the tab session
+- `cosmos-lab-handoff` in `sessionStorage` carries a reviewable demo summary for at most 15 minutes and is removed after use
+- the signed anonymous Lab token is held in JavaScript memory, not a cookie, and the server session expires after 30 minutes
+
+The approved first-party counter is outside the browser. Nginx sends successful top-level document events to UDP `127.0.0.1:5514`; `api/visit-analytics.mjs` classifies only the homepage, privacy page, Creation Lab and four demos. It uses the address only as an in-memory key for one fixed clock-hour bucket. The address is never written, hashed, encrypted for later use or included in application logs. Query strings, user agents, request bodies and navigation histories are not collected.
+
+At each closed hour the collector writes or updates one identifier-free JSONL record for that calendar day in `/var/lib/cosmos-analytics/visits-daily.jsonl`. Fields report total visits, visits reaching home, Lab, any demo, Lab plus demo, privacy, and each demo. Records are retained for 400 days; `npm run report:visits -- --days 7` computes the weekly view without creating hourly files. Shared addresses, bots, blocked `Sec-Fetch-Dest` headers and service restarts can cause under/over-counting, so these are directional product statistics rather than identity-grade analytics.
+
+No consent banner is shown while this functional and strictly aggregate state remains true. If browser, third-party, marketing or any other non-technical tracker is approved later, it must remain unloaded by default, receive an equally accessible accept/reject choice without reload, support withdrawal, and be documented here and in `privacy.html` before release.
+
 ## Creation Lab Runtime Architecture
 
 The active public demos are Document Operations, Orion Operations Hub, Secure Knowledge Assistant and KPI Studio. Each is an independent Vite entry and visual system. Shared code is limited to API contracts, localization, fixture data, knowledge policy and contact handoff.
@@ -171,6 +209,8 @@ Local and production topology:
 browser -> Vite/Nginx static dist/
         -> /api/* -> Node Fastify gateway on 127.0.0.1:8787
                      -> deterministic Python service on 127.0.0.1:8790
+Nginx document access -> UDP 127.0.0.1:5514 -> in-memory hourly dedupe
+                                                -> daily aggregate JSONL
 ```
 
 The Node gateway mounts SMTP, signed anonymous lab sessions, request validation, authoritative workflow state and the provider-neutral AI gateway. Sessions are role-bound in server memory, HMAC-signed, capped at 2,000 active records, expire after 30 minutes and permit 25 successful actions. Mutations require an idempotency key; execution is serialized per session, failed work rolls back without consuming quota, and a duplicate key replays its original result.
@@ -277,14 +317,15 @@ Performance notes:
 - The deployed frontend is static output, but the complete product requires the private Node gateway for Gmail SMTP and lab sessions plus FastAPI for deterministic document/retrieval pipelines.
 - Editable PNG backgrounds remain source assets; `npm run optimize:images` generates the nine runtime WebP files and compact Open Graph JPEG. The canonical background payload is about 2 MiB, roughly 90% smaller than its PNG sources.
 - `scripts/build.mjs` excludes source PNGs and concepts from `dist/`, caps the complete distribution at 8 MiB, enforces per-bundle and screenshot budgets, and rejects private files, secret-like tokens or provider-network endpoints.
-- No analytics are loaded; the only approved external frontend script is the pinned Three.js ES module.
+- Nginx enables gzip, ETags and seven-day caching for static assets; HTML remains revalidated. The homepage preloads the hero WebP.
+- No analytics code is loaded in the browser; the only approved external frontend script is the pinned Three.js ES module.
 
 ## Future Evolution
 
 Potential future changes that require user approval before implementation:
 
 - adding native WebGL beyond Three.js, post-processing, model loaders, physics or heavier 3D tooling
-- Analytics or conversion tracking
+- Browser, third-party or conversion tracking beyond the approved aggregate server counter
 - Additional backend form handling, CRM writes or third-party form services beyond `api/contact.js`
 - Dedicated service pages
 - Blog/articles

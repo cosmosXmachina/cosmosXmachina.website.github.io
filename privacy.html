@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="Davide Deon">
+    <meta name="description" content="Informativa privacy e tecnologie locali di cosmosXmachina.">
+    <meta name="robots" content="index,follow,max-snippet:-1">
+    <meta name="theme-color" content="#0b1026">
+    <link id="canonicalUrl" rel="canonical" href="https://cosmos-x-machina.it/privacy.html">
+    <link rel="alternate" hreflang="it" href="https://cosmos-x-machina.it/privacy.html?lang=it">
+    <link rel="alternate" hreflang="en" href="https://cosmos-x-machina.it/privacy.html?lang=en">
+    <link rel="alternate" hreflang="x-default" href="https://cosmos-x-machina.it/privacy.html">
+    <link rel="icon" href="/assets/cxm-logo.svg" type="image/svg+xml" sizes="any">
+    <link rel="preload" as="image" href="/assets/cosmos-hero.webp" type="image/webp">
+    <title>Privacy e tecnologie locali | cosmosXmachina</title>
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="cosmosXmachina">
+    <meta property="og:title" content="Privacy e tecnologie locali | cosmosXmachina">
+    <meta property="og:description" content="Informativa privacy, dati tecnici e tecnologie locali di cosmosXmachina.">
+    <meta property="og:url" content="https://cosmos-x-machina.it/privacy.html">
+    <meta property="og:locale" content="it_IT">
+    <meta property="og:locale:alternate" content="en_US">
+    <meta property="og:image" content="https://cosmos-x-machina.it/assets/cosmos-hero-og.jpg">
+    <meta property="og:image:alt" content="Privacy e tecnologie locali di cosmosXmachina">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Privacy e tecnologie locali | cosmosXmachina">
+    <meta name="twitter:description" content="Informativa privacy, dati tecnici e tecnologie locali di cosmosXmachina.">
+    <meta name="twitter:image" content="https://cosmos-x-machina.it/assets/cosmos-hero-og.jpg">
+    <meta name="twitter:image:alt" content="Privacy e tecnologie locali di cosmosXmachina">
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"cosmosXmachina","item":"https://cosmos-x-machina.it/"},{"@type":"ListItem","position":2,"name":"Privacy","item":"https://cosmos-x-machina.it/privacy.html"}]}</script>
+    <style>
+      :root {
+        color-scheme: dark;
+        --night: #0b1026;
+        --purple: #190a31;
+        --violet: #25104f;
+        --blue: #243d8f;
+        --cyan: #70e4ff;
+        --text: #f5f2ff;
+        --muted: #c1bed8;
+        --line: rgba(170, 154, 255, .24);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body {
+        min-height: 100vh;
+        margin: 0;
+        color: var(--text);
+        background: linear-gradient(145deg, rgba(11, 16, 38, .9), rgba(25, 10, 49, .88) 54%, rgba(37, 16, 79, .9)), url("/assets/cosmos-hero.webp") center top / cover fixed;
+      }
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        background: repeating-linear-gradient(60deg, transparent 0 84px, rgba(112, 228, 255, .035) 85px 86px), repeating-linear-gradient(-60deg, transparent 0 84px, rgba(155, 112, 255, .04) 85px 86px);
+        pointer-events: none;
+      }
+      a { color: var(--cyan); text-underline-offset: 4px; }
+      a:focus-visible, button:focus-visible { outline: 2px solid var(--cyan); outline-offset: 4px; }
+      .wrap { width: min(1120px, calc(100% - 34px)); margin-inline: auto; }
+      header {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        border-bottom: 1px solid var(--line);
+        background: rgba(9, 11, 31, .78);
+        box-shadow: 0 14px 36px rgba(2, 4, 18, .32);
+        backdrop-filter: blur(18px) saturate(135%);
+      }
+      nav { min-height: 76px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+      .brand { display: inline-flex; align-items: center; gap: 11px; color: var(--text); font-weight: 800; text-decoration: none; }
+      .brand img { width: 40px; height: 40px; filter: drop-shadow(0 0 12px rgba(112, 228, 255, .26)); }
+      .controls { display: flex; align-items: center; gap: 14px; }
+      .back { color: var(--muted); font-size: .9rem; }
+      .language { display: flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+      .language button { width: 44px; min-height: 38px; border: 0; color: var(--muted); background: rgba(255, 255, 255, .035); cursor: pointer; }
+      .language button[aria-pressed="true"] { color: #fff; background: linear-gradient(135deg, var(--blue), var(--violet)); }
+      main { padding-bottom: 90px; }
+      .hero { min-height: 48vh; display: grid; align-content: center; padding-block: 92px 70px; }
+      .eyebrow { color: var(--cyan); font-size: .78rem; font-weight: 800; text-transform: uppercase; }
+      h1 { max-width: 920px; margin: 14px 0 20px; font-size: clamp(2.7rem, 7vw, 6.2rem); line-height: .98; letter-spacing: 0; text-shadow: 0 8px 26px rgba(3, 5, 22, .55); }
+      .lead { max-width: 790px; margin: 0; color: var(--muted); font-size: clamp(1.05rem, 2vw, 1.34rem); line-height: 1.7; }
+      .status {
+        width: fit-content;
+        margin-top: 28px;
+        padding: 14px 17px;
+        border: 1px solid rgba(112, 228, 255, .28);
+        border-radius: 6px;
+        color: #eafcff;
+        background: linear-gradient(135deg, rgba(36, 61, 143, .26), rgba(37, 16, 79, .4));
+        box-shadow: 0 18px 46px rgba(2, 4, 20, .28), inset 0 1px rgba(255, 255, 255, .08);
+        backdrop-filter: blur(14px);
+      }
+      .policy { border-top: 1px solid var(--line); padding-block: 46px; display: grid; grid-template-columns: minmax(180px, .38fr) minmax(0, 1fr); gap: 40px; }
+      .policy h2 { margin: 0; color: #ece8ff; font-size: 1.22rem; }
+      .policy-body { max-width: 780px; color: var(--muted); line-height: 1.72; }
+      .policy-body > :first-child { margin-top: 0; }
+      .policy-body strong { color: var(--text); }
+      .policy-body ul { padding-left: 20px; }
+      .storage { width: 100%; border-collapse: collapse; margin-block: 22px; font-size: .92rem; }
+      .storage th, .storage td { padding: 14px 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+      .storage th { color: var(--text); }
+      code { color: #c9c5ff; overflow-wrap: anywhere; }
+      footer { padding: 32px 0; border-top: 1px solid var(--line); color: var(--muted); background: rgba(7, 8, 25, .48); }
+      footer .wrap { display: flex; justify-content: space-between; gap: 18px; flex-wrap: wrap; }
+      [hidden] { display: none !important; }
+      @media (max-width: 760px) {
+        nav { align-items: flex-start; padding-block: 13px; flex-direction: column; }
+        .controls { width: 100%; justify-content: space-between; }
+        .hero { min-height: auto; padding-top: 72px; }
+        .policy { grid-template-columns: 1fr; gap: 18px; }
+        .storage { display: block; overflow-x: auto; }
+      }
+      @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { transition: none !important; } }
+    </style>
+  </head>
+  <body>
+    <header>
+      <nav class="wrap" aria-label="Navigazione privacy">
+        <a class="brand" id="homeLink" href="/?lang=it"><img src="/assets/cxm-logo.svg" alt="" width="40" height="40"><span>cosmos<span style="color:#9884ff">X</span>machina</span></a>
+        <div class="controls">
+          <a class="back" id="backLink" href="/?lang=it" data-ui="back">Torna al sito</a>
+          <div class="language" role="group" aria-label="Language">
+            <button type="button" data-language="it" aria-pressed="true">IT</button>
+            <button type="button" data-language="en" aria-pressed="false">EN</button>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="wrap">
+      <article data-policy="it">
+        <section class="hero">
+          <span class="eyebrow">Trasparenza / privacy by design</span>
+          <h1>Privacy e tecnologie locali.</h1>
+          <p class="lead">Questa informativa spiega quali dati tratta cosmosXmachina, come funziona il modulo di contatto e quali preferenze tecniche vengono conservate nel browser.</p>
+          <p class="status"><strong>Nessun cookie di profilazione.</strong> Il sito non usa analytics di terze parti, pubblicità comportamentale, fingerprinting o tracking pixel. Produce soltanto conteggi visite aggregati sul proprio server.</p>
+        </section>
+
+        <section class="policy"><h2>1. Titolare</h2><div class="policy-body"><p>Il titolare del trattamento è <strong>Davide Deon, cosmosXmachina</strong>, P. IVA 05637720268. Per richieste privacy: <a href="mailto:davide.deon@gmail.com">davide.deon@gmail.com</a>.</p><p>Ultimo aggiornamento: 3 agosto 2026.</p></div></section>
+
+        <section class="policy"><h2>2. Dati e finalità</h2><div class="policy-body"><p>Il modulo di contatto raccoglie nome, email, lingua e le informazioni professionali inserite volontariamente nel messaggio. Sono usati esclusivamente per rispondere, valutare la richiesta e svolgere attività precontrattuali richieste dall'interessato.</p><p>I sistemi possono trattare dati tecnici ordinari per erogare, proteggere e misurare il servizio. Per il solo conteggio aggregato, Nginx invia tramite loopback locale al collector privato indirizzo IP, percorso, esito e indicazione di navigazione. L'indirizzo resta esclusivamente nella memoria del processo per deduplicare le richieste nello stesso intervallo orario: <strong>non viene scritto, conservato, cifrato o trasformato in hash</strong>. Il file giornaliero contiene soltanto numeri aggregati relativi a sito, Creation Lab e demo.</p><p>Le demo del Creation Lab sono progettate per dati sintetici: <strong>non inserire dati personali, riservati o aziendali reali</strong>.</p></div></section>
+
+        <section class="policy"><h2>3. Cookie, browser e statistiche</h2><div class="policy-body"><p>Il sito non imposta cookie propri e non usa strumenti di tracciamento non tecnici. Conserva soltanto preferenze funzionali necessarie o richieste dall'utente:</p><table class="storage"><thead><tr><th>Elemento</th><th>Scopo</th><th>Durata</th></tr></thead><tbody><tr><td><code>cosmos-lang</code></td><td>Ricorda la lingua scelta.</td><td>Fino alla modifica o cancellazione dal browser.</td></tr><tr><td><code>cosmos-lab-provider</code></td><td>Ricorda nella scheda il provider simulato scelto nelle demo.</td><td>Fino alla chiusura della sessione della scheda.</td></tr><tr><td><code>cosmos-lab-handoff</code></td><td>Trasferisce una sintesi revisionabile dalla demo al modulo di contatto.</td><td>Massimo 15 minuti e viene rimossa dopo l'uso.</td></tr><tr><td>Sessione anonima Lab</td><td>Token temporaneo mantenuto in memoria per sicurezza, ruoli e quota della demo; non è un cookie.</td><td>Massimo 30 minuti.</td></tr><tr><td>Conteggio visite lato server</td><td>Una visita per indirizzo e intervallo orario; registra soltanto totali giornalieri aggregati.</td><td>Indirizzo solo in RAM fino alla chiusura dell'ora; aggregati per massimo 400 giorni.</td></tr></tbody></table><p>Il conteggio non legge o scrive dati sul dispositivo, non crea un identificatore persistente e non comunica dati a piattaforme analytics. Non viene quindi mostrato un banner di consenso. Se in futuro verranno introdotti analytics di terze parti, marketing o altri tracker opzionali, resteranno disattivati fino a una scelta valida dell'utente.</p></div></section>
+
+        <section class="policy"><h2>4. Base giuridica</h2><div class="policy-body"><ul><li>Misure precontrattuali richieste dall'interessato per le richieste inviate dal modulo, ai sensi dell'art. 6(1)(b) GDPR.</li><li>Legittimo interesse alla sicurezza, prevenzione abusi, corretta erogazione e misurazione strettamente aggregata del servizio, ai sensi dell'art. 6(1)(f) GDPR.</li><li>Adempimento di obblighi di legge, quando applicabile, ai sensi dell'art. 6(1)(c) GDPR.</li></ul><p>I dati del modulo non vengono usati per newsletter o marketing senza una distinta base giuridica.</p></div></section>
+
+        <section class="policy"><h2>5. Conservazione</h2><div class="policy-body"><p>Le richieste vengono conservate per il tempo necessario a rispondere, gestire l'eventuale rapporto professionale, documentare le comunicazioni e rispettare obblighi di legge o tutelare diritti. I dati tecnici di sicurezza sono conservati per periodi limitati secondo la configurazione del server. Gli indirizzi usati dal contatore non sopravvivono alla chiusura dell'intervallo orario; i soli totali anonimi giornalieri sono mantenuti fino a 400 giorni. Le sessioni demo restano in memoria per non più di 30 minuti e non costituiscono un archivio clienti.</p></div></section>
+
+        <section class="policy"><h2>6. Destinatari</h2><div class="policy-body"><p>I dati possono essere trattati dai fornitori tecnici strettamente necessari: hosting/server, posta elettronica Google Gmail e relativi operatori autorizzati o responsabili del trattamento. La homepage carica il modulo Three.js fissato alla versione 0.184.0 tramite il CDN jsDelivr, che riceve i normali metadati della connessione. LinkedIn viene contattato solo quando l'utente apre volontariamente il relativo link.</p><p>Quando un fornitore tratta dati fuori dallo Spazio economico europeo, il trasferimento deve avvenire sulla base degli strumenti e delle garanzie previsti dal GDPR.</p></div></section>
+
+        <section class="policy"><h2>7. Diritti</h2><div class="policy-body"><p>Nei casi previsti puoi chiedere accesso, rettifica, cancellazione, limitazione, opposizione e portabilità dei dati scrivendo a <a href="mailto:davide.deon@gmail.com">davide.deon@gmail.com</a>. Puoi inoltre presentare reclamo al <a href="https://www.garanteprivacy.it/" target="_blank" rel="noopener">Garante per la protezione dei dati personali</a>.</p><p>Non vengono effettuate decisioni automatizzate con effetti giuridici né profilazione degli utenti.</p></div></section>
+      </article>
+
+      <article data-policy="en" hidden>
+        <section class="hero">
+          <span class="eyebrow">Transparency / privacy by design</span>
+          <h1>Privacy and local technologies.</h1>
+          <p class="lead">This notice explains which data cosmosXmachina processes, how the contact form works, and which technical preferences are stored in the browser.</p>
+          <p class="status"><strong>No profiling cookies.</strong> The site uses no third-party analytics, behavioral advertising, fingerprinting, or tracking pixels. It produces only aggregate visit counts on its own server.</p>
+        </section>
+
+        <section class="policy"><h2>1. Controller</h2><div class="policy-body"><p>The data controller is <strong>Davide Deon, cosmosXmachina</strong>, Italian VAT no. 05637720268. For privacy requests: <a href="mailto:davide.deon@gmail.com">davide.deon@gmail.com</a>.</p><p>Last updated: 3 August 2026.</p></div></section>
+
+        <section class="policy"><h2>2. Data and purposes</h2><div class="policy-body"><p>The contact form collects your name, email address, language, and the professional information you voluntarily enter. This information is used only to reply, assess the request, and take pre-contractual steps requested by you.</p><p>The systems may process ordinary technical data to deliver, protect, and measure the service. For aggregate counting only, Nginx sends the IP address, path, response status, and navigation indicator over local loopback to the private collector. The address remains solely in process memory to deduplicate requests in the same hourly interval: it is <strong>not written, retained, encrypted, or transformed into a hash</strong>. The daily file contains only aggregate numbers for the site, Creation Lab, and demos.</p><p>Creation Lab demos are designed for synthetic data: <strong>do not enter real personal, confidential, or business data</strong>.</p></div></section>
+
+        <section class="policy"><h2>3. Cookies, browser, and statistics</h2><div class="policy-body"><p>The site sets no first-party cookies and uses no non-technical tracking tools. It stores only functional preferences necessary for, or requested by, the user:</p><table class="storage"><thead><tr><th>Item</th><th>Purpose</th><th>Duration</th></tr></thead><tbody><tr><td><code>cosmos-lang</code></td><td>Remembers the selected language.</td><td>Until changed or deleted in the browser.</td></tr><tr><td><code>cosmos-lab-provider</code></td><td>Remembers the simulated provider selected in a demo tab.</td><td>Until the tab session ends.</td></tr><tr><td><code>cosmos-lab-handoff</code></td><td>Transfers a reviewable summary from a demo to the contact form.</td><td>Up to 15 minutes and removed after use.</td></tr><tr><td>Anonymous Lab session</td><td>Temporary in-memory token for demo security, roles, and quota; it is not a cookie.</td><td>Up to 30 minutes.</td></tr><tr><td>Server-side visit count</td><td>One visit per address and hourly interval; only aggregate daily totals are recorded.</td><td>Address in RAM only until the hour closes; aggregates for up to 400 days.</td></tr></tbody></table><p>The counter neither reads nor writes data on the device, creates no persistent identifier, and shares no data with analytics platforms. No consent banner is therefore displayed. If third-party analytics, marketing, or other optional tracking is introduced later, it will remain disabled until the user makes a valid choice.</p></div></section>
+
+        <section class="policy"><h2>4. Legal basis</h2><div class="policy-body"><ul><li>Pre-contractual steps requested by the data subject for contact-form requests under Article 6(1)(b) GDPR.</li><li>Legitimate interests in security, abuse prevention, reliable delivery, and strictly aggregate service measurement under Article 6(1)(f) GDPR.</li><li>Compliance with legal obligations where applicable under Article 6(1)(c) GDPR.</li></ul><p>Contact-form data is not used for newsletters or marketing without a separate legal basis.</p></div></section>
+
+        <section class="policy"><h2>5. Retention</h2><div class="policy-body"><p>Requests are retained for as long as needed to reply, manage any professional relationship, document communications, comply with legal obligations, or protect legal rights. Technical security data is retained for limited periods according to server configuration. Addresses used by the counter do not survive the end of the hourly interval; anonymous daily totals alone are retained for up to 400 days. Demo sessions remain in memory for no more than 30 minutes and are not a customer database.</p></div></section>
+
+        <section class="policy"><h2>6. Recipients</h2><div class="policy-body"><p>Data may be processed by strictly necessary technical providers: hosting/server services, Google Gmail email services, and their authorized personnel or processors. The homepage loads the Three.js module pinned to version 0.184.0 through the jsDelivr CDN, which receives ordinary connection metadata. LinkedIn is contacted only when the user voluntarily opens that link.</p><p>Where a provider processes data outside the European Economic Area, transfers must rely on the instruments and safeguards required by the GDPR.</p></div></section>
+
+        <section class="policy"><h2>7. Rights</h2><div class="policy-body"><p>Where applicable, you may request access, rectification, erasure, restriction, objection, and data portability by emailing <a href="mailto:davide.deon@gmail.com">davide.deon@gmail.com</a>. You may also lodge a complaint with the <a href="https://www.garanteprivacy.it/" target="_blank" rel="noopener">Italian Data Protection Authority</a>.</p><p>No automated decisions producing legal effects or user profiling are performed.</p></div></section>
+      </article>
+    </main>
+
+    <footer><div class="wrap"><span>cosmosXmachina / Davide Deon</span><span id="footerVat">P. IVA 05637720268</span></div></footer>
+    <script>
+      const supported = new Set(["it", "en"]);
+      const fromUrl = () => { const value = new URL(location.href).searchParams.get("lang"); return supported.has(value) ? value : null; };
+      const fromClient = () => ((navigator.languages?.[0] || navigator.language || "").toLowerCase().startsWith("en") ? "en" : "it");
+      const saved = () => { try { const value = localStorage.getItem("cosmos-lang"); return supported.has(value) ? value : null; } catch { return null; } };
+      function render(lang) {
+        const title = lang === "it" ? "Privacy e tecnologie locali | cosmosXmachina" : "Privacy and local technologies | cosmosXmachina";
+        const description = lang === "it" ? "Informativa privacy, dati tecnici e tecnologie locali di cosmosXmachina." : "cosmosXmachina privacy notice, technical data, and local technologies.";
+        const canonical = "https://cosmos-x-machina.it/privacy.html" + (fromUrl() ? `?lang=${fromUrl()}` : "");
+        const set = (selector, value) => { const node = document.querySelector(selector); if (node) node.content = value; };
+        document.documentElement.lang = lang;
+        document.title = title;
+        document.querySelector("#canonicalUrl").href = canonical;
+        set('meta[name="description"]', description);
+        set('meta[property="og:title"]', title);
+        set('meta[property="og:description"]', description);
+        set('meta[property="og:url"]', canonical);
+        set('meta[property="og:locale"]', lang === "it" ? "it_IT" : "en_US");
+        set('meta[property="og:locale:alternate"]', lang === "it" ? "en_US" : "it_IT");
+        set('meta[property="og:image:alt"]', lang === "it" ? "Privacy e tecnologie locali di cosmosXmachina" : "cosmosXmachina privacy and local technologies");
+        set('meta[name="twitter:title"]', title);
+        set('meta[name="twitter:description"]', description);
+        set('meta[name="twitter:image:alt"]', lang === "it" ? "Privacy e tecnologie locali di cosmosXmachina" : "cosmosXmachina privacy and local technologies");
+        document.querySelectorAll("[data-policy]").forEach(node => { node.hidden = node.dataset.policy !== lang; });
+        document.querySelectorAll("[data-language]").forEach(button => button.setAttribute("aria-pressed", button.dataset.language === lang));
+        document.querySelector("[data-ui='back']").textContent = lang === "it" ? "Torna al sito" : "Back to site";
+        document.querySelector("#footerVat").textContent = lang === "it" ? "P. IVA 05637720268" : "Italian VAT no. 05637720268";
+        document.querySelector("#homeLink").href = document.querySelector("#backLink").href = "/?lang=" + lang;
+        try { localStorage.setItem("cosmos-lang", lang); } catch {}
+      }
+      document.querySelectorAll("[data-language]").forEach(button => button.addEventListener("click", () => {
+        const url = new URL(location.href);
+        url.searchParams.delete("lang");
+        history.replaceState(history.state, "", url.pathname + url.search + url.hash);
+        render(button.dataset.language);
+      }));
+      render(fromUrl() || saved() || fromClient());
+    </script>
+  </body>
+</html>

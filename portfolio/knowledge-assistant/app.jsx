@@ -42,7 +42,13 @@ function App() {
   const [error, setError] = useState("");
   const [history, setHistory] = useState([]);
   const [feedback, setFeedback] = useState(null);
-  setDocumentLanguage(language, text.label + " | Creation Lab");
+  setDocumentLanguage(language, {
+    title: text.label + " | Creation Lab",
+    description: text.intro,
+    path: "/portfolio/knowledge-assistant/",
+    image: "/assets/portfolio/knowledge-assistant.jpg",
+    imageAlt: text.label + " / cosmosXmachina Creation Lab"
+  });
 
   useEffect(() => {
     getProviders()

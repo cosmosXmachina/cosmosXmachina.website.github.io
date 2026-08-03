@@ -1,4 +1,5 @@
 const SUPPORTED = new Set(["it", "en"]);
+const SITE_URL = "https://cosmos-x-machina.it";
 
 export function getLanguage() {
   const query = new URLSearchParams(window.location.search).get("lang");
@@ -50,7 +51,23 @@ export function withLanguage(path, language) {
   return path + separator + "lang=" + language;
 }
 
-export function setDocumentLanguage(language, title) {
+export function setDocumentLanguage(language, { title, description, path, image, imageAlt = title }) {
+  const queryLanguage = new URLSearchParams(window.location.search).get("lang");
+  const canonical = SITE_URL + path + (SUPPORTED.has(queryLanguage) ? `?lang=${queryLanguage}` : "");
+  const set = (selector, value) => { const node = document.querySelector(selector); if (node) node.content = value; };
   document.documentElement.lang = language;
   document.title = title;
+  document.querySelector('link[rel="canonical"]').href = canonical;
+  set('meta[name="description"]', description);
+  set('meta[property="og:title"]', title);
+  set('meta[property="og:description"]', description);
+  set('meta[property="og:url"]', canonical);
+  set('meta[property="og:locale"]', language === "it" ? "it_IT" : "en_US");
+  set('meta[property="og:locale:alternate"]', language === "it" ? "en_US" : "it_IT");
+  set('meta[property="og:image"]', SITE_URL + image);
+  set('meta[property="og:image:alt"]', imageAlt);
+  set('meta[name="twitter:title"]', title);
+  set('meta[name="twitter:description"]', description);
+  set('meta[name="twitter:image"]', SITE_URL + image);
+  set('meta[name="twitter:image:alt"]', imageAlt);
 }

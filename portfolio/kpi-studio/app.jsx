@@ -73,7 +73,13 @@ function App() {
   const [workerState, setWorkerState] = useState("ready");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  setDocumentLanguage(language, text.title + " | Creation Lab");
+  setDocumentLanguage(language, {
+    title: text.title + " | Creation Lab",
+    description: text.lead,
+    path: "/portfolio/kpi-studio/",
+    image: "/assets/portfolio/kpi-studio.jpg",
+    imageAlt: text.title + " / cosmosXmachina Creation Lab"
+  });
 
   useEffect(() => {
     getProviders()

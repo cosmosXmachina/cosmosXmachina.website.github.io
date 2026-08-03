@@ -29,14 +29,21 @@ Use these files in order:
 - `index.html` may load Three.js as a pinned CDN ES module for the approved 3D layer.
 - Approved contact backend: `api/server.mjs`, which mounts the existing `api/contact.js` SMTP handler and the lab routes. It reads the project `.env` file only. Never put Gmail app passwords or SMTP secrets in browser code or committed files.
 - Production requires the Node gateway and private Python service under systemd, with Nginx serving only `dist/` and proxying `/api/*` to loopback.
+- On an Ubuntu/Debian production machine, `sudo bash deploy-production.sh` is the canonical idempotent setup/update command. It must run every logic and browser test before activating the release, preserve `.env` and Certbot TLS, and leave Nginx plus both private services enabled and healthy.
 - Public AI behavior is fixture-only. Dormant OpenAI, Google, Anthropic, xAI and OpenRouter adapters are contract-tested with mocked transports; live calls require both `AI_MODE=live` and `AI_LIVE_ENABLED=true` and remain prohibited until the user explicitly approves activation.
 - Browser fixtures are development-only (`npm run dev:fixtures`). Production builds must expose service failures and must never silently substitute browser fixtures.
-- Do not add further frameworks, analytics, AI providers or form backends without user approval.
+- Do not add further frameworks, third-party/browser analytics, AI providers or form backends without user approval.
 - If a new technology is approved, update both this file and `cosmos_interface.md`.
 - The About/Profile section has been removed and must not be reintroduced unless requested.
 - The FAQ must not contain portfolio/demo questions or references.
 - Real contact links are now approved: `davide.deon@gmail.com`, Italian LinkedIn `https://www.linkedin.com/in/vash-vacuum/`, English LinkedIn `https://www.linkedin.com/in/vash-vacuum/?locale=en_US`.
+- Professional identity uses Italian VAT number `05637720268`, displayed as `P. IVA 05637720268` in Italian and `Italian VAT no. 05637720268` in English.
 - Language selection priority is URL `?lang=it|en`, then saved `localStorage` value `cosmos-lang`, then browser/system language, then Italian fallback. Header language buttons must remove only the `lang` URL parameter and then save/render the clicked language.
+- `privacy.html` is the bilingual privacy and local-technology notice. Link it from the homepage footer, Creation Lab footer and immediately beside the contact-form submission; the form acknowledgement is not consent.
+- `robots.txt`, `sitemap.xml`, canonical links, `it`/`en`/`x-default` alternates, localized search/social metadata and truthful JSON-LD are release requirements. Existing public pages may be optimized, but do not invent service pages, articles, case studies, reviews or claims.
+- Design-mode query URLs and named visual preview entries must remain `noindex,follow`; `index.html` is their canonical. Public language variants use self-canonical `?lang=it|en` URLs and the parameter-free URL is `x-default`.
+- The release sets no cookies and loads no browser or third-party analytics, advertising, profiling, fingerprinting or tracking pixels. The approved first-party visit counter receives Nginx document events over loopback, holds the address only in RAM for a fixed hourly deduplication bucket, and writes daily aggregate numbers only. Never persist or hash IP addresses, user agents, query strings, request bodies or per-visitor histories. Keep retention at 400 days unless the user approves a change.
+- No consent banner is needed for the current functional storage and strictly aggregate server-side measurement. Any future client-side, third-party, marketing or cross-site tracker requires explicit approval and corresponding notice/consent changes before it loads.
 
 ## Visual Direction
 
@@ -71,7 +78,8 @@ The 3D version should use solid procedural sacred-geometry structures layered be
 - Keep code lean, readable and static.
 - Keep bilingual Italian/English content complete and aligned.
 - Italian remains the priority market language.
-- Do not invent claims, testimonials or client results. Every Creation Lab page must identify itself as a self-directed demonstration using synthetic Orion Works data.
+- Do not invent claims, testimonials or client results. Every Creation Lab page must identify itself as a professional demonstration using synthetic Orion Works data.
+- Public copy must credit Davide Deon/Vash as designer and builder and must never imply that the website or demos were AI-coded. Synthetic-data and simulated-provider disclosures describe runtime behavior, not authorship, and must remain accurate.
 - Preserve accessibility basics: semantic sections, readable contrast, focus states, mobile-first layout and reduced-motion support.
 - When changing visual style, start with CSS variables and section background assignments in `index.html`.
 - When changing content, update the bilingual `copy` object in `index.html`; only mirror to `index2D.html` if the user explicitly wants the fallback version maintained.
