@@ -1,0 +1,26 @@
+# Copy to a root-owned path such as /opt/cosmosxmachina/deploy.conf and edit
+# the three machine-specific paths before running deploy-production.sh.
+COSMOS_ROOT=/opt/cosmosxmachina
+COSMOS_ENV_FILE=/opt/cosmosxmachina/.env
+APACHE_SITE_FILE=/etc/apache2/sites-available/cosmos-x-machina-le-ssl.conf
+# Use the same value when one file contains both :80 and :443 VirtualHosts.
+APACHE_HTTP_SITE_FILE=/etc/apache2/sites-available/cosmos-x-machina.conf
+
+# These may point outside COSMOS_ROOT when the SFTP account is chrooted. The
+# upload user must write INCOMING_DIR and read STATUS_DIR; root owns releases.
+INCOMING_DIR=/opt/cosmosxmachina/incoming
+STATUS_DIR=/opt/cosmosxmachina/status
+
+DOMAIN=cosmos-x-machina.it
+WWW_DOMAIN=www.cosmos-x-machina.it
+NODE_SERVICE=cosmos-contact.service
+PYTHON_SERVICE=cosmos-lab-python.service
+SERVICE_USER=www-data
+SERVICE_GROUP=www-data
+UPLOAD_USER=vash
+UPLOAD_GROUP=vash
+
+KEEP_RELEASES=2
+MIN_FREE_MIB=250
+ALLOW_LOW_MEMORY=0
+INSTALL_MISSING_PACKAGES=1

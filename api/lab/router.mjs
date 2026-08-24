@@ -10,9 +10,10 @@ import { abstention, evaluateKnowledgeRequest } from "./knowledge-policy.mjs";
 const orionFixtures = new OrionFixtureDatabase();
 
 class FixedWindowLimiter {
-  constructor({ limit = 20, windowMs = 10 * 60 * 1000, now = () => Date.now() } = {}) {
+  constructor({ limit = 20, windowMs = 10 * 60 * 1000, maxEntries = 5_000, now = () => Date.now() } = {}) {
     this.limit = limit;
     this.windowMs = windowMs;
+    this.maxEntries = maxEntries;
     this.now = now;
     this.entries = new Map();
   }
@@ -20,6 +21,17 @@ class FixedWindowLimiter {
   consume(key) {
     const now = this.now();
     const current = this.entries.get(key);
+    if (!current && this.entries.size >= this.maxEntries) {
+      for (const [client, candidate] of this.entries) {
+        if (candidate.resetAt <= now) this.entries.delete(client);
+      }
+      if (this.entries.size >= this.maxEntries) {
+        throw new AppError("RATE_LIMITED", "Anonymous session capacity is temporarily busy. Try again later.", {
+          status: 429,
+          retryable: true
+        });
+      }
+    }
     const entry = !current || current.resetAt <= now ? { count: 0, resetAt: now + this.windowMs } : current;
     entry.count += 1;
     this.entries.set(key, entry);
@@ -158,10 +170,13 @@ export async function registerLabRoutes(app, environment) {
   const production = String(environment.NODE_ENV).toLowerCase() === "production";
   const secret = environment.LAB_SESSION_SECRET || (production ? "" : "local-development-secret-change-me");
   if (!secret) throw new Error("LAB_SESSION_SECRET is required in production");
-  const store = new SessionStore(secret);
+  const store = new SessionStore(secret, () => Date.now(), {
+    maxSessions: boundedInteger(environment.LAB_MAX_SESSIONS, production ? 500 : 2_000, 1, 5_000)
+  });
   const sessionLimiter = new FixedWindowLimiter({
-    limit: Number(environment.LAB_SESSION_RATE_LIMIT || 20),
-    windowMs: Number(environment.LAB_SESSION_RATE_WINDOW_MS || 10 * 60 * 1000)
+    limit: boundedInteger(environment.LAB_SESSION_RATE_LIMIT, 20, 1, 1_000),
+    windowMs: boundedInteger(environment.LAB_SESSION_RATE_WINDOW_MS, 10 * 60 * 1000, 1_000, 24 * 60 * 60 * 1000),
+    maxEntries: boundedInteger(environment.LAB_RATE_LIMIT_MAX_CLIENTS, 5_000, 100, 50_000)
   });
 
   app.get("/api/lab/health", async () => ({
@@ -284,3 +299,8 @@ export async function registerLabRoutes(app, environment) {
 }
 
 export const routerInternals = { FixedWindowLimiter, executePython, fingerprint };
+
+function boundedInteger(value, fallback, minimum, maximum) {
+  const parsed = Number(value);
+  return Number.isInteger(parsed) ? Math.min(maximum, Math.max(minimum, parsed)) : fallback;
+}

@@ -94,9 +94,52 @@ test("session creation limiter rejects bursts deterministically", () => {
   assert.doesNotThrow(() => limiter.consume("client"));
 });
 
+test("session rate-limit storage fails closed at its memory bound", () => {
+  const limiter = new routerInternals.FixedWindowLimiter({ limit: 10, maxEntries: 1 });
+  limiter.consume("client-a");
+  assert.throws(() => limiter.consume("client-b"), (error) => error.code === "RATE_LIMITED" && error.status === 429);
+  assert.doesNotThrow(() => limiter.consume("client-a"));
+});
+
 test("production startup requires an explicit session secret", async () => {
   await assert.rejects(
     buildServer({ ...environment, NODE_ENV: "production", LAB_SESSION_SECRET: "" }),
     /LAB_SESSION_SECRET/
   );
+});
+
+test("production trusts forwarded clients only through the loopback proxy", async () => {
+  const app = await buildServer({ ...environment, NODE_ENV: "production", LAB_SESSION_RATE_LIMIT: "1" });
+  try {
+    const first = await app.inject({
+      method: "POST",
+      url: "/api/lab/session",
+      remoteAddress: "127.0.0.1",
+      headers: { "x-forwarded-for": "203.0.113.10" },
+      payload: { role: "visitor" }
+    });
+    const second = await app.inject({
+      method: "POST",
+      url: "/api/lab/session",
+      remoteAddress: "127.0.0.1",
+      headers: { "x-forwarded-for": "198.51.100.20" },
+      payload: { role: "visitor" }
+    });
+    assert.equal(first.statusCode, 200);
+    assert.equal(second.statusCode, 200);
+  } finally {
+    await app.close();
+  }
+});
+
+test("production session capacity is configurable", async () => {
+  const app = await buildServer({ ...environment, NODE_ENV: "production", LAB_MAX_SESSIONS: "1" });
+  try {
+    assert.equal((await app.inject({ method: "POST", url: "/api/lab/session", payload: { role: "visitor" } })).statusCode, 200);
+    const full = await app.inject({ method: "POST", url: "/api/lab/session", payload: { role: "visitor" } });
+    assert.equal(full.statusCode, 503);
+    assert.equal(full.json().error.code, "SESSION_CAPACITY");
+  } finally {
+    await app.close();
+  }
 });

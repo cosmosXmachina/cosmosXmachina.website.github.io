@@ -18,6 +18,23 @@ test("visit datagrams accept only successful public document navigation", () => 
   assert.equal(parseVisitDatagram(message.replace('"status":200', '"status":500')), null);
   assert.equal(parseVisitDatagram(message.replace("/portfolio/kpi-studio/", "/api/lab/health")), null);
   assert.equal(parseVisitDatagram(message.replace("203.0.113.8", "127.0.0.1")), null);
+  assert.deepEqual(
+    parseVisitDatagram("<190>cosmos_visit: COSMOS_VISIT 198.51.100.7 304 GET document /portfolio/knowledge-assistant/"),
+    { ip: "198.51.100.7", path: "/portfolio/knowledge-assistant/" }
+  );
+});
+
+test("hourly visitor buckets stay within the configured memory bound", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "cosmos-visits-bound-"));
+  const aggregator = new DailyVisitAggregator({ file: join(directory, "visits.jsonl"), maxBuckets: 2 });
+  try {
+    assert.equal(aggregator.record({ ip: "203.0.113.1", path: "/" }), true);
+    assert.equal(aggregator.record({ ip: "203.0.113.2", path: "/" }), true);
+    assert.equal(aggregator.record({ ip: "203.0.113.3", path: "/" }), false);
+    assert.equal(aggregator.buckets.size, 2);
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
 });
 
 test("daily records deduplicate by address and hour without persisting identifiers", async () => {

@@ -5,7 +5,10 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { randomUUID } = require("node:crypto");
 
-const ENV = loadDotEnv(path.resolve(__dirname, "..", ".env"));
+const ENV = {
+  ...loadDotEnv(path.resolve(process.env.COSMOS_ENV_FILE || path.resolve(__dirname, "..", ".env"))),
+  ...process.env
+};
 const MAX_BODY_BYTES = 32 * 1024;
 const FIELD_LIMITS = {
   lang: 8,

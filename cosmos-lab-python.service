@@ -4,24 +4,32 @@ After=network.target
 
 [Service]
 Type=simple
-WorkingDirectory=/var/www/cosmosXmachina.website.github.io
-ExecStart=/var/www/cosmosXmachina.website.github.io/.venv/bin/python /var/www/cosmosXmachina.website.github.io/python_service/server.py
+WorkingDirectory=@COSMOS_ROOT@/current/runtime/python
+ExecStart=@COSMOS_ROOT@/shared/venv/bin/python @COSMOS_ROOT@/current/runtime/python/python_service/server.py
 Restart=always
 RestartSec=5
-User=www-data
-Group=www-data
+User=@SERVICE_USER@
+Group=@SERVICE_GROUP@
 Environment=PYTHONUNBUFFERED=1
+Environment=COSMOS_ENV_FILE=@COSMOS_ENV_FILE@
+Environment=PYTHON_LAB_PORT=8790
 UMask=0027
 NoNewPrivileges=true
 PrivateDevices=true
 PrivateTmp=true
 ProtectControlGroups=true
-ProtectHome=read-only
+ProtectHome=true
 ProtectKernelModules=true
 ProtectKernelTunables=true
 ProtectSystem=strict
 RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
 RestrictSUIDSGID=true
+LockPersonality=true
+MemoryHigh=96M
+MemoryMax=128M
+CPUQuota=60%
+TasksMax=24
+LimitNOFILE=512
 
 [Install]
 WantedBy=multi-user.target

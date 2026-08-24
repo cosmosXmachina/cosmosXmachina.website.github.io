@@ -1,159 +1,96 @@
 # cosmosXmachina Creation Lab
 
-Status: approved implementation specification.
+Status: browser-only implementation and complete local release rehearsal passed; clean commit-scoped release verification remains before production approval.
 
-This document is the canonical project plan for the public portfolio. Operational setup is documented in installation.md, architecture details in cosmos_interface.md, and repository rules in AGENTS.md.
+This is the canonical portfolio architecture. Operational setup is in `installation.md`, detailed system architecture in `cosmos_interface.md`, and repository rules in `AGENTS.md`.
 
 ## Direction
 
-Create a public Portfolio section framed as the cosmosXmachina Creation Lab, where Vash turns ambiguous operational problems into inspectable systems.
+The Creation Lab presents four inspectable professional systems built by Davide Deon/Vash around Orion Works, a clearly fictional Veneto SME. Every interface is a self-directed demonstration using synthetic data, not a client result.
 
-Use Orion Works, a clearly fictional bilingual Veneto SME, across all demonstrations. Shared synthetic entities create continuity, but every demo receives its own professional product identity, typography, palette, layout, assets, and interaction model.
+- Keep `/portfolio/` and `/portfolio/<demo-slug>/` bilingual through `?lang=it|en`.
+- Open demos directly into usable interfaces with independent visual identities.
+- Expose problem, workflow, architecture, decisions, failure modes, tests and relevant service.
+- Preserve the expiring, reviewable `sessionStorage` handoff to the homepage contact form.
+- Keep the homepage and its Three.js bundle isolated from React/ECharts demo costs.
 
-The final direction combines the source plans as follows:
+## Active Scope
 
-- Keep the GPT plan's fictional-company universe, reasoning-first presentation, and three-demo initial release.
-- Keep the Codex plan's deterministic behavior, safety controls, incremental delivery, and restrained production footprint.
-- Do not inherit the homepage design or vanilla stack inside the demos.
-- Do not create one shared visual system or one large platform-like application.
-- Choose the commercial or technical presentation independently for every demo.
-- Reuse technology only when it is genuinely the best choice, never for artificial stack variety.
+Only ranks **1, 2, 3 and 6** are public. Demos 4, 5, 7, 8, 9 and 10 remain deferred and absent from Vite inputs, public cards, active route allowlists and browser tests.
 
-## Public Structure
+| Rank | Demo | Browser implementation |
+| ---: | --- | --- |
+| 1 | Document & Email Operations | React/TypeScript workstation; deterministic classification, typed extraction, validation, evidence and human review in memory |
+| 2 | Orion Operations Hub | React workspace; transactional state machine, roles, replay and versioned IndexedDB persistence |
+| 3 | Secure Knowledge Assistant | React research interface; permission-first demonstration filter, native inverted index, citations, evaluation and abstention |
+| 6 | KPI & Reporting Studio | React/ECharts interface; deterministic Web Worker calculations, local narrative, accessible table and CSV export |
 
-- Add Portfolio to the current homepage navigation.
-- Add a homepage preview featuring the four strongest commercial demonstrations.
-- Publish /portfolio/ and /portfolio/<demo-slug>/.
-- Preserve ?lang=it|en, saved-language, browser-language, and Italian-fallback behavior.
-- Give the Portfolio index the Creation Lab theme; individual demos do not inherit it.
-- Open every demo directly into a usable interface.
-- Expose the problem, workflow, architecture, decisions, failure modes, tests, and relevant service on every demo.
-- State clearly that each system is a self-directed demonstration using synthetic data and is not a real-client result.
-- Transfer an expiring, user-reviewable demo summary to the existing contact form through sessionStorage.
+The retained roadmap concepts are E-commerce Catalog Intelligence, Lead-to-Appointment System, Integration Reliability Control Room, Architecture Rescue Lab, Workflow Audit & ROI Architect and Browser Opportunity Scout.
 
-## Synthetic AI Architecture
+## Browser Runtime
 
-Version 1 makes no real AI calls and requires no AI API key.
+Version 1 makes no real AI calls, requires no AI key and makes zero runtime requests to `/api/lab/*`.
 
-Provider-neutral asynchronous contract:
+The shared non-visual runtime in `portfolio/shared/` provides:
 
-~~~text
+- versioned Orion Works fixtures and a provider-neutral simulated contract;
+- bounded input/schema validation and hostile-input rejection;
+- synthetic role-bound 30-minute sessions and 25 successful actions;
+- deterministic action IDs, idempotency replay, transactional rollback and reset;
+- evidence, traces, warnings and simulated latency/cancellation;
+- browser-local retrieval and persistence abstractions.
+
+Provider-neutral contract:
+
+```text
 execute({ task, schema, context, input })
   -> { output, evidence, usage, trace, warnings }
-~~~
+```
 
-Implementation rules:
+Normalized action envelope:
 
-- FixtureAIProvider uses versioned synthetic responses and deterministic rules.
-- Classification, extraction schemas, validation, permissions, and workflow transitions stay outside the provider.
-- Dormant OpenAI, Google Gemini, Anthropic Claude, xAI Grok and OpenRouter adapters implement the same provider-neutral contract and are tested only through mocked transports.
-- Fixture mode is the release behavior. Live mode requires the explicit `AI_LIVE_ENABLED=true` safety switch plus credentials and remains prohibited until separately approved.
-- Provider output is schema-validated and bounded; transport errors, timeouts, retries and trace redaction are normalized at the server boundary.
-- Synthetic demonstration appears prominently wherever an AI-like result is shown.
-- Browser and network tests prove that version 1 makes zero requests to external AI providers.
+```text
+{ ok, mode, demo, action, session, role, result, trace, warnings, quota }
+```
 
-## Roadmap and Active Scope
+OpenAI, Google Gemini, Anthropic Claude, xAI Grok and OpenRouter choices are presentation targets only; the deterministic fixture provider records the selection but contacts none of them. Dormant server adapters remain mock-tested compatibility code and are not imported by public demo bundles.
 
-The roadmap retains the original ten concepts, but the active public release intentionally contains only ranks **1, 2, 3, and 6**. The other six concepts are deferred: they are not included in the Vite build, Portfolio index, API allowlist, tests, or production deployment. Their earlier implementation remains recoverable from Git history if the user approves a later release.
+## State And Security Boundaries
 
-| Rank | Demo | Presentation priority | Independent design and stack |
-| ---: | --- | --- | --- |
-| 1 | AI Document & Email Operations | Client-led with technical evidence | Ivory/graphite split-view workstation; React, TypeScript, PDF.js; deterministic FastAPI/Pydantic pipeline |
-| 2 | Orion Operations Hub | Client-led full-stack proof | Dense, quiet SME workspace; React, TanStack utilities; Node/Fastify and SQLite |
-| 3 | Secure Knowledge Assistant | Senior AI/architecture depth | Editorial research interface; React; deterministic retrieval with SQLite FTS5, permissions, citations, and evaluation |
-| 4 | E-commerce Catalog Intelligence | Client-led vertical product | Image-rich merchant console; React; FastAPI transformations and simulated Shopify/WooCommerce adapters |
-| 5 | Lead-to-Appointment System | Client-led local-business proof | Distinct Veneto hospitality site plus staff CRM; Astro with React islands; Node and SQLite |
-| 6 | KPI & Reporting Studio | Client-led data proof | Bright analytical workspace; React, ECharts, and Web Workers; browser-side deterministic processing |
-| 7 | Integration Reliability Control Room | Senior backend depth | Dark observability console; React; Node event pipeline, idempotency, retries, dead letters, and replay |
-| 8 | Architecture Rescue Lab | Senior architecture depth | Code-diff and ADR case study; Astro/MDX; executable Spring Boot/JUnit fixture built in CI |
-| 9 | Workflow Audit & ROI Architect | Client conversion | Restrained consultancy canvas; React, SVG process maps, and transparent browser-side formulas |
-| 10 | Browser Opportunity Scout | Product-engineering depth | Compact Chrome side panel and web simulator; Manifest V3, React, and deterministic sample analysis |
+- Document, knowledge and KPI demo state is browser-memory state reset on reload or with the visible reset control.
+- Operations Hub stores a bounded schema-versioned synthetic order record in IndexedDB and visibly restores fixtures if storage is unavailable, stale or corrupt.
+- `cosmos-lab-provider` and the contact handoff retain their documented `sessionStorage` behavior.
+- Browser role filtering in Secure Knowledge Assistant demonstrates retrieval architecture only. Real authorization must filter protected data on a trusted server before it reaches an untrusted client.
+- Arbitrary uploads, URLs, scraping, external submission and real personal/business data are excluded.
 
-The AI Model Gateway is not a separate demo. Provider routing, evaluation, cost modelling, and fallback behavior appear as technical evidence inside demos 1, 3, and 4.
+## Preserved Server Infrastructure
 
-The Market Radar concept is absorbed into Browser Opportunity Scout through explainable opportunity scoring and proposal preparation.
+Apache still serves only the verified `dist/` tree and proxies `/api/*` to the loopback Node service. Node remains required for Gmail contact delivery and aggregate analytics. Existing Node Lab routes and the private Python deterministic service remain dormant compatibility infrastructure so the established Apache/systemd/SFTP/rollback topology does not require privileged reconfiguration.
 
-## Shared Interfaces
+The production release must continue to force `AI_MODE=fixture` and `AI_LIVE_ENABLED=false`. No public demo waits for Node/Python health or substitutes a hidden server fallback.
 
-Share only Orion Works fixtures, schemas, localization, accessibility helpers, and API contracts.
+## Build And Deployment
 
-Do not share visual components, design tokens, card systems, or demo layouts.
-
-Public API:
-
-~~~text
-POST /api/lab/session
-POST /api/lab/:demo/:action
-POST /api/lab/:demo/reset
-GET  /api/lab/health
-~~~
-
-Standard response:
-
-~~~text
-{ ok, mode, demo, action, session, result, trace, warnings, quota }
-~~~
-
-Runtime rules:
-
-- Anonymous role-bound sessions are HMAC-signed, bounded to 2,000 active records, expire after 30 minutes and allow 25 successful actions.
-- State-changing requests require idempotency keys. Failed operations roll back state and do not consume quota; duplicate requests replay their original result.
-- Visitor content is not persisted or written to logs.
-- Unknown demos/actions, oversized requests, hostile HTML, and invalid state transitions are rejected.
-- Arbitrary uploads, arbitrary URL fetching, scraping, and automatic proposal sending are excluded from version 1.
-- Browser fixtures are available only in the explicit development fixture mode. Production-mode API failures remain visible and recoverable in the interface.
-
-## Build and Deployment
-
-- Use one npm workspace and lockfile, with each demo as an independent build target and CSS bundle.
-- Build the homepage, Portfolio index, and demos into one dist/ directory.
-- Canonical section backgrounds are generated from retained PNG sources into optimized WebP files with `npm run optimize:images`; the public build excludes superseded PNGs.
-- Nginx serves only dist/ and proxies /api/* to the private Node gateway.
-- The Node service handles SMTP, anonymous sessions, Node-based workflows, and routing to the private Python service.
-- The FastAPI service handles deterministic document and retrieval pipelines.
-- Both services run under systemd and bind only to loopback.
-- Production requires Node, Python, and Nginx only.
-- Production does not require Docker, PostgreSQL, Redis, Java, or an AI provider.
-- .env is the only runtime configuration source. Version 1 contains no AI credentials.
-- Never serve the repository root.
-- Exclude .env, CV/profile sources, business plans, private keys, and development files from dist/.
-- vash_key and vash_key.pub must never be committed or deployed beneath the web root.
-
-Reference documentation:
-
-- Vite static deployment: https://vite.dev/guide/static-deploy.html
-- Nginx reverse proxy: https://docs.nginx.com/nginx/admin-guide/web-server/reverse-proxy/
-- FastAPI deployment concepts: https://fastapi.tiangolo.com/deployment/concepts/
-
-## Delivery Order
-
-1. Preserve the remote `index.html` as the authoritative homepage and add Portfolio as its ninth and final section.
-2. Publish Document Operations, Operations Hub, Secure Knowledge Assistant, and KPI Studio.
-3. Keep ranks 4, 5, 7, 8, 9, and 10 deferred until explicitly approved.
-
-No unfinished demo card is published. The Portfolio index shows completed demonstrations only.
+- `npm run build` builds the homepage, Portfolio and four demos into `dist/`, enforces bundle/distribution budgets, scans for secrets/provider endpoints and rejects `/api/lab` references in published code.
+- Playwright starts Vite without Node or Python, proving the demos work in a static-only topology at 360, 768, 1024 and 1440 pixels.
+- `npm run serve:local` intentionally starts the preserved full topology for contact, analytics and compatibility testing.
+- `npm run release:build` retains Node/Python unit and packaged smoke gates, then creates the verified archive, checksum and `.ready` marker locally.
+- Production remains Apache-native and uses the existing SFTP marker activation and rollback flow. Never serve the repository root.
+- Building a release candidate does not authorize upload or production activation.
 
 ## Verification
 
-- Vitest covers frontend logic and the explicitly enabled development browser fixture provider.
-- node:test covers Node workflows, provider behavior, and session expiry.
-- pytest covers FastAPI deterministic pipelines and provider behavior.
-- Playwright covers published workflows in Italian and English.
-- Network assertions prove that version 1 performs no external AI calls.
-- Replay tests ensure identical inputs produce reproducible results.
-- Security tests cover authorization, prompt-injection fixtures, idempotency, rate limits, hostile HTML, request limits, and session expiry.
-- Every interface supports keyboard navigation, visible focus, reduced motion, semantic landmarks, and accessible table alternatives for charts.
-- Responsive verification targets approximately 360, 768, 1024, and 1440 pixels.
-- Demo framework bundles stay out of the homepage.
-- Every demo has an individual performance budget.
-- The build rejects private files, secret-like content, external provider endpoints, oversized screenshot previews and a public distribution above 8 MiB.
-- AGENTS.md, cosmos_interface.md, README.md, and installation.md describe the workspace, dependencies, build, systemd units, and Nginx configuration.
+- Vitest covers fixture determinism, validation, quota, expiry, replay, rollback, cancellation, retrieval ranking, role filtering, citations, KPI formulas and storage schemas.
+- `node:test` and pytest retain contact, analytics, deployment and dormant compatibility coverage.
+- Playwright covers both languages, happy/failure paths, reset, IndexedDB persistence/recovery, contact handoff, keyboard/responsive behavior and reduced motion.
+- Browser tests assert zero fetch/XHR traffic during active workflows and zero Lab/provider requests.
+- The build rejects private files, secret-like values, live-provider endpoints, oversized assets, `/api/lab` coupling and a public distribution over 8 MiB.
+
+The 24 August 2026 release rehearsal passed 17 Vitest checks, 49 Node checks with one expected Windows-only skip, 7 pytest checks and 84 Playwright cases across 360, 768, 1024 and 1440 pixel viewports. The public build measured 3.76 MiB and the verified local rehearsal archive measured 3.17 MiB. Packaged Node/FastAPI compatibility smoke tests also passed; no production upload or activation was performed.
 
 ## Locked Decisions
 
-- Audience emphasis is selected independently for each demo.
-- Version 1 is entirely synthetic and has a tested provider boundary for future live adapters.
-- Production uses static builds plus private Node and Python services under systemd.
-- The existing homepage, Three.js layer, SMTP behavior, language precedence, and production contact endpoint remain intact.
-- Personal profiles, planning documents, unsupported internal claims, and private keys remain private.
-- Capability is demonstrated through working systems and explicit reasoning, not invented client results.
+- Public demos are deterministic browser systems, not cosmetic screenshots and not server-backed applications.
+- The existing homepage, URLs, contact SMTP, aggregate analytics and production infrastructure remain intact.
+- No new framework, WASM database, PDF parser, live AI SDK, external backend or tracking service is introduced.
+- Capability is demonstrated through working synthetic systems and explicit reasoning, never invented clients or results.

@@ -18,11 +18,11 @@ test("portfolio publishes the four active bilingual entries", async ({ page }) =
   }
 });
 
-test("every demo is usable and makes no external AI-provider request", async ({ page }) => {
+test("every demo loads on the static-only topology without Lab or provider requests", async ({ page }) => {
   const forbidden = [];
   const consoleErrors = [];
   page.on("request", (request) => {
-    if (/api\.openai\.com|generativelanguage\.googleapis\.com|api\.anthropic\.com|api\.x\.ai|openrouter\.ai/i.test(request.url())) forbidden.push(request.url());
+    if (/\/api\/lab(?:\/|$)|api\.openai\.com|generativelanguage\.googleapis\.com|api\.anthropic\.com|api\.x\.ai|openrouter\.ai/i.test(request.url())) forbidden.push(request.url());
   });
   page.on("console", (message) => { if (message.type() === "error") consoleErrors.push(message.text()); });
 
@@ -144,11 +144,11 @@ test("document exception requires correction before a human approval", async ({ 
   await expect(page.getByRole("button", { name: "Reopen review" })).toBeEnabled();
 });
 
-test("operations mutations are server-confirmed and role protected", async ({ page }) => {
+test("operations mutations are transactional, persisted and role protected", async ({ page }) => {
   await navigate(page, "/portfolio/operations-hub/?lang=en");
   await page.getByLabel("Internal note").fill("Confirm the revised delivery promise.");
   await page.getByRole("button", { name: "Save note" }).click();
-  await expect(page.getByRole("status")).toHaveText("Note saved in this session");
+  await expect(page.getByRole("status")).toHaveText("Note saved in this browser");
   await page.getByRole("button", { name: /Advance state -> packing/i }).click();
   await expect(page.getByRole("status")).toHaveText("OW-2418 -> packing");
   await page.getByRole("button", { name: "Generate risk brief" }).click();
@@ -156,6 +156,39 @@ test("operations mutations are server-confirmed and role protected", async ({ pa
   await page.getByLabel("Current role").selectOption("sales");
   await page.getByRole("button", { name: /OW-2419/ }).click();
   await expect(page.getByRole("button", { name: "Role cannot advance" })).toBeDisabled();
+});
+
+test("Operations Hub restores IndexedDB state and supports a deterministic reset", async ({ page }) => {
+  await navigate(page, "/portfolio/operations-hub/?lang=en");
+  await page.getByLabel("Internal note").fill("Persist this browser-local checkpoint.");
+  await page.getByRole("button", { name: "Save note" }).click();
+  await expect(page.getByRole("status")).toHaveText("Note saved in this browser");
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await expect(page.getByLabel("Internal note")).toHaveValue("Persist this browser-local checkpoint.");
+  await page.getByRole("button", { name: "Reset data" }).click();
+  await expect(page.getByRole("status")).toHaveText("Workspace reset");
+  await expect(page.getByLabel("Internal note")).toHaveValue("Verify availability and delivery promise before confirmation.");
+});
+
+test("Operations Hub recovers visibly from stale persisted state", async ({ page }) => {
+  await navigate(page, "/portfolio/operations-hub/?lang=en");
+  await page.evaluate(async () => {
+    const database = await new Promise((resolve, reject) => {
+      const request = indexedDB.open("cosmos-creation-lab", 1);
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+    await new Promise((resolve, reject) => {
+      const transaction = database.transaction("demo-state", "readwrite");
+      transaction.objectStore("demo-state").put({ schema: 0, orders: [] }, "operations-hub");
+      transaction.oncomplete = resolve;
+      transaction.onerror = () => reject(transaction.error);
+    });
+    database.close();
+  });
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await expect(page.getByRole("status")).toHaveText("Local state was unavailable, so the synthetic dataset was restored.");
+  await expect(page.getByRole("button", { name: /OW-2418/ })).toBeVisible();
 });
 
 test("knowledge answer is cited, evaluated and reviewable", async ({ page }) => {
@@ -177,21 +210,67 @@ test("KPI workflow keeps deterministic metrics separate from localized narrative
   await expect(page.getByText("3 righe", { exact: false })).toBeVisible();
   await page.getByRole("button", { name: "Genera nota decisionale" }).click();
   await expect(page.getByRole("heading", { name: /I ricavi crescono/ })).toBeVisible();
-  await expect(page.getByText("Campione sintetico di sei mesi", { exact: true })).toBeVisible();
+  await expect(page.getByText("Campione sintetico di 3 mesi", { exact: true })).toBeVisible();
 });
 
-test("expired sessions recover once without losing the action", async ({ page }) => {
-  let expired = false;
-  await page.route("**/api/lab/document-operations/classify", async (route) => {
-    if (!expired) {
-      expired = true;
-      await route.fulfill({ status: 401, contentType: "application/json", body: JSON.stringify({ error: { code: "SESSION_EXPIRED", message: "expired" } }) });
-    } else await route.continue();
-  });
+test("document actions remain usable when every Lab API route is unavailable", async ({ page }) => {
+  let labRequests = 0;
+  await page.route("**/api/lab/**", async (route) => { labRequests += 1; await route.abort(); });
   await navigate(page, "/portfolio/document-operations/?lang=en");
   await page.getByRole("button", { name: "Classify and extract" }).click();
   await expect(page.getByLabel("Order reference")).toHaveValue("NW-8841");
-  expect(expired).toBe(true);
+  expect(labRequests).toBe(0);
+});
+
+test("active workflows create no fetch or XHR traffic", async ({ page }) => {
+  const runtimeRequests = [];
+  page.on("request", (request) => {
+    if (["fetch", "xhr"].includes(request.resourceType())) runtimeRequests.push(request.url());
+  });
+
+  await navigate(page, "/portfolio/document-operations/?lang=en");
+  await page.getByRole("button", { name: "Classify and extract" }).click();
+  await expect(page.getByLabel("Order reference")).toHaveValue("NW-8841");
+
+  await navigate(page, "/portfolio/operations-hub/?lang=en");
+  await page.getByRole("button", { name: "Generate risk brief" }).click();
+  await expect(page.getByRole("heading", { name: /Delivery promise is exposed/ })).toBeVisible();
+
+  await navigate(page, "/portfolio/knowledge-assistant/?lang=en");
+  await page.getByRole("button", { name: "Search permitted sources" }).click();
+  await expect(page.getByRole("heading", { name: /Gold customers may request/ })).toBeVisible();
+
+  await navigate(page, "/portfolio/kpi-studio/?lang=en");
+  await page.getByRole("button", { name: "Generate decision note" }).click();
+  await expect(page.getByRole("heading", { name: /Revenue is rising/ })).toBeVisible();
+  expect(runtimeRequests).toEqual([]);
+});
+
+test("each browser demo exposes a deterministic reset", async ({ page }) => {
+  await navigate(page, "/portfolio/document-operations/?lang=en");
+  await page.getByRole("button", { name: "Classify and extract" }).click();
+  await page.getByRole("button", { name: "Reset demo" }).click();
+  await expect(page.getByLabel("Order reference")).toHaveCount(0);
+
+  await navigate(page, "/portfolio/knowledge-assistant/?lang=en");
+  await page.getByRole("button", { name: "Search permitted sources" }).click();
+  await page.getByRole("button", { name: "Reset demo" }).click();
+  await expect(page.getByText("Evidence before answer", { exact: true })).toBeVisible();
+
+  await navigate(page, "/portfolio/kpi-studio/?lang=en");
+  await page.getByRole("combobox", { name: /Period/ }).selectOption("3");
+  await page.getByRole("button", { name: "Reset demo" }).click();
+  await expect(page.getByRole("combobox", { name: /Period/ })).toHaveValue("6");
+});
+
+test("all published demos retain complete Italian and English document language", async ({ page }) => {
+  for (const language of ["it", "en"]) {
+    for (const slug of slugs) {
+      await navigate(page, `/portfolio/${slug}/?lang=${language}`);
+      await expect(page.locator("html")).toHaveAttribute("lang", language);
+      await expect(page.locator("h1").first()).toBeVisible();
+    }
+  }
 });
 
 test("reduced motion and compact layouts remain usable", async ({ page }) => {

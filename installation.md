@@ -1,372 +1,288 @@
-# Installation and Deployment
+# cosmosXmachina Installation And Apache Operations
 
-## Production Machine: Start Here
+This is the canonical setup and deployment guide. Production is Apache-native. Do not install Nginx and do not run an older deployment script that builds the application on the server.
 
-This is the handoff procedure for a person or Codex agent operating inside the uploaded repository on the Ubuntu/Debian production machine.
+The four active Creation Lab demos execute entirely in the browser and do not call `/api/lab/*`. The preserved Node/Python topology remains in releases for contact, aggregate analytics and backward-compatible health/rollback behavior; this migration requires no privileged production reconfiguration.
 
-1. Read `AGENTS.md` and `cosmos_interface.md`, then confirm the shell is in the repository root containing `deploy-production.sh`, `package-lock.json` and `.env.example`.
-2. Preserve an existing project-root `.env`; never replace it with the template. On a first installation, either let the script create it or copy `.env.example` to `.env` first and enter the real Gmail app password in `SMTP_PASS`.
-3. Run the autonomous installer from the repository root:
+## Operator Quick Start
 
-   ~~~bash
-   sudo bash deploy-production.sh
-   ~~~
+### One-Time Privileged Bootstrap
 
-4. Do not report success until the script reaches `Production installation completed`. Before that message it installs OS, Node and Python dependencies; preserves/configures `.env`; runs all frontend, Node, Python and four-viewport Playwright tests; builds and scans an isolated release; activates `dist/`; installs and enables systemd services; configures Nginx, SEO files and aggregate visit statistics; and verifies the private and public routes.
-5. If the script fails, use the reported line plus:
+A server administrator or an agent with root shell access performs this once:
 
-   ~~~bash
-   journalctl -u cosmos-contact.service -u cosmos-lab-python.service -n 100 --no-pager
-   nginx -t
-   ~~~
+1. Keep the repository copy used for bootstrap outside every Apache document root.
+2. Keep the real production `.env` at its existing private `/opt/...` path. Do not replace or copy it into a release.
+3. Copy `production/deploy.conf.example` to `/opt/cosmosxmachina/deploy.conf` and enter the real Apache vhost files, environment path, SFTP directories, service unit names and accounts.
+4. Make the configuration root-owned and not writable by group or others:
 
-   Fix the cause and rerun the same idempotent script. It keeps `.env` and uses the tracked Nginx merger to preserve an existing TLS certificate configuration while refreshing managed delivery and visit-count rules.
-6. On a first deployment, point DNS to the server and run the Certbot command printed by the script. Ports `8787` and `8790` must remain private; only Nginx should be public.
-7. Verify `https://cosmos-x-machina.it/`, `/privacy.html`, `/portfolio/`, all four demos, `/robots.txt`, `/sitemap.xml` and one real contact-form submission. The release remains `AI_MODE=fixture` and `AI_LIVE_ENABLED=false`.
+   ```bash
+   sudo chown root:root /opt/cosmosxmachina/deploy.conf
+   sudo chmod 600 /opt/cosmosxmachina/deploy.conf
+   ```
 
-For later code uploads, run `sudo bash deploy-production.sh` again. The script always validates the complete uploaded revision before it restarts the persistent services, and keeps the previous `dist/` in `.dist.previous` for manual rollback diagnosis.
+5. Create the configured incoming/status directories if SFTP must receive the first release before bootstrap, then grant the existing upload account access:
 
-Uploading or pulling repository source alone does **not** activate that revision. Nginx continues serving the existing `dist/`, and the already-running Node/Python processes keep their previously loaded code until the installer builds, swaps and restarts them. Do not manually replace only `dist/`: a new frontend paired with old private services is an unverified mixed release.
+   ```bash
+   sudo install -d -o vash -g vash -m 750 /opt/cosmosxmachina/incoming /opt/cosmosxmachina/status
+   ```
 
-This is the supported setup guide for the cosmosXmachina homepage and Creation Lab. The approved product specification is in creation_lab_plan.md.
+6. Upload one locally built archive, its `.sha256`, and its `.ready` marker to `INCOMING_DIR`, in that order.
+7. Run the tracked bootstrap from its private repository copy:
 
-The active public release contains demos 01, 02, 03 and 06 only. The other roadmap concepts are not built, served or exposed by the API.
+   ```bash
+   sudo bash deploy-production.sh --config /opt/cosmosxmachina/deploy.conf
+   ```
 
-The complete production site requires Nginx, Node.js, and Python. The Node endpoint is required: it provides Gmail SMTP delivery, anonymous lab sessions, workflow validation, and access to the private Python pipelines.
+8. Do not report completion until the script prints `Apache production bootstrap completed`. It must also leave `apache2`, the configured Node unit and the configured Python unit active.
 
-.env is the only application runtime configuration source. Do not add alternate environment-file names, systemd EnvironmentFile entries, JSON configuration, or browser-exposed secrets.
+The bootstrap preserves the existing `.env` and Certbot directives. It installs only compact runtime prerequisites, creates one shared Python virtual environment, installs low-resource systemd units, activates the verified release, merges managed blocks into the existing Apache vhosts, runs `apache2ctl configtest`, and installs the release cron.
 
-## Dependencies
+### Routine Releases Without Shell Access
 
-Development and production:
+After bootstrap, routine deployment needs SFTP only:
 
-- Git
-- Node.js 22.5 or newer
-- npm
-- Python 3.11 or newer
-- Python venv and pip
+1. Commit the intended tracked files so the worktree is clean.
+2. On the development machine run:
 
-Production only:
+   ```bash
+   npm ci
+   npm run release:build
+   ```
 
-- Nginx
-- systemd
-- Certbot for HTTPS
-- `iproute2` for the private UDP listener verification
+3. Upload with the included PowerShell helper, using the SFTP-visible incoming path configured by the administrator:
 
-Development or CI only:
+   ```powershell
+   .\scripts\upload-production-release.ps1 `
+     -RemoteIncoming incoming/cosmosxmachina `
+     -KeyPath .\cosmos_key
+   ```
 
-- Playwright Chromium for browser tests
+4. The helper sends the archive, checksum, and `.ready` marker last. Cron normally processes the marker within one minute.
+5. Read `STATUS_DIR/active.json` through SFTP. A successful record has `state: "active"` and names the new release.
 
-Not required in production:
+Never upload a dirty release. `npm run release:build` rejects tracked changes, and the uploader rejects local test release identifiers containing `-dirty-`.
 
-- Docker
-- PostgreSQL
-- Redis
-- Java
-- an AI-provider account or key
+## Production Topology
 
-## Runtime Configuration
+```text
+browser
+  -> Apache :80/:443
+       -> /, assets, privacy, Creation Lab and demos from /opt/cosmosxmachina/current/dist
+       -> active Creation Lab workflows run in the browser
+       -> /api/contact -> Node gateway 127.0.0.1:8787
+Apache document event -> UDP 127.0.0.1:5514 -> Node in-memory hourly dedupe
+                                              -> daily aggregate JSONL only
+preserved compatibility -> Node /api/lab routes -> Python 127.0.0.1:8790
+```
 
-Create the real file from the tracked template:
+Required services:
 
-~~~powershell
-Copy-Item .env.example .env
-~~~
+| Service | Responsibility |
+|---|---|
+| `apache2.service` | Sole public server, TLS, compression, caching, headers, strict route allowlist, static `dist/`, and `/api/*` reverse proxy. |
+| Configured Node systemd unit | Gmail contact delivery and aggregate analytics; retained Lab routes support compatibility smoke tests but are not called by public demos. |
+| Configured Python systemd unit | Retained deterministic pipeline compatibility service; public demos do not call it. |
+| Existing cron service | Finds `.ready` markers, verifies and activates releases, health-checks them, and rolls back failures. |
+| Existing SFTP subsystem | Receives release files and exposes status; it does not serve visitors. |
+| Existing Certbot timer | Renews the current Apache TLS certificates. |
+| Gmail SMTP | External contact-mail dependency, not a machine service. |
 
-Linux:
+Three.js, React, ECharts, the browser Lab runtime, retrieval index and IndexedDB state execute on the visitor's device and create no request-time Lab compute load on production.
 
-~~~bash
-cp .env.example .env
-chmod 600 .env
-~~~
+## Production Prerequisites And Cost
 
-Fill every value in .env. For Gmail SMTP, use the generated Google app password without spaces.
+The bootstrap expects Debian/Ubuntu, Apache 2.4, systemd, cron and SFTP. It enables Apache modules `proxy`, `proxy_http`, `headers`, `expires`, `deflate`, `setenvif`, `rewrite` and `ssl`.
 
-Local example:
+One-time runtime requirements:
 
-~~~text
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=465
-SMTP_USER=davide.deon@gmail.com
-SMTP_PASS=replace_with_real_app_password
-MAIL_FROM=davide.deon@gmail.com
-MAIL_TO=davide.deon@gmail.com
-ALLOWED_ORIGIN=http://127.0.0.1:4173,http://localhost:4173
-PORT=8787
-LAB_MODE=fixture
-LAB_SESSION_SECRET=replace_with_at_least_24_random_characters
-PYTHON_LAB_URL=http://127.0.0.1:8790
-PYTHON_LAB_PORT=8790
-AI_MODE=fixture
-AI_DEFAULT_PROVIDER=openai
-AI_ALLOWED_PROVIDERS=openai,google,anthropic,xai,openrouter
-AI_REQUEST_TIMEOUT_MS=12000
-AI_MAX_OUTPUT_TOKENS=1200
-AI_LIVE_ENABLED=false
-VISIT_ANALYTICS_ENABLED=false
-VISIT_ANALYTICS_HOST=127.0.0.1
-VISIT_ANALYTICS_PORT=5514
-VISIT_ANALYTICS_FILE=/var/lib/cosmos-analytics/visits-daily.jsonl
-VISIT_ANALYTICS_TIMEZONE=Europe/Rome
-VISIT_ANALYTICS_RETENTION_DAYS=400
-~~~
-
-Production overrides:
-
-~~~text
-ALLOWED_ORIGIN=https://cosmos-x-machina.it,https://www.cosmos-x-machina.it
-VISIT_ANALYTICS_ENABLED=true
-~~~
-
-Generate LAB_SESSION_SECRET on the server:
-
-~~~bash
-openssl rand -hex 32
-~~~
-
-Version 1 has no AI credential and must keep `AI_MODE=fixture` with `AI_LIVE_ENABLED=false`. The five dormant provider adapters are mock-tested only. Never put an AI key in browser code or dist/.
-
-## Local Setup
-
-From the repository root:
-
-~~~powershell
-npm install
-python -m venv .venv
-.\.venv\Scripts\python -m pip install --upgrade pip
-.\.venv\Scripts\python -m pip install -r python_service\requirements.txt
-npm run build
-~~~
-
-Run `npm run optimize:images` only when the editable PNG background sources change. It regenerates the canonical WebP assets and social-preview JPEG with the installed Playwright Chromium runtime.
-
-Start these commands in three terminals:
-
-~~~powershell
-.\.venv\Scripts\python python_service\server.py
-~~~
-
-~~~powershell
-npm start
-~~~
-
-~~~powershell
-npm run preview
-~~~
-
-Open:
-
-- http://127.0.0.1:4173/
-- http://127.0.0.1:4173/portfolio/
-- http://127.0.0.1:8787/api/lab/health
-
-The homepage and demos are served from dist/. The Node and Python services remain private on 127.0.0.1.
-
-The browser demos contain a deterministic fixture fallback only under `npm run dev:fixtures`. Normal development and production builds expose backend failures; the Node gateway and Python process must both run when testing the production topology.
-
-## Local Tests
-
-~~~powershell
-npm test
-npm run build
-npm run test:e2e
-~~~
-
-Playwright browsers are installed once with:
-
-~~~powershell
-npx playwright install chromium
-~~~
-
-## Production Deployment
-
-The default production layout is:
-
-~~~text
-Internet
-  -> Nginx :80/:443
-      -> / and /portfolio from /var/www/cosmosXmachina.website.github.io/dist
-      -> /api/* to 127.0.0.1:8787
-          -> Node SMTP, sessions, and workflows
-          -> private Python pipelines at 127.0.0.1:8790
-      -> successful document events over UDP 127.0.0.1:5514
-          -> hourly in-memory dedupe, then identifier-free daily JSONL
-~~~
-
-Do not expose ports 8787 or 8790 in the firewall. Do not serve the repository root.
-
-### 1. DNS
-
-At the domain registrar for cosmos-x-machina.it:
-
-- Create an A record for @ pointing to the server's public IPv4 address.
-- Create a CNAME record for www pointing to cosmos-x-machina.it.
-- If the server has stable IPv6, add an AAAA record for @ and configure IPv6 firewall rules.
-- Remove conflicting A, AAAA, or forwarding records.
-- Wait for DNS propagation and verify with dig or nslookup.
-
-Both cosmos-x-machina.it and www.cosmos-x-machina.it must resolve to the deployment machine before requesting certificates.
-
-### 2. Install System Packages
-
-On Ubuntu/Debian:
-
-~~~bash
-sudo apt update
-sudo apt install -y git nginx python3 python3-venv python3-pip certbot python3-certbot-nginx
-~~~
-
-Install a supported Node.js release and verify it:
-
-~~~bash
-node --version
-npm --version
-~~~
-
-Node must be 22.5 or newer because Operations Hub uses the built-in SQLite module. Install Node 22 from a supported distribution package if the OS repository is older.
-
-### 3. Deploy the Repository
-
-~~~bash
-sudo mkdir -p /var/www/cosmosXmachina.website.github.io
-sudo chown -R "$USER":www-data /var/www/cosmosXmachina.website.github.io
-git clone YOUR_REPOSITORY_URL /var/www/cosmosXmachina.website.github.io
-cd /var/www/cosmosXmachina.website.github.io
+| Component | Production requirement | Approximate impact |
+|---|---|---|
+| Apache | Existing Apache 2.4 and existing Certbot integration | Already installed; managed config only |
+| Node.js | Node 22.5 or newer; no npm or `node_modules` needed at runtime | About 50-120 MB if installation/upgrade is required |
+| Python | Python 3.11+, `venv`, pip | Base runtime normally already present |
+| Python packages | FastAPI, Pydantic and Uvicorn from `requirements-production.txt` | About 30-50 MB |
+| OS tools | `bash`, `tar`, `gzip`, `sha256sum`, `curl`, `flock`, `logger`, CA certificates | Normally already installed |
+
+Do not install Git, Docker, Redis, a database, Nginx, Playwright, Chromium, Vite, Vitest, pytest, frontend dependencies or AI SDKs on production.
+
+Measured and expected footprint:
+
+- Current compiled frontend: about 3.74 MiB.
+- Complete compressed release: expected around 4.5-5 MiB and capped at 8 MiB.
+- Two retained releases: normally below 10 MiB compressed-equivalent payload.
+- Shared Python runtime plus staging/status: expected project footprint around 50-80 MiB.
+- Total when Node must also be installed: approximately 110-200 MiB.
+- Required free disk: at least 250 MiB; 300 MiB or more is recommended.
+- Node gateway: approximately 40-80 MB RAM, with `MemoryMax=192M` and a 128 MB V8 heap.
+- Python service: approximately 40-80 MB RAM, with `MemoryMax=128M`.
+- Typical incremental RAM: approximately 80-160 MB; idle CPU is near zero.
+- Recommended baseline: one CPU core and 1 GB RAM.
+- Activation warns below 768 MB RAM and refuses below 512 MB unless `ALLOW_LOW_MEMORY=1` is deliberately approved.
+
+No server-side rendering, ML inference, background model job or live AI call runs in production. Public demo interactions do not reach either private service. The retained units pin ports `8787` and `8790`, force `AI_MODE=fixture` and `AI_LIVE_ENABLED=false`, and enable only the approved loopback aggregate analytics listener. These operational values override stale entries in the preserved `.env`; SMTP credentials and allowed origins still come from that external file.
+
+## Deployment Configuration
+
+Start from `production/deploy.conf.example`. Important fields:
+
+- `COSMOS_ROOT`: private release root, normally `/opt/cosmosxmachina`.
+- `COSMOS_ENV_FILE`: unchanged real secrets/config file outside releases.
+- `APACHE_SITE_FILE`: HTTPS vhost file, or the combined HTTP/HTTPS vhost file.
+- `APACHE_HTTP_SITE_FILE`: HTTP vhost file; set it equal to `APACHE_SITE_FILE` when both vhosts share one file.
+- `INCOMING_DIR`: SFTP-writable release inbox.
+- `STATUS_DIR`: SFTP-readable activation status.
+- `NODE_SERVICE` and `PYTHON_SERVICE`: existing systemd unit names to reuse.
+- `SERVICE_USER`/`SERVICE_GROUP`: private runtime identity; it must be able to read `COSMOS_ENV_FILE`.
+- `UPLOAD_USER`/`UPLOAD_GROUP`: existing SFTP identity.
+- `KEEP_RELEASES=2`: active plus previous rollback release.
+- `MIN_FREE_MIB=250`: release activation disk floor.
+- `INSTALL_MISSING_PACKAGES=1`: allow the one-time bootstrap to install compact runtime prerequisites.
+
+The bootstrap refuses a deployment config that is not root-owned or is group/world writable. It also refuses a production `.env` that the service account cannot read or that group/others can write. A normal secrets mode is `640` with an appropriate private service group, or `600` when the service runs as its owner.
+
+Minimum runtime values expected in the preserved `.env` are documented in `.env.example`. Production should include a strong `LAB_SESSION_SECRET`, the Gmail SMTP settings, the public `ALLOWED_ORIGIN`, and visit-counter settings when analytics is enabled.
+
+## What A Release Contains
+
+`scripts/build-production-release.mjs` runs the complete local gates, builds `dist/`, bundles the Node gateway, copies only runtime Python modules, writes a SHA-256 file manifest, scans for secrets/live-AI configuration, and creates:
+
+```text
+release-output/
+  cosmos-release-<commit>.tar.gz
+  cosmos-release-<commit>.tar.gz.sha256
+  cosmos-release-<commit>.ready
+```
+
+The archive allowlist permits only:
+
+- compiled `dist/` public files;
+- bundled Node gateway plus `contact.js` and its package type marker;
+- six Python runtime modules and production requirements;
+- the private cross-service smoke script;
+- `manifest.json`.
+
+Plans, Markdown, source tests, CVs, SSH keys, `.env`, scratch pages, unbuilt source and repository metadata cannot enter a release. The verifier rejects extra files, symlinks, special files, modified checksums, changed runtime requirements, dirty builds, live-AI mode and secret-like content.
+
+## Activation And Rollback
+
+`production/activate-release.sh` is installed as a root-owned cron target and runs under `flock`:
+
+1. Ignore incomplete uploads with no `.ready` marker.
+2. Parse a small regular marker and verify archive/checksum names and SHA-256.
+3. Check the archive size, free disk and RAM floor.
+4. Reject unsafe archive paths, extract into a staging directory, normalize modes and run the exact manifest verifier.
+5. Reject changed Python requirements until bootstrap explicitly updates the shared environment.
+6. Atomically point `current` at the verified version.
+7. Restart Python or Node only when its component hash changed or the service is inactive.
+8. Check both private health routes and run one complete fixture workflow through Node and Python.
+9. Restore the previous `current` symlink and services if any health check fails.
+10. Keep only the active and previous releases, delete stale staging data, and write a compact status JSON.
+
+Uploading the same release again is idempotent and still revalidates the on-disk release and health topology. A corrupt archive, low disk, changed requirements or failed service produces a failed status and does not replace the working release.
+
+## Apache Security And Public Files
+
+Apache serves `/opt/cosmosxmachina/current/dist`, never the repository. The managed vhost:
+
+- denies the application root, then grants only `current/dist`;
+- disables directory indexes and HTTP TRACE;
+- allows only the homepage, privacy, crawler files, runtime assets, Creation Lab, four demos, `/api/*`, and ACME challenge paths;
+- returns `403` for plans, source, keys, `.env`, scratch pages and unexpected legacy aliases;
+- redirects HTTP and `www` traffic to the HTTPS apex while preserving paths;
+- keeps backend ports bound to loopback;
+- discards ordinary IP-bearing Apache access logs;
+- applies security headers, compression, ETags and restrained asset caching.
+
+`production/public-root.htaccess` is only an interim guard for the legacy SFTP document root. It has already been designed as the same strict public allowlist. Once Apache points at `current/dist`, the legacy repository root must remain outside the vhost and the interim file is no longer part of delivery.
+
+Recommended filesystem ownership:
+
+```text
+/opt/cosmosxmachina/                 root:root       0755
+/opt/cosmosxmachina/.env             root:<service>  0640 (or private owner 0600)
+/opt/cosmosxmachina/deploy.conf      root:root       0600
+/opt/cosmosxmachina/releases/        root:root       0755
+/opt/cosmosxmachina/shared/          root:<service>  0750
+INCOMING_DIR and STATUS_DIR          <upload>        0750
+/var/lib/cosmos-analytics/           <service>       0750
+```
+
+## Local Development And Tests
+
+Development machine prerequisites are Node 22.5+, npm, Python 3.11+, and Playwright Chromium. These are not production requirements.
+
+```bash
 npm ci
-python3 -m venv .venv
-.venv/bin/python -m pip install --upgrade pip
-.venv/bin/python -m pip install -r python_service/requirements.txt
-cp .env.example .env
-chmod 640 .env
-~~~
+python -m venv .venv
+```
 
-Edit .env with the production values. Do not copy a development app password into a public file or shell history.
+Activate the environment, then:
 
-Build the only public web root:
-
-~~~bash
+```bash
+python -m pip install -r python_service/requirements.txt
+npx playwright install chromium
+npm test
+npm run test:e2e
 npm run build
-test -f dist/index.html
-test -f dist/portfolio/index.html
-~~~
+```
 
-Check that secrets and private sources are absent:
+To preview all four browser-only demos after `npm run build`, only the static server is needed:
 
-~~~bash
-find dist -name '.env*' -o -name 'vash_key*' -o -name '*.md'
-~~~
+```bash
+npm run preview
+```
 
-The command should print nothing.
+To run the full compatibility topology with Vite, Node and Python for contact, analytics and private-route checks:
 
-### 4. Install systemd Units
+```bash
+npm run serve:local
+```
 
-The tracked units are cosmos-contact.service and cosmos-lab-python.service.
+Open `http://127.0.0.1:4173/`. Stop with `Ctrl+C`.
 
-Create the protected aggregate-statistics directory before starting the Node unit when installing manually:
+`npm run release:build` is the authoritative release gate. It chooses unused loopback ports, then runs frontend tests, all Node tests, Python tests, the current static-only 84-case Playwright matrix, the production build, `/api/lab` bundle rejection, archive verification and secret scanning. The packaged compatibility runtime is still smoke-tested. On Windows, the final atomic POSIX activation simulation is skipped and is run by the Ubuntu CI job.
 
-~~~bash
-sudo install -d -o www-data -g www-data -m 0750 /var/lib/cosmos-analytics
-~~~
+## Production Verification And Diagnosis
 
-~~~bash
-sudo cp cosmos-contact.service /etc/systemd/system/cosmos-contact.service
-sudo cp cosmos-lab-python.service /etc/systemd/system/cosmos-lab-python.service
-sudo systemctl daemon-reload
-sudo systemctl enable --now cosmos-lab-python.service
-sudo systemctl enable --now cosmos-contact.service
-sudo systemctl status cosmos-lab-python.service --no-pager
-sudo systemctl status cosmos-contact.service --no-pager
-~~~
+Root-capable server operators can check:
 
-Both services use Restart=always and start automatically after a reboot. They bind only to loopback. The Node and Python applications read the project-root .env directly; the units do not define another configuration source.
-
-Health checks:
-
-~~~bash
-curl http://127.0.0.1:8790/health
-curl http://127.0.0.1:8787/api/lab/health
-~~~
-
-### 5. Install Nginx Configuration
-
-~~~bash
-sudo cp cosmos-x-machina.nginx /etc/nginx/sites-available/cosmos-x-machina
-sudo ln -s /etc/nginx/sites-available/cosmos-x-machina /etc/nginx/sites-enabled/cosmos-x-machina
-sudo rm -f /etc/nginx/sites-enabled/default
-sudo nginx -t
-sudo systemctl reload nginx
-~~~
-
-Nginx serves only `dist/` and is the sole public route to `/api/*`. It redirects `www` to the apex domain, compresses text, applies conservative asset caching and sends document events only to the private loopback aggregate collector. The vhost does not write an IP-bearing access log and never serves the repository, `.env`, profiles, plans or keys.
-
-The autonomous installer uses `scripts/configure-nginx-site.mjs` instead of blindly overwriting an existing TLS file. On repeat runs it retains Certbot directives, replaces only marked cosmosXmachina delivery blocks and verifies the resulting configuration with `nginx -t`.
-
-### 6. Firewall and HTTPS
-
-Allow only SSH, HTTP, and HTTPS:
-
-~~~bash
-sudo ufw allow OpenSSH
-sudo ufw allow 'Nginx Full'
-sudo ufw enable
-~~~
-
-Do not allow 8787 or 8790.
-
-After DNS resolves:
-
-~~~bash
-sudo certbot --nginx -d cosmos-x-machina.it -d www.cosmos-x-machina.it --redirect
-sudo certbot renew --dry-run
-~~~
-
-Certbot adds the HTTPS server and HTTP-to-HTTPS redirect to the installed Nginx configuration.
-
-### 7. Search Engine Discovery
-
-The code ships complete metadata, `robots.txt` and `sitemap.xml`; account verification cannot be automated safely. After the first public deployment:
-
-1. Add `cosmos-x-machina.it` as a Domain property in Google Search Console and verify it with the DNS TXT record Google provides.
-2. Submit `https://cosmos-x-machina.it/sitemap.xml` and inspect `/`, `/?lang=it`, `/?lang=en`, `/portfolio/` and one demo URL.
-3. Add the domain in Bing Webmaster Tools, either by importing the verified Search Console property or using Bing's DNS verification, then submit the same sitemap.
-4. Recheck indexing after major content changes. Do not add verification secrets to public HTML when DNS verification is available.
-
-### 8. Production Verification
-
-~~~bash
+```bash
+sudo apache2ctl configtest
+sudo systemctl status apache2 <node-unit> <python-unit>
+curl -fsS http://127.0.0.1:8787/api/lab/health
+curl -fsS http://127.0.0.1:8790/health
 curl -I https://cosmos-x-machina.it/
 curl -I https://cosmos-x-machina.it/portfolio/
-curl https://cosmos-x-machina.it/robots.txt
-curl https://cosmos-x-machina.it/sitemap.xml
-curl https://cosmos-x-machina.it/api/lab/health
-ss -lun | grep 127.0.0.1:5514
-journalctl -u cosmos-contact.service -n 50 --no-pager
-journalctl -u cosmos-lab-python.service -n 50 --no-pager
-sudo -u www-data npm run report:visits -- --days 7
-~~~
+curl -I https://cosmos-x-machina.it/acension.txt
+```
 
-Run the report command from the repository root. It prints daily records and a seven-day total; the current hour appears only after it closes. Use the live contact form for the final SMTP check. Request bodies, query strings, user agents and visitor identifiers are not logged; do not add them.
+The first five should succeed; the private file probe should return `403`. Backend ports must not be reachable externally.
 
-## Updating Production
+For diagnostics:
 
-~~~bash
-cd /var/www/cosmosXmachina.website.github.io
-git pull --ff-only
-sudo bash deploy-production.sh
-~~~
+```bash
+sudo journalctl -u <node-unit> -u <python-unit> --since today
+sudo tail -n 1 /opt/cosmosxmachina/status/active.json
+```
 
-The script tests before activating, atomically swaps `dist/`, refreshes services and Nginx, and preserves `.env`. Verify the homepage, Portfolio index, one Node workflow, one Python workflow, statistics listener and contact delivery after every deployment.
+The contact endpoint shares the Node gateway. If Lab health works but mail does not, verify the preserved SMTP values and Gmail app password without printing secrets. Do not replace the `.env` with `.env.example`.
 
-## Security Checklist
+Visit analytics is enabled by the production Node unit and writes only daily aggregate records to `/var/lib/cosmos-analytics/visits-daily.jsonl`. The development report command can read a copied file:
 
-- .env exists only on the runtime machine and is mode 640 or stricter.
-- vash_key, vash_key.pub, CVs, profiles, and planning sources are not committed or copied into dist/.
-- Only Nginx listens publicly.
-- Node listens on 127.0.0.1:8787.
-- Python listens on 127.0.0.1:8790.
-- The aggregate collector listens only on UDP 127.0.0.1:5514 and `/var/lib/cosmos-analytics` is writable only by the service account.
-- Daily visit records contain counts only; IP addresses and hashes must never be written.
-- The repository root is never an Nginx root.
-- Gmail SMTP uses an app password, not the main account password.
-- Version 1 has no AI key and no external AI traffic.
-- Arbitrary uploads, URL fetching, scraping, and automatic proposal sending remain disabled.
+```bash
+npm run report:visits -- --file /path/to/visits-daily.jsonl --days 7
+```
+
+No IP address, user agent, query string, request body or visitor history is persisted.
+
+## Search Console And Bing Submission
+
+After the HTTPS release is active:
+
+1. Add `https://cosmos-x-machina.it/` to Google Search Console. DNS verification is preferred because it remains valid independently of a page release; use the TXT value Google provides at the DNS host.
+2. Submit `https://cosmos-x-machina.it/sitemap.xml` in the Sitemaps view and inspect the homepage plus Creation Lab URL once.
+3. Add the same site in Bing Webmaster Tools, or import the verified Search Console property when Bing offers that path.
+4. Submit the same sitemap in Bing and leave `robots.txt` publicly reachable.
+5. Do not create a second indexed property for design-preview URLs. The `.com` address is an English-profile redirect; canonical Creation Lab and demo URLs remain on `.it`.
+
+Search submission does not guarantee ranking or immediate indexing. Keep canonical, alternate-language, structured-data, robots and sitemap tests green in every release.

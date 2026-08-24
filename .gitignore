@@ -10,6 +10,7 @@ dist/
 .venv/
 __pycache__/
 .pytest_cache/
+.test-tmp/
 coverage/
 Davide_Deon_CV_EN.pdf
 Vash Services Profile.txt
@@ -19,3 +20,4 @@ sol gpt plan.txt
 test-results/
 playwright-report/
 debug.log
+release-output/

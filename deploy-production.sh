@@ -1,227 +1,208 @@
 #!/usr/bin/env bash
-# cosmosXmachina production bootstrap for Ubuntu/Debian.
+# cosmosXmachina Apache-native production bootstrap and recovery entry point.
 #
-# Run from the uploaded repository root:
-#   sudo bash deploy-production.sh
+# SERVER OPERATOR / CODEX PROCEDURE
+# 1. Do not run this from the public Apache document root. Keep the repository
+#    copy private and keep the real .env at its existing path under /opt.
+# 2. Copy production/deploy.conf.example to a root-owned deployment file, edit
+#    COSMOS_ENV_FILE, both Apache vhost paths, INCOMING_DIR and STATUS_DIR for
+#    this machine, then upload a locally built release archive/checksum/.ready marker.
+# 3. Run: sudo bash deploy-production.sh --config /opt/cosmosxmachina/deploy.conf
+# 4. The script installs only missing runtime prerequisites, creates the small
+#    shared Python environment, reuses the configured systemd service names,
+#    activates a verified release, merges only a managed block into the existing
+#    Apache/Certbot vhost, runs apache2ctl configtest, and installs the cron.
+# 5. Do not report success until "Apache production bootstrap completed" is
+#    printed. Never run the retired Nginx deployment procedure.
+# 6. Future routine releases require SFTP only: upload archive, .sha256, then
+#    .ready last. Cron verifies, activates, health-checks and rolls back.
 #
-# Operator/Codex contract:
-# - Preserve an existing project-root .env. On a first install, either let this
-#   script create it or create it from .env.example and set SMTP_PASS first.
-# - This script installs OS, Node and Python dependencies; forces fixture-only
-#   AI behavior; runs frontend, Node, Python and four-viewport Playwright tests;
-#   builds and scans an isolated release; activates dist/; installs/enables the
-#   Node and Python systemd services; configures Nginx, SEO files and private
-#   aggregate visit statistics; and verifies health.
-# - Do not report success unless "Production installation completed" appears.
-# - If it fails, fix the reported line and rerun this idempotent script. Inspect:
-#     journalctl -u cosmos-contact.service -u cosmos-lab-python.service -n 100 --no-pager
-#     nginx -t
-# - Existing Certbot/TLS configuration is preserved when its web root and API
-#   proxy are valid. On a first deployment, configure DNS and run the Certbot
-#   command printed at completion. Never expose loopback ports 8787 or 8790.
+# Full Node/Python/browser tests and frontend compilation happen on the local
+# machine in npm run release:build. Production never installs npm packages,
+# Playwright, Chromium, Vite, test frameworks, Git, Nginx or AI SDKs.
 set -Eeuo pipefail
 IFS=$'\n\t'
 
-APP_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
-DOMAIN="${DOMAIN:-cosmos-x-machina.it}"
-WWW_DOMAIN="${WWW_DOMAIN:-www.cosmos-x-machina.it}"
-SERVICE_USER="${SERVICE_USER:-www-data}"
-SITE_NAME="cosmos-x-machina"
-NEXT_DIST="$APP_ROOT/.dist.next"
-PREVIOUS_DIST="$APP_ROOT/.dist.previous"
-TMP_NGINX=""
-
+SCRIPT_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+CONFIG="/opt/cosmosxmachina/deploy.conf"
+if [[ "${1:-}" == "--config" && -n "${2:-}" ]]; then CONFIG="$2"; fi
 log() { printf '\n[cosmosXmachina] %s\n' "$*"; }
 fail() { printf '\n[cosmosXmachina] ERROR: %s\n' "$*" >&2; exit 1; }
-cleanup() { [[ -z "$TMP_NGINX" ]] || rm -f -- "$TMP_NGINX"; }
-trap cleanup EXIT
-trap 'printf "\n[cosmosXmachina] Failed at line %s. Existing .env was preserved.\n" "$LINENO" >&2' ERR
 
-if [[ ${EUID:-$(id -u)} -ne 0 ]]; then
-  exec sudo --preserve-env=DOMAIN,WWW_DOMAIN,SERVICE_USER bash "$0" "$@"
-fi
-[[ "$(uname -s)" == "Linux" ]] || fail "This production installer supports Linux only."
-[[ "$APP_ROOT" =~ ^/[A-Za-z0-9._/-]+$ ]] || fail "Use a repository path without spaces or shell metacharacters."
-[[ "$APP_ROOT" != "/" && -f "$APP_ROOT/package-lock.json" && -f "$APP_ROOT/.env.example" ]] || fail "Run the repository copy of this script."
-[[ -r /etc/os-release ]] || fail "Cannot identify the operating system."
-# shellcheck disable=SC1091
-source /etc/os-release
-[[ "${ID:-} ${ID_LIKE:-}" =~ (debian|ubuntu) ]] || fail "Only Ubuntu/Debian-family servers are supported."
-id "$SERVICE_USER" >/dev/null 2>&1 || fail "Service account '$SERVICE_USER' does not exist."
+if [[ ${EUID:-$(id -u)} -ne 0 ]]; then exec sudo bash "$0" --config "$CONFIG"; fi
+[[ "$(uname -s)" == "Linux" ]] || fail "Linux is required."
+[[ -r "$CONFIG" ]] || fail "Create and edit the root-owned deployment config first: $CONFIG"
+[[ "$(stat -c %u "$CONFIG")" == "0" ]] || fail "Deployment config must be owned by root."
+config_mode=$((8#$(stat -c %a "$CONFIG")))
+(( (config_mode & 0022) == 0 )) || fail "Deployment config must not be writable by group or others."
+# shellcheck disable=SC1090
+source "$CONFIG"
 
-node_is_supported() {
-  command -v node >/dev/null 2>&1 && node -e '
-    const [major, minor] = process.versions.node.split(".").map(Number);
-    process.exit(major > 22 || (major === 22 && minor >= 5) ? 0 : 1);
-  '
+required=(COSMOS_ROOT COSMOS_ENV_FILE APACHE_SITE_FILE APACHE_HTTP_SITE_FILE INCOMING_DIR STATUS_DIR DOMAIN WWW_DOMAIN NODE_SERVICE PYTHON_SERVICE SERVICE_USER SERVICE_GROUP UPLOAD_USER UPLOAD_GROUP KEEP_RELEASES MIN_FREE_MIB ALLOW_LOW_MEMORY INSTALL_MISSING_PACKAGES)
+for name in "${required[@]}"; do [[ -n "${!name:-}" ]] || fail "Missing $name in $CONFIG"; done
+for path in "$COSMOS_ROOT" "$COSMOS_ENV_FILE" "$APACHE_SITE_FILE" "$APACHE_HTTP_SITE_FILE" "$INCOMING_DIR" "$STATUS_DIR"; do
+  [[ "$path" == /* && "$path" != "/" && "$path" =~ ^/[A-Za-z0-9._/-]+$ ]] || fail "Unsafe path in deployment config: $path"
+done
+for value in "$DOMAIN" "$WWW_DOMAIN"; do [[ "$value" =~ ^[A-Za-z0-9.-]+$ ]] || fail "Invalid domain: $value"; done
+for service in "$NODE_SERVICE" "$PYTHON_SERVICE"; do [[ "$service" =~ ^[A-Za-z0-9_.@-]+\.service$ ]] || fail "Invalid systemd unit name: $service"; done
+for account in "$SERVICE_USER" "$SERVICE_GROUP" "$UPLOAD_USER" "$UPLOAD_GROUP"; do [[ "$account" =~ ^[A-Za-z0-9_-]+$ ]] || fail "Invalid account name"; done
+[[ "$KEEP_RELEASES" =~ ^[0-9]+$ && "$KEEP_RELEASES" -ge 2 && "$KEEP_RELEASES" -le 5 ]] || fail "KEEP_RELEASES must be between 2 and 5."
+[[ "$MIN_FREE_MIB" =~ ^[0-9]+$ && "$MIN_FREE_MIB" -ge 100 && "$MIN_FREE_MIB" -le 10240 ]] || fail "MIN_FREE_MIB must be between 100 and 10240."
+[[ "$ALLOW_LOW_MEMORY" =~ ^[01]$ && "$INSTALL_MISSING_PACKAGES" =~ ^[01]$ ]] || fail "Boolean deployment settings must be 0 or 1."
+[[ -f "$SCRIPT_ROOT/cosmos-x-machina.apache.conf" && -f "$SCRIPT_ROOT/production/activate-release.sh" ]] || fail "Run the tracked repository copy of this script."
+[[ -f "$COSMOS_ENV_FILE" ]] || fail "The existing production environment file was not found: $COSMOS_ENV_FILE"
+[[ -f "$APACHE_SITE_FILE" ]] || fail "The existing Apache vhost was not found: $APACHE_SITE_FILE"
+[[ -f "$APACHE_HTTP_SITE_FILE" ]] || fail "The existing Apache HTTP vhost was not found: $APACHE_HTTP_SITE_FILE"
+id "$SERVICE_USER" >/dev/null 2>&1 || fail "Service user does not exist: $SERVICE_USER"
+id "$UPLOAD_USER" >/dev/null 2>&1 || fail "SFTP upload user does not exist: $UPLOAD_USER"
+getent group "$SERVICE_GROUP" >/dev/null || fail "Service group does not exist: $SERVICE_GROUP"
+getent group "$UPLOAD_GROUP" >/dev/null || fail "Upload group does not exist: $UPLOAD_GROUP"
+command -v apache2ctl >/dev/null || fail "Apache is not installed."
+command -v systemctl >/dev/null || fail "systemd is required."
+
+node_supported() {
+  command -v node >/dev/null 2>&1 && node -e 'const [a,b]=process.versions.node.split(".").map(Number);process.exit(a>22||(a===22&&b>=5)?0:1)'
 }
 
 install_node() {
-  log "Installing Node.js 22 from the NodeSource Debian repository"
+  log "Installing the supported Node.js 22 runtime (no npm packages)"
+  apt-get update
+  DEBIAN_FRONTEND=noninteractive apt-get install -y ca-certificates curl gnupg
   install -d -m 0755 /etc/apt/keyrings
-  curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key \
-    | gpg --dearmor --yes -o /etc/apt/keyrings/nodesource.gpg
+  curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor --yes -o /etc/apt/keyrings/nodesource.gpg
   chmod a+r /etc/apt/keyrings/nodesource.gpg
-  printf 'deb [arch=%s signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_22.x nodistro main\n' \
-    "$(dpkg --print-architecture)" > /etc/apt/sources.list.d/nodesource.list
+  printf 'deb [arch=%s signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_22.x nodistro main\n' "$(dpkg --print-architecture)" > /etc/apt/sources.list.d/nodesource.list
   apt-get update
   DEBIAN_FRONTEND=noninteractive apt-get install -y nodejs
-  node_is_supported || fail "Node.js 22.5 or newer was not installed successfully."
+  node_supported || fail "Node 22.5 or newer could not be installed."
 }
 
-set_env() {
-  local key="$1" value="$2" escaped
-  escaped="${value//\\/\\\\}"
-  escaped="${escaped//&/\\&}"
-  escaped="${escaped//|/\\|}"
-  if grep -q "^${key}=" "$APP_ROOT/.env"; then
-    sed -i "s|^${key}=.*|${key}=${escaped}|" "$APP_ROOT/.env"
-  else
-    printf '%s=%s\n' "$key" "$value" >> "$APP_ROOT/.env"
-  fi
-}
-
-wait_for() {
-  local url="$1" name="$2"
-  for _ in {1..40}; do
-    curl -fsS --max-time 2 "$url" >/dev/null 2>&1 && return 0
-    sleep 0.5
-  done
-  journalctl -u cosmos-contact.service -u cosmos-lab-python.service -n 40 --no-pager >&2 || true
-  fail "$name did not become healthy at $url"
-}
-
-public_get() {
-  local path="$1"
-  if [[ -f "/etc/letsencrypt/live/$DOMAIN/fullchain.pem" ]]; then
-    curl -fsS --resolve "$DOMAIN:443:127.0.0.1" "https://$DOMAIN$path"
-  else
-    curl -fsS -H "Host: $DOMAIN" "http://127.0.0.1$path"
-  fi
-}
-
-log "Installing operating-system dependencies"
-apt-get update
-DEBIAN_FRONTEND=noninteractive apt-get install -y \
-  ca-certificates curl git gnupg iproute2 nginx openssl python3 python3-pip python3-venv certbot python3-certbot-nginx
-node_is_supported || install_node
-log "Using $(node --version), npm $(npm --version), and $(python3 --version 2>&1)"
-
-log "Preparing the protected runtime configuration"
-if [[ ! -f "$APP_ROOT/.env" ]]; then
-  install -m 0640 "$APP_ROOT/.env.example" "$APP_ROOT/.env"
-  log "Created .env from the tracked template; existing deployments keep their file unchanged."
+if [[ "$INSTALL_MISSING_PACKAGES" == "1" ]]; then
+  log "Installing only compact production prerequisites"
+  apt-get update
+  DEBIAN_FRONTEND=noninteractive apt-get install -y ca-certificates curl gzip tar util-linux python3 python3-pip python3-venv
 fi
-set_env ALLOWED_ORIGIN "https://$DOMAIN,https://$WWW_DOMAIN"
-set_env PUBLIC_SITE_URL "https://$DOMAIN"
-set_env PORT "8787"
-set_env PYTHON_LAB_URL "http://127.0.0.1:8790"
-set_env PYTHON_LAB_PORT "8790"
-set_env LAB_MODE "fixture"
-set_env AI_MODE "fixture"
-set_env AI_LIVE_ENABLED "false"
-set_env VISIT_ANALYTICS_ENABLED "true"
-set_env VISIT_ANALYTICS_HOST "127.0.0.1"
-set_env VISIT_ANALYTICS_PORT "5514"
-set_env VISIT_ANALYTICS_FILE "/var/lib/cosmos-analytics/visits-daily.jsonl"
-set_env VISIT_ANALYTICS_TIMEZONE "Europe/Rome"
-set_env VISIT_ANALYTICS_RETENTION_DAYS "400"
-if grep -Eq '^LAB_SESSION_SECRET=(|replace_)' "$APP_ROOT/.env"; then
-  set_env LAB_SESSION_SECRET "$(openssl rand -hex 32)"
-fi
-chown root:"$SERVICE_USER" "$APP_ROOT/.env"
-chmod 0640 "$APP_ROOT/.env"
-for key in "$APP_ROOT/cosmos_key" "$APP_ROOT/vash_key"; do
-  [[ ! -e "$key" ]] || chmod 0600 "$key"
-done
+node_supported || { [[ "$INSTALL_MISSING_PACKAGES" == "1" ]] && install_node || fail "Install Node 22.5 or newer."; }
+python3 -c 'import sys; raise SystemExit(0 if sys.version_info >= (3,11) else 1)' || fail "Python 3.11 or newer is required."
+for command in curl flock logger sha256sum tar; do command -v "$command" >/dev/null || fail "Missing command: $command"; done
+NODE_BIN="$(readlink -f "$(command -v node)")"
+runuser -u "$SERVICE_USER" -- test -r "$COSMOS_ENV_FILE" || fail "Service user $SERVICE_USER cannot read the preserved environment file. Adjust its owner/group, not its contents."
+env_mode=$((8#$(stat -c %a "$COSMOS_ENV_FILE")))
+(( (env_mode & 0022) == 0 )) || fail "The production environment file must not be writable by group or others."
 
-log "Installing locked Node and Python dependencies"
-cd "$APP_ROOT"
-npm ci
-python3 -m venv .venv
-.venv/bin/python -m pip install --upgrade pip
-.venv/bin/python -m pip install -r python_service/requirements.txt
-.venv/bin/python -m pip check
-npm audit --audit-level=high
-npm test
-node node_modules/playwright/cli.js install --with-deps chromium
-E2E_SITE_PORT=44173 E2E_NODE_PORT=48787 E2E_PYTHON_PORT=48790 E2E_WORKERS=2 \
-  node node_modules/playwright/cli.js test
+install -d -o root -g root -m 0755 "$COSMOS_ROOT" "$COSMOS_ROOT/bin" "$COSMOS_ROOT/releases"
+install -d -o root -g "$SERVICE_GROUP" -m 0750 "$COSMOS_ROOT/shared"
+install -d -o "$UPLOAD_USER" -g "$UPLOAD_GROUP" -m 0750 "$INCOMING_DIR" "$STATUS_DIR"
+install -d -o "$SERVICE_USER" -g "$SERVICE_GROUP" -m 0750 /var/lib/cosmos-analytics
+free_kib=$(df -Pk "$COSMOS_ROOT" | awk 'NR==2 {print $4}')
+((free_kib >= MIN_FREE_MIB * 1024)) || fail "At least ${MIN_FREE_MIB} MiB must be free."
+memory_kib=$(awk '/^MemTotal:/ {print $2}' /proc/meminfo)
+if ((memory_kib < 512 * 1024)) && [[ "$ALLOW_LOW_MEMORY" != "1" ]]; then fail "Less than 512 MiB RAM is unsupported."; fi
+if ((memory_kib < 768 * 1024)); then log "WARNING: RAM is below 768 MiB; resource ceilings will be important."; fi
 
-log "Building a checked release away from the live web root"
-rm -rf -- "$NEXT_DIST"
-DIST_DIR=".dist.next" npm run build
-[[ -f "$NEXT_DIST/index.html" && -f "$NEXT_DIST/privacy.html" && -f "$NEXT_DIST/robots.txt" && -f "$NEXT_DIST/sitemap.xml" && -f "$NEXT_DIST/portfolio/index.html" ]] || fail "The release build is incomplete."
-rm -rf -- "$PREVIOUS_DIST"
-if [[ -d "$APP_ROOT/dist" ]]; then mv "$APP_ROOT/dist" "$PREVIOUS_DIST"; fi
-if ! mv "$NEXT_DIST" "$APP_ROOT/dist"; then
-  [[ ! -d "$PREVIOUS_DIST" ]] || mv "$PREVIOUS_DIST" "$APP_ROOT/dist"
-  fail "Could not activate the new dist directory."
-fi
-npm prune --omit=dev
-npm audit --omit=dev --audit-level=high
+log "Installing the shared runtime-only Python environment"
+python3 -m venv "$COSMOS_ROOT/shared/venv"
+"$COSMOS_ROOT/shared/venv/bin/python" -m pip install --disable-pip-version-check --no-cache-dir -r "$SCRIPT_ROOT/python_service/requirements-production.txt"
+"$COSMOS_ROOT/shared/venv/bin/python" -m pip check
+install -o root -g "$SERVICE_GROUP" -m 0640 "$SCRIPT_ROOT/python_service/requirements-production.txt" "$COSMOS_ROOT/shared/requirements-production.txt"
+sha256sum "$SCRIPT_ROOT/python_service/requirements-production.txt" | awk '{print $1}' > "$COSMOS_ROOT/shared/requirements-production.sha256"
+chmod 0640 "$COSMOS_ROOT/shared/requirements-production.sha256"
 
-log "Installing persistent private services"
-NODE_BIN="$(command -v node)"
-install -d -o "$SERVICE_USER" -g "$SERVICE_USER" -m 0750 /var/lib/cosmos-analytics
-sed -e "s|/var/www/cosmosXmachina.website.github.io|$APP_ROOT|g" -e "s|/usr/bin/node|$NODE_BIN|g" \
-  "$APP_ROOT/cosmos-contact.service" > /etc/systemd/system/cosmos-contact.service
-sed "s|/var/www/cosmosXmachina.website.github.io|$APP_ROOT|g" \
-  "$APP_ROOT/cosmos-lab-python.service" > /etc/systemd/system/cosmos-lab-python.service
-chgrp "$SERVICE_USER" "$APP_ROOT"
-chmod 0750 "$APP_ROOT"
+install -o root -g root -m 0755 "$SCRIPT_ROOT/production/activate-release.sh" "$COSMOS_ROOT/bin/activate-release.sh"
+install -o root -g root -m 0644 "$SCRIPT_ROOT/production/verify-release.mjs" "$COSMOS_ROOT/bin/verify-release.mjs"
+
+render_unit() {
+  local source="$1" target="$2" temporary backup
+  temporary="$(mktemp)"
+  sed -e "s|@COSMOS_ROOT@|$COSMOS_ROOT|g" \
+      -e "s|@COSMOS_ENV_FILE@|$COSMOS_ENV_FILE|g" \
+      -e "s|@NODE_BIN@|$NODE_BIN|g" \
+      -e "s|@SERVICE_USER@|$SERVICE_USER|g" \
+      -e "s|@SERVICE_GROUP@|$SERVICE_GROUP|g" "$source" > "$temporary"
+  backup="$COSMOS_ROOT/shared/$(basename "$target").before-apache-native"
+  [[ ! -f "$target" || -e "$backup" ]] || cp -a "$target" "$backup"
+  install -o root -g root -m 0644 "$temporary" "$target"
+  rm -f -- "$temporary"
+}
+
+log "Reusing the configured systemd service names with low-resource units"
+render_unit "$SCRIPT_ROOT/cosmos-contact.service" "/etc/systemd/system/$NODE_SERVICE"
+render_unit "$SCRIPT_ROOT/cosmos-lab-python.service" "/etc/systemd/system/$PYTHON_SERVICE"
 systemctl daemon-reload
-systemctl enable cosmos-lab-python.service cosmos-contact.service
-systemctl restart cosmos-lab-python.service cosmos-contact.service
+systemctl enable "$PYTHON_SERVICE" "$NODE_SERVICE"
 
-log "Installing or validating the Nginx site"
-TMP_NGINX="$(mktemp)"
-NGINX_SITE="/etc/nginx/sites-available/$SITE_NAME"
-NGINX_ARGS=(--template "$APP_ROOT/cosmos-x-machina.nginx" --output "$TMP_NGINX" --app-root "$APP_ROOT" --domain "$DOMAIN" --www-domain "$WWW_DOMAIN")
-if [[ -f "$NGINX_SITE" ]]; then
-  NGINX_ARGS+=(--existing "$NGINX_SITE")
+if [[ ! -L "$COSMOS_ROOT/current" ]]; then
+  compgen -G "$INCOMING_DIR/cosmos-release-*.ready" >/dev/null || fail "Upload a verified release and its .ready marker before first bootstrap."
 fi
-if [[ -f "$NGINX_SITE" ]] && grep -Eq 'listen .*443|ssl_certificate' "$NGINX_SITE"; then
-  grep -Fq "$APP_ROOT/dist" "$NGINX_SITE" || fail "Existing TLS Nginx site points to a different web root."
-  grep -Fq '127.0.0.1:8787' "$NGINX_SITE" || fail "Existing TLS Nginx site lacks the required API proxy."
-  log "Preserving TLS certificates while refreshing the managed site rules."
+if compgen -G "$INCOMING_DIR/cosmos-release-*.ready" >/dev/null; then
+  "$COSMOS_ROOT/bin/activate-release.sh" --config "$CONFIG"
+else
+  systemctl restart "$PYTHON_SERVICE" "$NODE_SERVICE"
+  NODE_HEALTH_URL=http://127.0.0.1:8787 PYTHON_HEALTH_URL=http://127.0.0.1:8790 node "$COSMOS_ROOT/current/runtime/smoke-release.mjs"
 fi
-node "$APP_ROOT/scripts/configure-nginx-site.mjs" "${NGINX_ARGS[@]}"
-install -m 0644 "$TMP_NGINX" "$NGINX_SITE"
-ln -sfn "$NGINX_SITE" "/etc/nginx/sites-enabled/$SITE_NAME"
-nginx -t
-systemctl enable nginx
-systemctl reload nginx
 
-log "Verifying private services and the public route"
-wait_for http://127.0.0.1:8790/health "Python pipeline"
-wait_for http://127.0.0.1:8787/api/lab/health "Node gateway"
-LAB_HEALTH="$(curl -fsS http://127.0.0.1:8787/api/lab/health)"
-python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["ok"] and d["mode"]=="fixture" and d["externalAI"] is False' <<<"$LAB_HEALTH" \
-  || fail "The lab health response is not fixture-only."
-public_get / >/dev/null
-public_get /privacy.html >/dev/null
-public_get /portfolio/ >/dev/null
-ROBOTS_BODY="$(public_get /robots.txt)"
-SITEMAP_BODY="$(public_get /sitemap.xml)"
-grep -Fq 'sitemap.xml' <<<"$ROBOTS_BODY"
-grep -Fq 'hreflang="en"' <<<"$SITEMAP_BODY"
-ss -lun | grep -Fq '127.0.0.1:5514'
-systemctl is-enabled --quiet nginx cosmos-lab-python.service cosmos-contact.service
-systemctl is-active --quiet nginx cosmos-lab-python.service cosmos-contact.service
+log "Merging managed delivery and redirect blocks into the existing Apache/Certbot vhosts"
+a2enmod proxy proxy_http headers expires deflate setenvif rewrite ssl >/dev/null
+apache_backup="$(mktemp)"
+http_backup="$(mktemp)"
+cp -a "$APACHE_SITE_FILE" "$apache_backup"
+cp -a "$APACHE_HTTP_SITE_FILE" "$http_backup"
 
-log "Production installation completed"
+configure_apache() {
+  local target="$1" mode="$2" candidate
+  candidate="$(mktemp)"
+  if ! node "$SCRIPT_ROOT/scripts/configure-apache-site.mjs" \
+    --template "$SCRIPT_ROOT/cosmos-x-machina.apache.conf" \
+    --existing "$target" \
+    --output "$candidate" \
+    --app-root "$COSMOS_ROOT" \
+    --domain "$DOMAIN" \
+    --www-domain "$WWW_DOMAIN" \
+    --mode "$mode"; then
+    rm -f -- "$candidate"
+    return 1
+  fi
+  install -o root -g root -m 0644 "$candidate" "$target"
+  rm -f -- "$candidate"
+}
+
+apache_merge_ok=1
+if [[ "$APACHE_HTTP_SITE_FILE" == "$APACHE_SITE_FILE" ]]; then
+  configure_apache "$APACHE_SITE_FILE" auto || apache_merge_ok=0
+else
+  configure_apache "$APACHE_SITE_FILE" delivery || apache_merge_ok=0
+  ((apache_merge_ok)) && configure_apache "$APACHE_HTTP_SITE_FILE" http || apache_merge_ok=0
+fi
+if (( ! apache_merge_ok )) || ! apache2ctl configtest; then
+  cp -a "$apache_backup" "$APACHE_SITE_FILE"
+  cp -a "$http_backup" "$APACHE_HTTP_SITE_FILE"
+  apache2ctl configtest || true
+  rm -f -- "$apache_backup" "$http_backup"
+  fail "Apache rejected the managed configuration; the original vhost was restored."
+fi
+rm -f -- "$apache_backup" "$http_backup"
+systemctl reload apache2
+
+log "Installing marker-driven cron activation"
+cat > /etc/cron.d/cosmosxmachina-release <<EOF
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+* * * * * root $COSMOS_ROOT/bin/activate-release.sh --config $CONFIG >/dev/null 2>&1
+EOF
+chmod 0644 /etc/cron.d/cosmosxmachina-release
+
+systemctl is-active --quiet apache2 cron "$PYTHON_SERVICE" "$NODE_SERVICE" || fail "A required production service is inactive."
+public_status="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 10 -H "Host: $DOMAIN" http://127.0.0.1/)"
+[[ "$public_status" =~ ^(200|301|302|307|308)$ ]] || fail "Apache public route returned HTTP $public_status"
+if [[ "$INSTALL_MISSING_PACKAGES" == "1" ]]; then apt-get clean; fi
+
+log "Apache production bootstrap completed"
 printf '%s\n' \
-  "Public files: $APP_ROOT/dist" \
-  "Node gateway: active on 127.0.0.1:8787" \
-  "Python pipeline: active on 127.0.0.1:8790" \
-  "Visit statistics: daily aggregates only in /var/lib/cosmos-analytics/visits-daily.jsonl" \
+  "Static root: $COSMOS_ROOT/current/dist" \
+  "Node gateway: 127.0.0.1:8787 via $NODE_SERVICE" \
+  "Python pipeline: 127.0.0.1:8790 via $PYTHON_SERVICE" \
+  "Environment: preserved at $COSMOS_ENV_FILE" \
+  "Incoming SFTP releases: $INCOMING_DIR" \
+  "Deployment status: $STATUS_DIR/active.json" \
   "AI behavior: fixture-only; external calls disabled" \
-  "Services: enabled at boot and configured with Restart=always"
-if grep -Eq '^SMTP_PASS=(|replace_)' "$APP_ROOT/.env"; then
-  printf '\nWARNING: SMTP_PASS still needs the Gmail app password for direct form delivery.\n' >&2
-fi
-if [[ ! -f "/etc/letsencrypt/live/$DOMAIN/fullchain.pem" ]]; then
-  printf '\nAfter DNS resolves, enable HTTPS with:\n  sudo certbot --nginx -d %s -d %s --redirect\n' "$DOMAIN" "$WWW_DOMAIN"
-fi
-printf '\nInspect services and visits with:\n  journalctl -u cosmos-contact.service -u cosmos-lab-python.service -f\n  cd %s && sudo -u %s npm run report:visits -- --days 7\n' "$APP_ROOT" "$SERVICE_USER"
+  "Public server: existing Apache/Certbot configuration"

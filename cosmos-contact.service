@@ -4,25 +4,46 @@ After=network.target
 
 [Service]
 Type=simple
-WorkingDirectory=/var/www/cosmosXmachina.website.github.io
-ExecStart=/usr/bin/node /var/www/cosmosXmachina.website.github.io/api/server.mjs
+WorkingDirectory=@COSMOS_ROOT@/current
+ExecStart=@NODE_BIN@ @COSMOS_ROOT@/current/runtime/node/api/server.bundle.mjs
 Restart=always
 RestartSec=5
-User=www-data
-Group=www-data
+User=@SERVICE_USER@
+Group=@SERVICE_GROUP@
 Environment=NODE_ENV=production
+Environment=COSMOS_ENV_FILE=@COSMOS_ENV_FILE@
+Environment=NODE_OPTIONS=--max-old-space-size=128
+Environment=PORT=8787
+Environment=LAB_MODE=fixture
+Environment=LAB_MAX_SESSIONS=500
+Environment=LAB_RATE_LIMIT_MAX_CLIENTS=5000
+Environment=AI_MODE=fixture
+Environment=AI_LIVE_ENABLED=false
+Environment=PYTHON_LAB_URL=http://127.0.0.1:8790
+Environment=VISIT_ANALYTICS_ENABLED=true
+Environment=VISIT_ANALYTICS_HOST=127.0.0.1
+Environment=VISIT_ANALYTICS_PORT=5514
+Environment=VISIT_ANALYTICS_FILE=/var/lib/cosmos-analytics/visits-daily.jsonl
+Environment=VISIT_ANALYTICS_RETENTION_DAYS=400
+Environment=VISIT_ANALYTICS_MAX_HOURLY_VISITORS=5000
 UMask=0027
 NoNewPrivileges=true
 PrivateDevices=true
 PrivateTmp=true
 ProtectControlGroups=true
-ProtectHome=read-only
+ProtectHome=true
 ProtectKernelModules=true
 ProtectKernelTunables=true
 ProtectSystem=strict
 ReadWritePaths=/var/lib/cosmos-analytics
 RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
 RestrictSUIDSGID=true
+LockPersonality=true
+MemoryHigh=144M
+MemoryMax=192M
+CPUQuota=60%
+TasksMax=32
+LimitNOFILE=1024
 
 [Install]
 WantedBy=multi-user.target

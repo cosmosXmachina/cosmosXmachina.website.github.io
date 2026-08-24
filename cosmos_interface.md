@@ -16,18 +16,18 @@ This file documents the architecture, technologies, visual system and implementa
 - Asset folder: `assets/`
 - Creation Lab: `portfolio/` with active demos 01, 02, 03 and 06
 - Build workspace: `package.json`, `vite.config.js`, `scripts/build.mjs`, `scripts/optimize-images.mjs`
-- Private services: `api/server.mjs` and `python_service/server.py`
+- Preserved private services: `api/server.mjs` for contact/analytics plus dormant Lab routes, and `python_service/server.py` for dormant compatibility
 - Private aggregate visit counter: `api/visit-analytics.mjs`; report command: `npm run report:visits -- --days 7`
-- README: `README.md` summarizes local preview, static-host limitations and the Nginx production release
-- Installation guide: `installation.md` documents dependencies, fresh-machine setup and contact endpoint deployment
-- Autonomous production installer: `deploy-production.sh`; it installs dependencies, runs the complete isolated test topology, builds to `.dist.next`, activates `dist/`, installs systemd/Nginx configuration and verifies health while preserving `.env` and existing TLS
-- Hosting target: Nginx serving only `dist/`, with `/api/*` proxied to private loopback services
+- README: `README.md` summarizes local preview, static-host limitations and the Apache production release
+- Installation guide: `installation.md` is the canonical local setup, one-time bootstrap, SFTP release and recovery procedure
+- Production tooling: `scripts/build-production-release.mjs`, `scripts/upload-production-release.ps1`, `production/activate-release.sh`, `production/verify-release.mjs`, `deploy-production.sh`, `cosmos-x-machina.apache.conf` and `production/deploy.conf.example`
+- Hosting target: Apache serving only `/opt/cosmosxmachina/current/dist`, with `/api/*` proxied to private loopback services
 - Architecture: canonical remote-first homepage plus a multi-page Creation Lab production build
 - Languages: Italian and English, switched client-side
-- Current base tech stack: HTML, CSS, vanilla JavaScript, React, Vite, Node, FastAPI and static image assets
+- Current base tech stack: HTML, CSS, vanilla JavaScript, React, Vite, Node, FastAPI, IndexedDB, Web Workers and static image assets
 - Additional approved technology for `index.html`: Three.js loaded as a pinned CDN ES module
-- Approved backend: `api/server.mjs`, mounting the Gmail SMTP handler, anonymous lab sessions and deterministic workflow routes using the project `.env` file
-- Production build command: `npm run build`; background regeneration command: `npm run optimize:images`; browser/third-party analytics and live external AI remain unapproved
+- Approved backend: `api/server.mjs`, mounting Gmail SMTP, aggregate analytics and dormant Lab compatibility routes; public demos execute in the browser and production reads the preserved external file selected by `COSMOS_ENV_FILE`
+- Production release command: `npm run release:build`; ordinary frontend command: `npm run build`; background regeneration command: `npm run optimize:images`; browser/third-party analytics and live external AI remain unapproved
 
 Any new technology beyond the static stack, the approved `index.html` Three.js layer and the approved contact endpoint must be approved by the user first, then documented in both `AGENTS.md` and this file.
 
@@ -44,7 +44,7 @@ Real contacts currently wired into the site:
 
 The VAT number appears in the homepage Contact section, the legal footer, the Creation Lab footer and the homepage `ProfessionalService` JSON-LD record. Public authorship is Davide Deon/Vash; no customer-facing page may imply that the site or demos were AI-coded. References to synthetic data and simulated providers explain demo behavior only.
 
-The contact form posts JSON to `CONTACT_ENDPOINT`, which defaults to `/api/contact`. The Gmail SMTP mail system requires `api/contact.js` to be running on a Node/serverless host. The endpoint reads the project `.env` file and sends through Gmail SMTP with `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM`, `MAIL_TO`, `ALLOWED_ORIGIN` and `PORT`. Gmail app passwords must never be committed or placed in browser JavaScript.
+The contact form posts JSON to `CONTACT_ENDPOINT`, which defaults to `/api/contact`. The Gmail SMTP mail system requires `api/contact.js` through the private Node gateway. Production loads the unchanged real `/opt/.../.env` via `COSMOS_ENV_FILE` and sends through Gmail SMTP with `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM`, `MAIL_TO`, `ALLOWED_ORIGIN` and `PORT`. Gmail app passwords must never be committed, packaged or placed in browser JavaScript.
 
 If the endpoint is unavailable, `index.html` falls back to a `mailto:` URL addressed to `davide.deon@gmail.com`, using the selected language's subject and form labels. This preserves a backup contact path, but real Gmail SMTP delivery requires the Node endpoint to be deployed separately or the site to be served from a host that runs `/api/contact`.
 
@@ -68,7 +68,7 @@ The About/Profile section remains intentionally removed. Portfolio is deliberate
 
 ## File Variants
 
-`index.html` is the canonical production homepage and includes the approved Three.js solid sacred-geometry layer. The production Nginx build serves it at the site root; GitHub Pages can host only the static preview without private Lab or SMTP services.
+`index.html` is the canonical production homepage and includes the approved Three.js solid sacred-geometry layer. Production Apache serves its compiled copy at the site root. Static hosting supports all four Creation Lab demos but cannot provide private SMTP or aggregate server-side analytics.
 
 `index2D.html` is the older non-3D fallback/reference page. Do not treat it as the main implementation unless the user asks to restore or maintain the 2D version.
 
@@ -191,9 +191,10 @@ The current release sets no first-party cookies and uses no browser/third-party 
 - `cosmos-lang` in `localStorage` persists the requested language until changed or removed
 - `cosmos-lab-provider` in `sessionStorage` persists a simulated provider choice for the tab session
 - `cosmos-lab-handoff` in `sessionStorage` carries a reviewable demo summary for at most 15 minutes and is removed after use
-- the signed anonymous Lab token is held in JavaScript memory, not a cookie, and the server session expires after 30 minutes
+- `cosmos-creation-lab` IndexedDB stores the bounded, versioned synthetic Operations Hub order state until reset or browser-site data is cleared
+- synthetic role, quota, replay and workflow session state is held only in JavaScript memory and renews after 30 minutes; it is not a cookie or security token
 
-The approved first-party counter is outside the browser. Nginx sends successful top-level document events to UDP `127.0.0.1:5514`; `api/visit-analytics.mjs` classifies only the homepage, privacy page, Creation Lab and four demos. It uses the address only as an in-memory key for one fixed clock-hour bucket. The address is never written, hashed, encrypted for later use or included in application logs. Query strings, user agents, request bodies and navigation histories are not collected.
+The approved first-party counter is outside the browser. Apache pipes successful top-level document events through the standard `logger` utility to UDP `127.0.0.1:5514`; `api/visit-analytics.mjs` classifies only the homepage, privacy page, Creation Lab and four demos. It uses the address only as an in-memory key for one fixed clock-hour bucket, capped at 5,000 current entries by default. The address is never written, hashed, encrypted for later use or included in application logs. Query strings, user agents, request bodies and navigation histories are not collected.
 
 At each closed hour the collector writes or updates one identifier-free JSONL record for that calendar day in `/var/lib/cosmos-analytics/visits-daily.jsonl`. Fields report total visits, visits reaching home, Lab, any demo, Lab plus demo, privacy, and each demo. Records are retained for 400 days; `npm run report:visits -- --days 7` computes the weekly view without creating hourly files. Shared addresses, bots, blocked `Sec-Fetch-Dest` headers and service restarts can cause under/over-counting, so these are directional product statistics rather than identity-grade analytics.
 
@@ -201,25 +202,63 @@ No consent banner is shown while this functional and strictly aggregate state re
 
 ## Creation Lab Runtime Architecture
 
-The active public demos are Document Operations, Orion Operations Hub, Secure Knowledge Assistant and KPI Studio. Each is an independent Vite entry and visual system. Shared code is limited to API contracts, localization, fixture data, knowledge policy and contact handoff.
+The active public demos are Document Operations, Orion Operations Hub, Secure Knowledge Assistant and KPI Studio. Each is an independent Vite entry and visual system. Shared code is limited to the browser runtime, localization, versioned fixtures, retrieval policy, Operations Hub persistence and contact handoff.
 
 Local and production topology:
 
 ```text
-browser -> Vite/Nginx static dist/
-        -> /api/* -> Node Fastify gateway on 127.0.0.1:8787
-                     -> deterministic Python service on 127.0.0.1:8790
-Nginx document access -> UDP 127.0.0.1:5514 -> in-memory hourly dedupe
+browser -> Vite locally / Apache production static dist/
+        -> Creation Lab workflows execute entirely in browser
+        -> /api/contact -> Node Fastify gateway on 127.0.0.1:8787
+Apache document access -> UDP 127.0.0.1:5514 -> in-memory hourly dedupe
                                                 -> daily aggregate JSONL
+
+preserved compatibility: Node /api/lab routes -> Python 127.0.0.1:8790
+                         (not called by public demos)
 ```
 
-The Node gateway mounts SMTP, signed anonymous lab sessions, request validation, authoritative workflow state and the provider-neutral AI gateway. Sessions are role-bound in server memory, HMAC-signed, capped at 2,000 active records, expire after 30 minutes and permit 25 successful actions. Mutations require an idempotency key; execution is serialized per session, failed work rolls back without consuming quota, and a duplicate key replays its original result.
+`portfolio/shared/browser-runtime.js` is the public execution boundary. It validates bounded inputs, rejects executable HTML, provides role-bound 30-minute synthetic sessions and 25 successful actions, creates deterministic IDs, applies state transitions to a draft, commits only successful work, and replays matching idempotency keys without consuming quota. It also provides simulated latency, cancellation and visible reset behavior without `fetch`.
 
-`AI_MODE=fixture` is the only approved release behavior. OpenAI, Google Gemini, Anthropic Claude, xAI Grok and OpenRouter adapters are present behind the same contract and tested with mocked transports. Live execution additionally requires `AI_LIVE_ENABLED=true`; it must not be enabled without explicit user approval. Provider output is schema-validated and bounded, transport errors are normalized, retries are limited, and traces are redacted. No API keys or provider endpoints enter browser bundles.
+The browser `FixtureAIProvider` preserves the provider-neutral result contract. OpenAI, Google Gemini, Anthropic Claude, xAI Grok and OpenRouter selections are simulated presentation targets; no provider endpoint or key enters a browser bundle. The build rejects `/api/lab` references and provider-network endpoints in published code.
 
-Browser fixtures are enabled only by Vite development mode plus `fixtures` mode or `VITE_BROWSER_FIXTURES=true`. Use `npm run dev:fixtures` for a static exploratory fallback. Normal development and production builds expose service errors instead of silently masking a missing gateway or Python pipeline.
+Per-demo execution:
 
-`scripts/e2e-stack.mjs` launches the real local Vite, Node and Python topology for Playwright. The browser matrix runs at 360, 768, 1024 and 1440 pixels and covers both languages, workflows, authorization, citations, validation, expired-session recovery, new-tab navigation, reduced motion and forbidden external AI traffic.
+- Document Operations performs classification, extraction, validation, evidence and human-review transitions in browser memory.
+- Operations Hub uses the shared transactional state machine and a bounded schema-versioned IndexedDB record. Missing, stale or corrupt storage restores the known fixtures visibly.
+- Secure Knowledge Assistant tokenizes a twelve-document synthetic corpus into a native inverted index, filters permitted documents before ranking, cites retrieved passages and abstains on restricted/injection/no-evidence requests. This is an inspectable demonstration, not a real client-side authorization boundary.
+- KPI Studio keeps ECharts rendering and KPI calculations in the browser/Web Worker and derives its local narrative from the selected period's computed metrics.
+
+The Node gateway still owns Gmail SMTP and aggregate analytics. Its Lab routes, provider adapters and the private Python pipeline remain compatibility code and retain unit/packaged smoke coverage, but public demos neither import nor call them. Production continues to force `AI_MODE=fixture` and `AI_LIVE_ENABLED=false`.
+
+`scripts/e2e-stack.mjs` starts Vite alone for Playwright, deliberately leaving Node/Python Lab execution unavailable. `npm run serve:local` starts the preserved full topology for contact, analytics and compatibility checks. The browser matrix runs at 360, 768, 1024 and 1440 pixels and covers both languages, workflows, reset, IndexedDB persistence/recovery, citations, validation, navigation, reduced motion and zero runtime fetch/XHR traffic.
+
+## Apache Production Release Architecture
+
+Production is deliberately build-free and low-footprint. `npm run release:build` runs all frontend, Node, Python and Playwright gates on the development machine, chooses unused loopback ports, builds `dist/`, bundles the Fastify gateway with esbuild, copies only runtime Python modules, scans for secrets and live-AI configuration, and emits an archive, checksum and `.ready` marker under ignored `release-output/`. The compressed archive is capped at 8 MiB and contains no repository source, tests, plans, CVs, keys or `.env`.
+
+The only public daemon is Apache. The managed configuration supports combined or separate HTTP/HTTPS vhost files, preserves Certbot certificate directives, redirects HTTP and `www` to the HTTPS apex, disables TRACE and indexes, denies the private application root, grants only `current/dist`, and applies a URL allowlist before stale aliases or filesystem mapping. Public routes are the homepage, privacy, crawler files, runtime assets, Creation Lab, demos 01/02/03/06, `/api/*` and ACME challenges. Apache discards ordinary access logs and forwards only qualifying document events over loopback for aggregate measurement.
+
+The release directory layout is:
+
+```text
+/opt/cosmosxmachina/
+  .env                       external preserved secrets/config
+  deploy.conf                root-owned machine configuration
+  current -> releases/<id>   atomic active symlink
+  releases/                  active and previous release only
+  shared/venv/               runtime-only FastAPI/Pydantic/Uvicorn environment
+  incoming/                  SFTP release inbox
+  status/active.json         SFTP-readable activation result
+  bin/                       root-owned verifier and activator
+```
+
+The Node systemd unit is limited to a 128 MB V8 heap, `MemoryMax=192M`, `CPUQuota=60%` and 32 tasks. The Python unit uses one Uvicorn worker, `MemoryMax=128M`, `CPUQuota=60%` and 24 tasks. Both run under the configured service identity, bind only to pinned loopback ports, read `COSMOS_ENV_FILE`, and receive systemd filesystem and privilege restrictions. The Node unit also forces fixture-only AI and the bounded loopback analytics listener so a legacy `.env` cannot disable production safeguards or move private listeners. Production refuses less than 512 MB total RAM unless explicitly overridden and requires at least 250 MiB free disk.
+
+Routine deployment is marker-driven and needs no shell: upload archive, checksum, then `.ready` last. Root cron runs the activator under `flock`, verifies regular-file markers, hashes, archive paths, exact manifests, requirement compatibility, disk/RAM limits and fixture-only policy, then atomically changes `current`. It restarts only changed or inactive services, checks both health routes, runs a complete Node-to-Python smoke workflow and restores the previous release on failure. Repeated markers are idempotent and reverify the existing release.
+
+`deploy-production.sh` is only the one-time privileged bootstrap/manual recovery entry point. It may install Node 22 and the small Python runtime environment, reuses the configured existing systemd service names and real `/opt` environment file, merges Apache blocks with rollback around `apache2ctl configtest`, and installs cron. Production never installs npm dependencies, frontend build tools, Playwright, Chromium, Git, Docker, Nginx or AI SDKs.
+
+`production/public-root.htaccess` is an interim strict allowlist for the legacy SFTP root that previously exposed repository files. Canonical production does not depend on it because the Apache document root is `current/dist`.
 
 ## Visual System
 
@@ -314,10 +353,10 @@ Current accessibility decisions:
 
 Performance notes:
 
-- The deployed frontend is static output, but the complete product requires the private Node gateway for Gmail SMTP and lab sessions plus FastAPI for deterministic document/retrieval pipelines.
+- The deployed Creation Lab is static and browser-executed. The complete website still uses the private Node gateway for Gmail SMTP and aggregate analytics; retained Lab/Python services are dormant compatibility infrastructure rather than public-demo dependencies.
 - Editable PNG backgrounds remain source assets; `npm run optimize:images` generates the nine runtime WebP files and compact Open Graph JPEG. The canonical background payload is about 2 MiB, roughly 90% smaller than its PNG sources.
-- `scripts/build.mjs` excludes source PNGs and concepts from `dist/`, caps the complete distribution at 8 MiB, enforces per-bundle and screenshot budgets, and rejects private files, secret-like tokens or provider-network endpoints.
-- Nginx enables gzip, ETags and seven-day caching for static assets; HTML remains revalidated. The homepage preloads the hero WebP.
+- `scripts/build.mjs` excludes source PNGs and concepts from `dist/`, caps the complete distribution at 8 MiB, enforces per-bundle and screenshot budgets, and rejects private files, secret-like tokens, provider-network endpoints or `/api/lab` references in published code.
+- Apache enables deflate, ETags and seven-day caching for static assets; HTML remains revalidated. The homepage preloads the hero WebP.
 - No analytics code is loaded in the browser; the only approved external frontend script is the pinned Three.js ES module.
 
 ## Future Evolution

@@ -77,6 +77,12 @@ for (const file of publicFiles.filter((path) => /assets[\\/]portfolio[\\/].+\.jp
   if (size > 250 * 1024) throw new Error(`${relative(dist, file)} exceeds the 250 KiB preview budget`);
 }
 
+for (const file of publicFiles.filter((path) => relative(dist, path).replaceAll("\\", "/").startsWith("portfolio/") || /assets[\\/].+\.js$/i.test(path))) {
+  if (/\/api\/lab(?:\/|["'`])/i.test(await readFile(file, "utf8"))) {
+    throw new Error(`Published Creation Lab code still references /api/lab: ${relative(dist, file)}`);
+  }
+}
+
 console.log(`Built the public site in ${relativeDist.replaceAll("\\", "/")}/ (${(publicBytes / 1024 / 1024).toFixed(2)} MiB).`);
 
 async function filesBelow(directory) {

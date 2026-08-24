@@ -53,26 +53,20 @@ for (const signal of ["SIGINT", "SIGTERM", "SIGHUP"]) process.on(signal, () => s
 process.on("uncaughtException", (error) => { console.error(error); stop(1); });
 process.on("unhandledRejection", (error) => { console.error(error); stop(1); });
 
-const python = process.platform === "win32"
-  ? resolve(".venv", "Scripts", "python.exe")
-  : resolve(".venv", "bin", "python");
-if (!existsSync(python)) throw new Error("Create .venv and install python_service/requirements.txt before E2E tests.");
-
-start(python, ["-m", "uvicorn", "python_service.app:app", "--host", "127.0.0.1", "--port", String(pythonPort)], {
-  PYTHONUNBUFFERED: "1"
-});
-await waitFor(`http://127.0.0.1:${pythonPort}/health`);
-
-start(process.execPath, ["api/server.mjs"], {
-  NODE_ENV: localProfile ? "development" : "test",
-  PORT: String(nodePort),
-  AI_MODE: "fixture",
-  LAB_SESSION_SECRET: "local-e2e-session-secret-change-me",
-  LAB_SESSION_RATE_LIMIT: "500",
-  ALLOWED_ORIGIN: `http://127.0.0.1:${sitePort}`,
-  PYTHON_LAB_URL: `http://127.0.0.1:${pythonPort}`
-});
-await waitFor(`http://127.0.0.1:${nodePort}/api/lab/health`);
+if (localProfile) {
+  const localPython = process.platform === "win32"
+    ? resolve(".venv", "Scripts", "python.exe")
+    : resolve(".venv", "bin", "python");
+  const python = existsSync(localPython) ? localPython : process.platform === "win32" ? "python" : "python3";
+  start(python, ["-m", "uvicorn", "python_service.app:app", "--host", "127.0.0.1", "--port", String(pythonPort)], { PYTHONUNBUFFERED: "1" });
+  await waitFor(`http://127.0.0.1:${pythonPort}/health`);
+  start(process.execPath, ["api/server.mjs"], {
+    NODE_ENV: "development", PORT: String(nodePort), AI_MODE: "fixture",
+    LAB_SESSION_SECRET: "local-e2e-session-secret-change-me", LAB_SESSION_RATE_LIMIT: "500",
+    ALLOWED_ORIGIN: `http://127.0.0.1:${sitePort}`, PYTHON_LAB_URL: `http://127.0.0.1:${pythonPort}`
+  });
+  await waitFor(`http://127.0.0.1:${nodePort}/api/lab/health`);
+}
 
 start(process.execPath, ["node_modules/vite/bin/vite.js", "--host", "127.0.0.1", "--port", String(sitePort), "--strictPort"], {
   VITE_BROWSER_FIXTURES: "false",
@@ -81,5 +75,5 @@ start(process.execPath, ["node_modules/vite/bin/vite.js", "--host", "127.0.0.1",
 await waitFor(`http://127.0.0.1:${sitePort}/portfolio/`);
 console.log(localProfile
   ? `cosmosXmachina is ready at http://127.0.0.1:${sitePort}/ (Ctrl+C stops all services).`
-  : "Local Creation Lab E2E stack is ready.");
+  : "Static-only Creation Lab E2E stack is ready; no Lab backend is running.");
 await new Promise(() => {});

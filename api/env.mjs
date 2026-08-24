@@ -12,10 +12,11 @@ function parseValue(raw) {
   return value.replace(/\s+#.*$/, "").trim();
 }
 
-export function loadEnv(file = resolve(".env")) {
+export function loadEnv(file = process.env.COSMOS_ENV_FILE || resolve(".env")) {
+  const environmentFile = resolve(file);
   let source = "";
   try {
-    source = readFileSync(file, "utf8");
+    source = readFileSync(environmentFile, "utf8");
   } catch (error) {
     if (error.code === "ENOENT") return { ...process.env };
     throw error;

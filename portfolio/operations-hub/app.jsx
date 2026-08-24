@@ -1,9 +1,10 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { getPreferredProvider, getProviders, runAction, setPreferredProvider } from "../shared/api.js";
+import { getPreferredProvider, getProviders, resetSession, runAction, setPreferredProvider } from "../shared/api.js";
 import { disclosure, modeLabel } from "../shared/disclosure.js";
 import { sendToContact } from "../shared/handoff.js";
 import { errorText, getLanguage, setDocumentLanguage, withLanguage } from "../shared/i18n.js";
+import { clearOperationsState, loadOperationsState, saveOperationsState } from "../shared/operations-store.js";
 import "./style.css";
 import "./mobile-disclosure.css";
 
@@ -25,12 +26,12 @@ const inventory = [
 
 const copy = {
   it: {
-    title: "Operations Hub", subtitle: "Un punto operativo comune per ordini, blocchi e responsabilita.", orders: "Ordini", tasks: "Attivita", stock: "Inventario", advance: "Avanza stato", brief: "Genera briefing rischio", contact: "Discuti un hub operativo", back: "CX / Creation Lab", workspace: "Spazio di lavoro", currentRole: "Ruolo corrente", provider: "Provider simulato", summary: "Riepilogo operativo", openOrders: "Ordini aperti", blocked: "Bloccati", onTime: "Puntualita", stockAlerts: "Allarmi scorte", followUps: "follow-up segnalati", belowReorder: "1 sotto il punto di riordino", search: "Cerca ordini", searchHint: "ID o cliente", state: "Stato", active: "Attivi", all: "Tutti", customer: "Cliente", due: "Scadenza", owner: "Responsabile", value: "Valore", noOrders: "Nessun ordine corrisponde a questa vista.", dossier: "Dossier ordine", flag: "Segnala", clearFlag: "Rimuovi segnalazione", gold: "Cliente Gold / Veneto", items: "Articoli", promised: "Promessa", activeBlocker: "Blocco attivo", note: "Nota interna", saveNote: "Salva nota", noteSaved: "Nota salvata nella sessione", complete: "Workflow completato", roleBlocked: "Il ruolo non puo avanzare", preparing: "Preparazione briefing sintetico...", exceptionQueue: "Coda eccezioni", ownership: "Follow-up che richiedono un responsabile", open: "aperti", inventoryControl: "Controllo inventario", pressure: "Pressione prenotazioni", snapshot: "Dati sintetici / 19 lug", product: "Prodotto", onHand: "Disponibili", reserved: "Prenotati", available: "Liberi", reorder: "Punto riordino", signal: "Segnale", syntheticBrief: "Dimostrazione sintetica", why: "Perche conta", bounded: "Azioni successive vincolate", boundary: "Confine di controllo", boundaryText: "Il briefing non puo modificare stato, inventario o responsabilita. Deve agire un operatore autorizzato.", trace: "Traccia provider", audit: "Audit di sessione", activity: "attivita", notPersisted: "non salvato", opened: "Ordine aperto", next: "Continua", now: "ora", people: "persone", roleNames: { operations: "Elena / Operazioni", sales: "Marco / Vendite", warehouse: "Luca / Magazzino" }, statusNames: { review: "verifica", packing: "preparazione", blocked: "bloccato", shipped: "spedito" }, stockNames: { healthy: "regolare", critical: "critico", watch: "attenzione" },
-    sections: [["Problema", "Ordini, note e responsabilita sono frammentati tra fogli, email e memoria del team."], ["Workflow", "Ogni ordine attraversa stati consentiti, con proprietario, blocchi e storico azioni."], ["Architettura", "React nel client, gateway Node/Fastify, SQLite e stato dimostrativo per sessione."], ["Decisioni", "Vista densa per lavoro ripetuto, transizioni esplicite e briefing separato dalle regole."], ["Failure modes", "Transizioni illegali, ruoli insufficienti, sessioni scadute e input sovradimensionati vengono respinti."], ["Test", "State machine per ordine, permessi, scadenza, replay, responsive e percorsi tastiera."], ["Servizio rilevante", "Prodotti full-stack e sistemi operativi interni per PMI."]]
+    title: "Operations Hub", subtitle: "Un punto operativo comune per ordini, blocchi e responsabilita.", orders: "Ordini", tasks: "Attivita", stock: "Inventario", advance: "Avanza stato", brief: "Genera briefing rischio", contact: "Discuti un hub operativo", back: "CX / Creation Lab", workspace: "Spazio di lavoro", currentRole: "Ruolo corrente", provider: "Provider simulato", reset: "Ripristina dati", resetDone: "Spazio di lavoro ripristinato", storageRecovered: "Lo stato locale non era disponibile: e stato ripristinato il dataset sintetico.", summary: "Riepilogo operativo", openOrders: "Ordini aperti", blocked: "Bloccati", onTime: "Puntualita", stockAlerts: "Allarmi scorte", followUps: "follow-up segnalati", belowReorder: "1 sotto il punto di riordino", search: "Cerca ordini", searchHint: "ID o cliente", state: "Stato", active: "Attivi", all: "Tutti", customer: "Cliente", due: "Scadenza", owner: "Responsabile", value: "Valore", noOrders: "Nessun ordine corrisponde a questa vista.", dossier: "Dossier ordine", flag: "Segnala", clearFlag: "Rimuovi segnalazione", gold: "Cliente Gold / Veneto", items: "Articoli", promised: "Promessa", activeBlocker: "Blocco attivo", note: "Nota interna", saveNote: "Salva nota", noteSaved: "Nota salvata nel browser", complete: "Workflow completato", roleBlocked: "Il ruolo non puo avanzare", preparing: "Preparazione briefing sintetico...", exceptionQueue: "Coda eccezioni", ownership: "Follow-up che richiedono un responsabile", open: "aperti", inventoryControl: "Controllo inventario", pressure: "Pressione prenotazioni", snapshot: "Dati sintetici / 19 lug", product: "Prodotto", onHand: "Disponibili", reserved: "Prenotati", available: "Liberi", reorder: "Punto riordino", signal: "Segnale", syntheticBrief: "Dimostrazione sintetica", why: "Perche conta", bounded: "Azioni successive vincolate", boundary: "Confine di controllo", boundaryText: "Il briefing non puo modificare stato, inventario o responsabilita. Deve agire un operatore autorizzato.", trace: "Traccia provider", audit: "Audit di sessione", activity: "attivita", notPersisted: "registro della sessione", opened: "Ordine aperto", next: "Continua", now: "ora", people: "persone", roleNames: { operations: "Elena / Operazioni", sales: "Marco / Vendite", warehouse: "Luca / Magazzino" }, statusNames: { review: "verifica", packing: "preparazione", blocked: "bloccato", shipped: "spedito" }, stockNames: { healthy: "regolare", critical: "critico", watch: "attenzione" },
+    sections: [["Problema", "Ordini, note e responsabilita sono frammentati tra fogli, email e memoria del team."], ["Workflow", "Ogni ordine attraversa stati consentiti, con proprietario, blocchi e storico azioni."], ["Architettura", "React, motore transazionale nel browser e stato locale versionato in IndexedDB."], ["Decisioni", "Vista densa per lavoro ripetuto, transizioni esplicite e briefing separato dalle regole."], ["Failure modes", "Transizioni illegali, ruoli insufficienti, stato locale corrotto e input sovradimensionati vengono respinti o ripristinati."], ["Test", "State machine per ordine, permessi, scadenza, replay, persistenza, responsive e percorsi tastiera."], ["Servizio rilevante", "Prodotti full-stack e sistemi operativi interni per PMI."]]
   },
   en: {
-    title: "Operations Hub", subtitle: "One operational workspace for orders, blockers and ownership.", orders: "Orders", tasks: "Tasks", stock: "Inventory", advance: "Advance state", brief: "Generate risk brief", contact: "Discuss an operations hub", back: "CX / Creation Lab", workspace: "Workspace", currentRole: "Current role", provider: "Simulated provider", summary: "Operations summary", openOrders: "Open orders", blocked: "Blocked", onTime: "On-time rate", stockAlerts: "Stock alerts", followUps: "follow-ups flagged", belowReorder: "1 below reorder point", search: "Search orders", searchHint: "ID or customer", state: "State", active: "Active", all: "All", customer: "Customer", due: "Due", owner: "Owner", value: "Value", noOrders: "No orders match this view.", dossier: "Order dossier", flag: "Flag", clearFlag: "Clear flag", gold: "Gold account / Veneto", items: "Items", promised: "Promised", activeBlocker: "Active blocker", note: "Internal note", saveNote: "Save note", noteSaved: "Note saved in this session", complete: "Workflow complete", roleBlocked: "Role cannot advance", preparing: "Preparing synthetic brief...", exceptionQueue: "Exception queue", ownership: "Follow-ups requiring ownership", open: "open", inventoryControl: "Inventory control", pressure: "Reservation pressure", snapshot: "Fixture snapshot / 19 Jul", product: "Product", onHand: "On hand", reserved: "Reserved", available: "Available", reorder: "Reorder point", signal: "Signal", syntheticBrief: "Synthetic demonstration", why: "Why it matters", bounded: "Bounded next actions", boundary: "Control boundary", boundaryText: "This brief cannot change order state, inventory or ownership. A permitted operator must act.", trace: "Provider trace", audit: "Session audit", activity: "activity", notPersisted: "not persisted", opened: "Order opened", next: "Next", now: "now", people: "people", roleNames: { operations: "Elena / Operations", sales: "Marco / Sales", warehouse: "Luca / Warehouse" }, statusNames: { review: "review", packing: "packing", blocked: "blocked", shipped: "shipped" }, stockNames: { healthy: "healthy", critical: "critical", watch: "watch" },
-    sections: [["Problem", "Orders, notes and ownership are fragmented across sheets, email and team memory."], ["Workflow", "Every order moves through allowed states with an owner, blockers and action history."], ["Architecture", "React client, Node/Fastify gateway, SQLite and session-scoped demonstration state."], ["Decisions", "A dense view for repeated work, explicit transitions and briefings separated from business rules."], ["Failure modes", "Illegal transitions, insufficient roles, expired sessions and oversized input are rejected."], ["Tests", "Per-order state machine, permissions, expiry, replay, responsive behavior and keyboard paths."], ["Relevant service", "Full-stack products and internal operational systems for SMEs."]]
+    title: "Operations Hub", subtitle: "One operational workspace for orders, blockers and ownership.", orders: "Orders", tasks: "Tasks", stock: "Inventory", advance: "Advance state", brief: "Generate risk brief", contact: "Discuss an operations hub", back: "CX / Creation Lab", workspace: "Workspace", currentRole: "Current role", provider: "Simulated provider", reset: "Reset data", resetDone: "Workspace reset", storageRecovered: "Local state was unavailable, so the synthetic dataset was restored.", summary: "Operations summary", openOrders: "Open orders", blocked: "Blocked", onTime: "On-time rate", stockAlerts: "Stock alerts", followUps: "follow-ups flagged", belowReorder: "1 below reorder point", search: "Search orders", searchHint: "ID or customer", state: "State", active: "Active", all: "All", customer: "Customer", due: "Due", owner: "Owner", value: "Value", noOrders: "No orders match this view.", dossier: "Order dossier", flag: "Flag", clearFlag: "Clear flag", gold: "Gold account / Veneto", items: "Items", promised: "Promised", activeBlocker: "Active blocker", note: "Internal note", saveNote: "Save note", noteSaved: "Note saved in this browser", complete: "Workflow complete", roleBlocked: "Role cannot advance", preparing: "Preparing synthetic brief...", exceptionQueue: "Exception queue", ownership: "Follow-ups requiring ownership", open: "open", inventoryControl: "Inventory control", pressure: "Reservation pressure", snapshot: "Fixture snapshot / 19 Jul", product: "Product", onHand: "On hand", reserved: "Reserved", available: "Available", reorder: "Reorder point", signal: "Signal", syntheticBrief: "Synthetic demonstration", why: "Why it matters", bounded: "Bounded next actions", boundary: "Control boundary", boundaryText: "This brief cannot change order state, inventory or ownership. A permitted operator must act.", trace: "Provider trace", audit: "Session audit", activity: "activity", notPersisted: "session log", opened: "Order opened", next: "Next", now: "now", people: "people", roleNames: { operations: "Elena / Operations", sales: "Marco / Sales", warehouse: "Luca / Warehouse" }, statusNames: { review: "review", packing: "packing", blocked: "blocked", shipped: "shipped" }, stockNames: { healthy: "healthy", critical: "critical", watch: "watch" },
+    sections: [["Problem", "Orders, notes and ownership are fragmented across sheets, email and team memory."], ["Workflow", "Every order moves through allowed states with an owner, blockers and action history."], ["Architecture", "React, a transactional browser engine and versioned local state in IndexedDB."], ["Decisions", "A dense view for repeated work, explicit transitions and briefings separated from business rules."], ["Failure modes", "Illegal transitions, insufficient roles, corrupt local state and oversized input are rejected or recovered."], ["Tests", "Per-order state machine, permissions, expiry, replay, persistence, responsive behavior and keyboard paths."], ["Relevant service", "Full-stack products and internal operational systems for SMEs."]]
   }
 };
 
@@ -52,7 +53,7 @@ function App() {
   const [error, setError] = useState("");
   const [logs, setLogs] = useState({});
   const [note, setNote] = useState(initialOrders[0].note);
-  const [busy, setBusy] = useState("");
+  const [busy, setBusy] = useState("hydrate");
   setDocumentLanguage(language, {
     title: text.title + " | Creation Lab",
     description: text.subtitle,
@@ -66,6 +67,16 @@ function App() {
       .then((value) => setProviders(value.providers.filter((item) => item.selectable)))
       .catch((failure) => setError(errorText(failure, language)));
   }, [language]);
+
+  useEffect(() => {
+    let active = true;
+    loadOperationsState(initialOrders).then((stored) => {
+      if (!active) return;
+      setOrders(stored.orders);
+      if (stored.recovered) setNotice(text.storageRecovered);
+    }).finally(() => { if (active) setBusy(""); });
+    return () => { active = false; };
+  }, [text.storageRecovered]);
 
   const current = orders.find((order) => order.id === selected) || orders[0];
   useEffect(() => setNote(current.note || ""), [current.id, current.note]);
@@ -94,7 +105,10 @@ function App() {
     try {
       const payload = await runAction("operations-hub", action, actionInput(extra), provider);
       const state = payload.result.state;
-      setOrders((items) => items.map((item) => item.id === current.id ? apply(item, state) : item));
+      const nextOrders = orders.map((item) => item.id === current.id ? apply(item, state) : item);
+      try { await saveOperationsState(nextOrders); }
+      catch { setNotice(text.storageRecovered); }
+      setOrders(nextOrders);
       if (logMessage) log(current.id, logMessage(state));
       return state;
     } catch (failure) {
@@ -148,6 +162,18 @@ function App() {
   }
 
   function chooseProvider(value) { setProvider(value); setPreferredProvider(value); }
+  async function resetWorkspace() {
+    setBusy("reset");
+    await clearOperationsState().catch(() => {});
+    resetSession();
+    setOrders(structuredClone(initialOrders));
+    setSelected(initialOrders[0].id);
+    setLogs({});
+    setBrief(null);
+    setError("");
+    setNotice(text.resetDone);
+    setBusy("");
+  }
   const canAdvance = Boolean(nextState[current.status]) && !(nextState[current.status] === "shipped" && role === "sales");
 
   return <div className="shell">
@@ -166,6 +192,7 @@ function App() {
         <div className="header-controls">
           <label>{text.currentRole}<select value={role} onChange={(event) => { setRole(event.target.value); setBrief(null); setError(""); }}>{Object.entries(text.roleNames).map(([value, label]) => <option value={value} key={value}>{label}</option>)}</select></label>
           <label>{text.provider}<select value={provider} onChange={(event) => chooseProvider(event.target.value)}>{providers.map((item) => <option value={item.id} key={item.id}>{item.label} / {language === "it" ? "simulato" : "simulated"}</option>)}</select></label>
+          <button className="reset-data" onClick={resetWorkspace} disabled={Boolean(busy)}>{text.reset}</button>
         </div>
       </header>
       <p className="synthetic-strip">{disclosure(language)}</p>

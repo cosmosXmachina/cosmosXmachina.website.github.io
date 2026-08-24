@@ -61,25 +61,33 @@ export function classifyPublicDocument(path) {
 
 export function parseVisitDatagram(message) {
   const source = Buffer.isBuffer(message) ? message.toString("utf8") : String(message || "");
+  const apache = source.match(/COSMOS_VISIT\s+(\S+)\s+(\d{3})\s+(\S+)\s+(\S+)\s+(\S+)/);
+  if (apache) {
+    return cleanVisitEvent({ ip: apache[1], status: apache[2], method: apache[3], dest: apache[4], path: apache[5] });
+  }
   const start = source.indexOf("{");
   if (start < 0) return null;
   try {
-    const event = JSON.parse(source.slice(start));
-    if (!event.ip || event.method !== "GET" || event.dest !== "document") return null;
-    const status = Number(event.status);
-    if (!Number.isInteger(status) || status < 200 || status >= 400) return null;
-    if (["127.0.0.1", "::1"].includes(event.ip)) return null;
-    return classifyPublicDocument(event.path) ? { ip: String(event.ip), path: String(event.path) } : null;
+    return cleanVisitEvent(JSON.parse(source.slice(start)));
   } catch {
     return null;
   }
 }
 
+function cleanVisitEvent(event) {
+  if (!event?.ip || event.method !== "GET" || event.dest !== "document") return null;
+  const status = Number(event.status);
+  if (!Number.isInteger(status) || status < 200 || status >= 400) return null;
+  if (["127.0.0.1", "::1"].includes(event.ip)) return null;
+  return classifyPublicDocument(event.path) ? { ip: String(event.ip), path: String(event.path) } : null;
+}
+
 export class DailyVisitAggregator {
-  constructor({ file, timeZone = "Europe/Rome", retentionDays = 400, now = Date.now }) {
+  constructor({ file, timeZone = "Europe/Rome", retentionDays = 400, maxBuckets = 5_000, now = Date.now }) {
     this.file = resolve(file);
     this.timeZone = timeZone;
     this.retentionDays = retentionDays;
+    this.maxBuckets = maxBuckets;
     this.now = now;
     this.buckets = new Map();
     this.records = new Map();
@@ -99,6 +107,7 @@ export class DailyVisitAggregator {
     this.finalizeClosedHours(hour);
     const key = `${hour}\0${event.ip}`;
     let bucket = this.buckets.get(key);
+    if (!bucket && this.buckets.size >= this.maxBuckets) return false;
     if (!bucket) {
       bucket = { hour, date: dateInZone(timestamp, this.timeZone), pages: new Set(), demos: new Set() };
       this.buckets.set(key, bucket);
@@ -165,7 +174,14 @@ export function createVisitAnalytics(environment, logger = console) {
   const file = environment.VISIT_ANALYTICS_FILE || "/var/lib/cosmos-analytics/visits-daily.jsonl";
   const requestedRetention = Number(environment.VISIT_ANALYTICS_RETENTION_DAYS || 400);
   const retentionDays = Number.isInteger(requestedRetention) ? Math.min(3_650, Math.max(7, requestedRetention)) : 400;
-  const aggregator = new DailyVisitAggregator({ file, timeZone: environment.VISIT_ANALYTICS_TIMEZONE || "Europe/Rome", retentionDays });
+  const requestedBuckets = Number(environment.VISIT_ANALYTICS_MAX_HOURLY_VISITORS || 5_000);
+  const maxBuckets = Number.isInteger(requestedBuckets) ? Math.min(50_000, Math.max(100, requestedBuckets)) : 5_000;
+  const aggregator = new DailyVisitAggregator({
+    file,
+    timeZone: environment.VISIT_ANALYTICS_TIMEZONE || "Europe/Rome",
+    retentionDays,
+    maxBuckets
+  });
   let socket;
   let timer;
 

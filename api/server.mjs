@@ -18,7 +18,7 @@ export async function buildServer(environment = loadEnv()) {
     logger: false,
     bodyLimit: 64 * 1024,
     requestTimeout: 12_000,
-    trustProxy: false
+    trustProxy: production ? ["127.0.0.1", "::1"] : false
   });
 
   await app.register(cors, {

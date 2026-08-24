@@ -9,6 +9,11 @@ records Codex's interpretation separately, tracks evidence-backed progress, and
 will be completed with the final completion reasoning and action only after the
 full production-readiness audit proves that the goal is complete.
 
+Current deployment supersession note (2026-08-04): this ledger preserves
+historical handoff evidence. Any Nginx deployment statement below is obsolete.
+Current production is the low-footprint Apache/SFTP release architecture in
+AGENTS.md, cosmos_interface.md, installation.md and deploy-production.sh.
+
 
 Cross-Machine Handoff Snapshot
 ------------------------------

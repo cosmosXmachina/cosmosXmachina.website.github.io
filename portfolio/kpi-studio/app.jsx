@@ -4,7 +4,7 @@ import * as echarts from "echarts/core";
 import { LineChart } from "echarts/charts";
 import { GridComponent, MarkLineComponent, TooltipComponent } from "echarts/components";
 import { CanvasRenderer } from "echarts/renderers";
-import { getPreferredProvider, getProviders, runAction, setPreferredProvider } from "../shared/api.js";
+import { getPreferredProvider, getProviders, resetSession, runAction, setPreferredProvider } from "../shared/api.js";
 import { disclosure, modeLabel } from "../shared/disclosure.js";
 import { sendToContact } from "../shared/handoff.js";
 import { errorText, getLanguage, setDocumentLanguage, withLanguage } from "../shared/i18n.js";
@@ -28,11 +28,11 @@ const records = [
 const copy = {
   it: {
     title: "KPI Studio", lead: "Numeri operativi leggibili, formule trasparenti e confronti riproducibili.", revenue: "Ricavi", margin: "Margine lordo", delivery: "Consegne puntuali", returns: "Resi", narrative: "Genera nota decisionale", export: "Esporta CSV", contact: "Costruiamo un reporting utile", back: "Torna al Creation Lab", period: "Periodo", last3: "Ultimi 3 mesi", last6: "Ultimi 6 mesi", provider: "Provider simulato", calculation: "Calcolo", worker: "Web Worker", fallback: "fallback locale", calculating: "in calcolo", scope: "Ambito dati", scopes: { all: "Tutto", italy: "Italia", export: "Export" }, noBaseline: "nessun confronto", vsPrior: "rispetto al periodo precedente", above: "sopra", below: "sotto", target: "obiettivo", guardrail: "soglia", primary: "Analisi principale", trend: "Andamento ricavi e margine", decision: "Supporto decisionale", scenario: "Scenario", growth: "Crescita del prossimo periodo", projected: "Ricavi del prossimo periodo", notForecast: "scenario lineare trasparente, non una previsione", dataContract: "Contratto dati", quality: "Controlli qualita", passed: "superati", review: "verifica", rows: "Righe", missing: "Mancanti", duplicates: "Duplicati", refreshed: "Aggiornati", governance: "Governance metriche", definitions: "Definizioni", revenueDef: "Fatture nette registrate, IVA esclusa.", onTimeDef: "Spedizione entro la data confermata.", returnsDef: "Unita rientrate nel periodo.", decisionNote: "Nota decisionale sintetica", close: "Chiudi", signals: "Segnali", checks: "Verifiche suggerite", limitations: "Limiti", boundedNarrative: "I numeri sono calcolati deterministicamente. Il provider scrive solo questa nota vincolata e non puo modificare le metriche.", accessibleTable: "Tabella dati accessibile", sourceRows: "Righe sorgente Orion Works", month: "Mese", cogs: "COGS", next: "Continua", chartLabel: "Linee dei ricavi e del margine lordo per il periodo selezionato", formulaRevenue: "SOMMA del valore netto fatturato", formulaMargin: "ricavi meno costo del venduto, diviso ricavi", formulaDelivery: "ordini puntuali diviso ordini consegnati", formulaReturns: "unita rese diviso unita spedite", error: "Impossibile completare la richiesta.",
-    sections: [["Problema", "Report manuali e definizioni incoerenti rendono ogni riunione una discussione sui numeri."], ["Workflow", "Selezione ambito, calcolo isolato, confronto periodo, controllo qualita, tabella accessibile ed export."], ["Architettura", "React, ECharts e calcoli deterministici in Web Worker; gateway provider per la sola narrazione."], ["Decisioni", "Ogni KPI espone formula, periodo e denominatore. Il grafico ha sempre un'alternativa tabellare."], ["Modalita di errore", "Divisione per zero, date mancanti, duplicati e filtri vuoti producono stati espliciti."], ["Test", "Formule, arrotondamento, replay, tabella equivalente, export, tastiera e viewport responsive."], ["Servizio rilevante", "Dashboard, data products e reporting operativo."]]
+    sections: [["Problema", "Report manuali e definizioni incoerenti rendono ogni riunione una discussione sui numeri."], ["Workflow", "Selezione ambito, calcolo isolato, confronto periodo, controllo qualita, tabella accessibile ed export."], ["Architettura", "React, ECharts, calcoli in Web Worker e narrazione deterministica eseguiti interamente nel browser."], ["Decisioni", "Ogni KPI espone formula, periodo e denominatore. Il grafico ha sempre un'alternativa tabellare."], ["Modalita di errore", "Divisione per zero, date mancanti, duplicati e filtri vuoti producono stati espliciti."], ["Test", "Formule, arrotondamento, replay, tabella equivalente, export, tastiera e viewport responsive."], ["Servizio rilevante", "Dashboard, data products e reporting operativo."]]
   },
   en: {
     title: "KPI Studio", lead: "Readable operational numbers, transparent formulas and reproducible comparisons.", revenue: "Revenue", margin: "Gross margin", delivery: "On-time delivery", returns: "Returns", narrative: "Generate decision note", export: "Export CSV", contact: "Build useful reporting", back: "Back to Creation Lab", period: "Period", last3: "Last 3 months", last6: "Last 6 months", provider: "Simulated provider", calculation: "Calculation", worker: "Web Worker", fallback: "local fallback", calculating: "calculating", scope: "Data scope", scopes: { all: "All", italy: "Italy", export: "Export" }, noBaseline: "no baseline", vsPrior: "vs prior period", above: "above", below: "below", target: "target", guardrail: "guardrail", primary: "Primary analysis", trend: "Revenue and margin trend", decision: "Decision support", scenario: "Scenario", growth: "Next-period growth", projected: "Next-period revenue", notForecast: "transparent linear scenario, not a forecast", dataContract: "Data contract", quality: "Quality checks", passed: "passed", review: "review", rows: "Rows", missing: "Missing", duplicates: "Duplicates", refreshed: "Refreshed", governance: "Metric governance", definitions: "Definitions", revenueDef: "Posted net invoices, excluding VAT.", onTimeDef: "Dispatch on or before confirmed date.", returnsDef: "Units received back within the period.", decisionNote: "Synthetic decision note", close: "Close", signals: "Signals", checks: "Suggested checks", limitations: "Limitations", boundedNarrative: "Numbers are calculated deterministically. The provider only writes this bounded narrative and cannot alter metrics.", accessibleTable: "Accessible data table", sourceRows: "Orion Works KPI source rows", month: "Month", cogs: "COGS", next: "Next", chartLabel: "Revenue and gross-margin lines for the selected period", formulaRevenue: "SUM of net invoice value", formulaMargin: "revenue minus cost of goods, divided by revenue", formulaDelivery: "on-time orders divided by delivered orders", formulaReturns: "returned units divided by shipped units", error: "The request could not be completed.",
-    sections: [["Problem", "Manual reports and inconsistent definitions turn every meeting into a debate about the numbers."], ["Workflow", "Select scope, isolated calculation, period comparison, quality checks, accessible table and export."], ["Architecture", "React, ECharts and deterministic Web Worker calculations; provider gateway for narrative only."], ["Decisions", "Every KPI exposes formula, period and denominator. Every chart has a table alternative."], ["Failure modes", "Division by zero, missing dates, duplicates and empty filters produce explicit states."], ["Tests", "Formulas, rounding, replay, equivalent table, export, keyboard and responsive viewports."], ["Relevant service", "Dashboards, data products and operational reporting."]]
+    sections: [["Problem", "Manual reports and inconsistent definitions turn every meeting into a debate about the numbers."], ["Workflow", "Select scope, isolated calculation, period comparison, quality checks, accessible table and export."], ["Architecture", "React, ECharts, Web Worker calculations and deterministic narrative running entirely in the browser."], ["Decisions", "Every KPI exposes formula, period and denominator. Every chart has a table alternative."], ["Failure modes", "Division by zero, missing dates, duplicates and empty filters produce explicit states."], ["Tests", "Formulas, rounding, replay, equivalent table, export, keyboard and responsive viewports."], ["Relevant service", "Dashboards, data products and operational reporting."]]
   }
 };
 
@@ -73,6 +73,7 @@ function App() {
   const [workerState, setWorkerState] = useState("ready");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const actionController = useRef(null);
   setDocumentLanguage(language, {
     title: text.title + " | Creation Lab",
     description: text.lead,
@@ -86,6 +87,8 @@ function App() {
       .then((value) => setProviders(value.providers.filter((item) => item.selectable)))
       .catch((failure) => setError(errorText(failure, language, text.error)));
   }, [language, text.error]);
+
+  useEffect(() => () => actionController.current?.abort(), []);
 
   useEffect(() => {
     setWorkerState("calculating");
@@ -110,17 +113,35 @@ function App() {
     : ["SUM(net invoice value)", "(revenue - COGS) / revenue", "on-time orders / delivered", "returned units / shipped"];
   const projection = useMemo(() => Math.round((rows.at(-1)?.revenue || 0) * (1 + scenario / 100)), [rows, scenario]);
   function chooseProvider(value) { setProvider(value); setPreferredProvider(value); }
+  function resetDemo() {
+    actionController.current?.abort();
+    actionController.current = null;
+    resetSession();
+    setScope("all");
+    setMonths(6);
+    setScenario(8);
+    setNarrative(null);
+    setError("");
+    setLoading(false);
+  }
 
   async function generateNarrative() {
+    actionController.current?.abort();
+    const controller = new AbortController();
+    actionController.current = controller;
     setLoading(true);
     setError("");
     try {
-      const payload = await runAction("kpi-studio", "brief", { scope, months, metrics, quality: result.quality, scenarioGrowth: scenario, language }, provider);
+      const payload = await runAction("kpi-studio", "brief", { scope, months, metrics, quality: result.quality, scenarioGrowth: scenario, language }, provider, { signal: controller.signal });
+      if (controller.signal.aborted) return;
       setNarrative(payload.result.execution);
     } catch (failure) {
-      setError(errorText(failure, language, text.error));
+      if (!controller.signal.aborted) setError(errorText(failure, language, text.error));
     } finally {
-      setLoading(false);
+      if (actionController.current === controller) {
+        actionController.current = null;
+        setLoading(false);
+      }
     }
   }
 
@@ -135,7 +156,7 @@ function App() {
   }
 
   return <><header className="topbar"><a href={withLanguage("/portfolio/", language)}>{text.back}</a><b>ORION / REPORTING / 06</b><span>{modeLabel(language)}</span></header><main>
-    <section className="title"><div><p>ANALYTICS WORKSPACE / 06</p><h1>{text.title}</h1><h2>{text.lead}</h2><small>{disclosure(language)}</small></div><div className="controls"><label>{text.period}<select value={months} onChange={(event) => setMonths(Number(event.target.value))}><option value="3">{text.last3}</option><option value="6">{text.last6}</option></select></label><label>{text.provider}<select value={provider} onChange={(event) => chooseProvider(event.target.value)}>{providers.map((item) => <option value={item.id} key={item.id}>{item.label} / {language === "it" ? "simulato" : "simulated"}</option>)}</select></label><span>{text.calculation}: {workerState === "ready" ? text.worker : workerState === "fallback" ? text.fallback : text.calculating}</span></div><div className="filter" role="group" aria-label={text.scope}>{Object.entries(text.scopes).map(([value, label]) => <button aria-pressed={scope === value} className={scope === value ? "active" : ""} onClick={() => setScope(value)} key={value}>{label}</button>)}</div></section>
+    <section className="title"><div><p>ANALYTICS WORKSPACE / 06</p><h1>{text.title}</h1><h2>{text.lead}</h2><small>{disclosure(language)}</small></div><div className="controls"><label>{text.period}<select value={months} onChange={(event) => setMonths(Number(event.target.value))}><option value="3">{text.last3}</option><option value="6">{text.last6}</option></select></label><label>{text.provider}<select value={provider} onChange={(event) => chooseProvider(event.target.value)}>{providers.map((item) => <option value={item.id} key={item.id}>{item.label} / {language === "it" ? "simulato" : "simulated"}</option>)}</select></label><button className="reset-demo" onClick={resetDemo}>{language === "it" ? "Ripristina demo" : "Reset demo"}</button><span>{text.calculation}: {workerState === "ready" ? text.worker : workerState === "fallback" ? text.fallback : text.calculating}</span></div><div className="filter" role="group" aria-label={text.scope}>{Object.entries(text.scopes).map(([value, label]) => <button aria-pressed={scope === value} className={scope === value ? "active" : ""} onClick={() => setScope(value)} key={value}>{label}</button>)}</div></section>
     {error && <p className="error" role="alert">{error}</p>}
     <section className="metrics"><article><div><span>{text.revenue}</span><button title={text.formulaRevenue} aria-label={text.formulaRevenue}>i</button></div><strong>EUR {metrics.revenue}k</strong><small>{formulas[0]}</small><em className="positive">{metrics.revenueDelta === null ? text.noBaseline : `${metrics.revenueDelta >= 0 ? "+" : ""}${formatPercent(metrics.revenueDelta)} ${text.vsPrior}`}</em></article><article><div><span>{text.margin}</span><button title={text.formulaMargin} aria-label={text.formulaMargin}>i</button></div><strong>{formatPercent(metrics.margin)}</strong><small>{formulas[1]}</small><em className={metrics.margin >= 36 ? "positive" : "negative"}>{metrics.margin >= 36 ? text.above : text.below} 36% {text.guardrail}</em></article><article><div><span>{text.delivery}</span><button title={text.formulaDelivery} aria-label={text.formulaDelivery}>i</button></div><strong>{formatPercent(metrics.delivery)}</strong><small>{formulas[2]}</small><em className="positive">{text.target} 92%</em></article><article><div><span>{text.returns}</span><button title={text.formulaReturns} aria-label={text.formulaReturns}>i</button></div><strong>{formatPercent(metrics.returns)}</strong><small>{formulas[3]}</small><em className={metrics.returns <= 2 ? "positive" : "negative"}>{text.guardrail} &lt; 2%</em></article></section>
     <section className="analysis"><div><div className="panel-head"><div><span>{text.primary}</span><h2>{text.trend}</h2></div><div className="chart-key"><span><i />{text.revenue}</span><span><i />{text.margin}</span><em>{rows[0]?.month} - {rows.at(-1)?.month}</em></div></div><TrendChart rows={rows} label={text.chartLabel} /></div><aside><div className="panel-head"><div><span>{text.decision}</span><h2>{text.scenario}</h2></div></div><label>{text.growth} <strong>{scenario}%</strong><input type="range" min="-10" max="25" step="1" value={scenario} onChange={(event) => setScenario(Number(event.target.value))} /></label><div className="projection"><span>{text.projected}</span><strong>EUR {projection}k</strong><small>{text.notForecast}</small></div><button onClick={generateNarrative} disabled={loading}>{text.narrative}</button></aside></section>

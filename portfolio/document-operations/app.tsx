@@ -1,6 +1,6 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { getPreferredProvider, getProviders, runAction, setPreferredProvider } from "../shared/api.js";
+import { getPreferredProvider, getProviders, resetSession, runAction, setPreferredProvider } from "../shared/api.js";
 import { disclosure, modeLabel } from "../shared/disclosure.js";
 import { sendToContact } from "../shared/handoff.js";
 import { errorText, getLanguage, setDocumentLanguage, withLanguage } from "../shared/i18n.js";
@@ -38,7 +38,7 @@ const copy = {
     back: "Torna al Creation Lab", providerTarget: "Provider simulato", liveMode: "Modalita provider live", syntheticMode: "Simulazione provider sintetica", queueAria: "Riepilogo coda", searchQueue: "Cerca nella coda", searchPlaceholder: "ID, mittente, oggetto", filterAria: "Filtro coda", running: "Pipeline deterministica in esecuzione...", pipelineError: "Errore pipeline", retry: "Riprova", from: "Da", subjectLabel: "Oggetto", pdfMeta: "2 pagine / documento sintetico", humanGate: "Verifica umana", idleTitle: "Pronto per un replay deterministico", idleBody: "Seleziona un elemento e avvia la classificazione. Nulla viene salvato e nessuna azione a valle e automatica.", correctFields: "Correggi i campi evidenziati prima di approvare.", fieldError: "Riferimento, data ISO valida, totale positivo e valuta a tre lettere sono obbligatori.", sourceBound: "legato alla fonte", sessionOnly: "solo sessione", evidencePending: "Le evidenze appaiono dopo l'estrazione.", queueOpened: "Elemento della coda aperto", technicalTrace: "Traccia tecnica", next: "Continua", earlier: "prima", now: "ora", pass: "OK", statusIdle: "non elaborato", statusRunning: "in esecuzione", statusClassified: "classificato", statusApproved: "approvato", statusRejected: "rifiutato", statusError: "errore",
     stats: [["Ricevuti oggi", "6 in questa simulazione"], ["Da verificare", "passaggio umano"], ["Priorita alta", "rischio consegna o valore"], ["Gestione mediana", "minuti sintetici"]],
     fields: ["Categoria", "Priorita", "Riferimento ordine", "Data richiesta", "Totale", "Valuta"],
-    sections: [["Problema", "Le richieste arrivano tra email e allegati, richiedono reinserimento manuale e nascondono le eccezioni."], ["Workflow", "Acquisizione controllata, classificazione, estrazione tipizzata, validazione e approvazione umana."], ["Architettura", "React e TypeScript nel client; gateway provider neutrale; pipeline FastAPI/Pydantic privata."], ["Decisioni", "Schema e regole restano fuori dal provider. Nessun allegato arbitrario e nessuna azione automatica."], ["Failure modes", "Campi mancanti, date incoerenti, documenti ambigui e servizi non disponibili producono stati espliciti."], ["Test", "Contratti provider, replay, limiti richiesta, HTML ostile, transizioni e zero chiamate esterne in fixture mode."], ["Servizio rilevante", "Automazione AI e workflow documentali con supervisione."]]
+    sections: [["Problema", "Le richieste arrivano tra email e allegati, richiedono reinserimento manuale e nascondono le eccezioni."], ["Workflow", "Acquisizione controllata, classificazione, estrazione tipizzata, validazione e approvazione umana."], ["Architettura", "React e TypeScript con pipeline deterministica, validazione e stato eseguiti interamente nel browser."], ["Decisioni", "Schema e regole restano separati dal provider simulato. Nessun allegato arbitrario e nessuna azione automatica."], ["Failure modes", "Campi mancanti, date incoerenti, documenti ambigui e input non validi producono stati espliciti."], ["Test", "Contratti provider, replay, limiti richiesta, HTML ostile, transizioni e zero chiamate esterne."], ["Servizio rilevante", "Automazione AI e workflow documentali con supervisione."]]
   },
   en: {
     title: "Document Operations", subtitle: "Incoming mail, extracted data and human decisions in one workstation.",
@@ -48,7 +48,7 @@ const copy = {
     back: "Back to Creation Lab", providerTarget: "Simulated provider", liveMode: "Live provider mode", syntheticMode: "Synthetic provider simulation", queueAria: "Queue summary", searchQueue: "Search queue", searchPlaceholder: "ID, sender, subject", filterAria: "Queue filter", running: "Running deterministic pipeline...", pipelineError: "Pipeline error", retry: "Retry", from: "From", subjectLabel: "Subject", pdfMeta: "2 pages / synthetic fixture", humanGate: "Human review gate", idleTitle: "Ready for deterministic replay", idleBody: "Select a queue item and run classification. Nothing is persisted and no downstream action is automatic.", correctFields: "Correct the highlighted fields before approval.", fieldError: "Reference, valid ISO date, positive total and three-letter currency are required.", sourceBound: "source-bound", sessionOnly: "session only", evidencePending: "Evidence appears after extraction.", queueOpened: "Queue item opened", technicalTrace: "Technical trace", next: "Next", earlier: "earlier", now: "now", pass: "PASS", statusIdle: "unprocessed", statusRunning: "running", statusClassified: "classified", statusApproved: "approved", statusRejected: "rejected", statusError: "error",
     stats: [["Received today", "6 in this fixture"], ["Needs review", "human checkpoint"], ["High priority", "delivery or value risk"], ["Median handling", "synthetic minutes"]],
     fields: ["Category", "Priority", "Order reference", "Requested date", "Total", "Currency"],
-    sections: [["Problem", "Requests arrive across email and attachments, require manual re-entry and hide exceptions."], ["Workflow", "Controlled intake, classification, typed extraction, validation and human approval."], ["Architecture", "React and TypeScript client; provider-neutral gateway; private FastAPI/Pydantic pipeline."], ["Decisions", "Schemas and rules stay outside the provider. No arbitrary attachments and no automatic actions."], ["Failure modes", "Missing fields, invalid dates, ambiguous documents and unavailable services produce explicit states."], ["Tests", "Provider contracts, replay, request limits, hostile HTML, transitions and zero external calls in fixture mode."], ["Relevant service", "Supervised AI automation and document workflows."]]
+    sections: [["Problem", "Requests arrive across email and attachments, require manual re-entry and hide exceptions."], ["Workflow", "Controlled intake, classification, typed extraction, validation and human approval."], ["Architecture", "React and TypeScript with deterministic pipeline, validation and state running entirely in the browser."], ["Decisions", "Schemas and rules stay separate from the simulated provider. No arbitrary attachments and no automatic actions."], ["Failure modes", "Missing fields, invalid dates, ambiguous documents and invalid inputs produce explicit states."], ["Tests", "Provider contracts, replay, request limits, hostile HTML, transitions and zero external calls."], ["Relevant service", "Supervised AI automation and document workflows."]]
   }
 };
 
@@ -73,6 +73,7 @@ function App() {
   const [activity, setActivity] = useState<Record<string, string[]>>({});
   const [error, setError] = useState("");
   const [busyAction, setBusyAction] = useState("");
+  const actionController = useRef<AbortController | null>(null);
   setDocumentLanguage(language, {
     title: text.title + " | Creation Lab",
     description: text.subtitle,
@@ -88,6 +89,8 @@ function App() {
     }).catch((failure) => setError(errorText(failure, language, text.pipelineError)));
   }, [text.pipelineError]);
 
+  useEffect(() => () => actionController.current?.abort(), []);
+
   const visible = useMemo(() => messages.filter((message) => {
     const matchesFilter = filter === "all" || (filter === "priority" && message.priority === "high") || (filter === "pending" && !statuses[message.id]);
     const haystack = (message.id + " " + message.sender + " " + message.subject).toLowerCase();
@@ -101,7 +104,32 @@ function App() {
     setPreferredProvider(value);
   }
 
+  function beginAction() {
+    actionController.current?.abort();
+    const controller = new AbortController();
+    actionController.current = controller;
+    return controller;
+  }
+
+  function resetDemo() {
+    actionController.current?.abort();
+    actionController.current = null;
+    resetSession();
+    setSelectedId(messages[0].id);
+    setFilter("all");
+    setQuery("");
+    setStatuses({});
+    setExecution(null);
+    setFields(null);
+    setActivity({});
+    setError("");
+    setBusyAction("");
+  }
+
   function chooseMessage(message: Message) {
+    actionController.current?.abort();
+    actionController.current = null;
+    setStatuses((current) => current[selected.id] === "running" ? { ...current, [selected.id]: "idle" } : current);
     setSelectedId(message.id);
     setExecution(null);
     setFields(null);
@@ -113,18 +141,25 @@ function App() {
   }
 
   async function classify() {
-    setStatuses((current) => ({ ...current, [selected.id]: "running" }));
+    const controller = beginAction();
+    const message = selected;
+    setStatuses((current) => ({ ...current, [message.id]: "running" }));
     setError("");
     try {
-      const payload = await runAction("document-operations", "classify", { messageId: selected.id, body: selected.body, language }, provider);
+      const payload = await runAction("document-operations", "classify", { messageId: message.id, body: message.body, language }, provider, { signal: controller.signal });
+      if (controller.signal.aborted) return;
       const result = payload.result.execution || payload.result;
       setExecution(result.output ? result : result.execution || result);
       setFields(result.output?.fields || null);
-      setStatuses((current) => ({ ...current, [selected.id]: "classified" }));
-      addActivity(selected.id, (language === "en" ? "Extracted with " : "Estratto con ") + provider + (language === "en" ? " (simulated)" : " (simulato)"));
+      setStatuses((current) => ({ ...current, [message.id]: "classified" }));
+      addActivity(message.id, (language === "en" ? "Extracted with " : "Estratto con ") + provider + (language === "en" ? " (simulated)" : " (simulato)"));
     } catch (failure) {
-      setStatuses((current) => ({ ...current, [selected.id]: "error" }));
-      setError(errorText(failure, language, text.pipelineError));
+      if (!controller.signal.aborted) {
+        setStatuses((current) => ({ ...current, [message.id]: "error" }));
+        setError(errorText(failure, language, text.pipelineError));
+      }
+    } finally {
+      if (actionController.current === controller) actionController.current = null;
     }
   }
 
@@ -133,17 +168,24 @@ function App() {
       setError(text.correctFields);
       return;
     }
+    const controller = beginAction();
     setBusyAction(action);
     setError("");
     try {
-      await runAction("document-operations", action, { messageId: selected.id, fields, language }, provider);
+      await runAction("document-operations", action, { messageId: selected.id, fields, language }, provider, { signal: controller.signal });
+      if (controller.signal.aborted) return;
       const next = action === "reopen" ? "classified" : action === "approve" ? "approved" : "rejected";
       setStatuses((current) => ({ ...current, [selected.id]: next }));
       const actionLabel = language === "it" ? { approve: "approvato", reject: "rifiutato", reopen: "riaperto" }[action] : action;
       addActivity(selected.id, actionLabel + (language === "it" ? " / verifica umana" : " / human review"));
     } catch (failure) {
-      setError(errorText(failure, language, text.pipelineError));
-    } finally { setBusyAction(""); }
+      if (!controller.signal.aborted) setError(errorText(failure, language, text.pipelineError));
+    } finally {
+      if (actionController.current === controller) {
+        actionController.current = null;
+        setBusyAction("");
+      }
+    }
   }
 
   const output = execution?.output;
@@ -175,6 +217,7 @@ function App() {
           <div className="run-config">
             <label>{text.providerTarget}<select value={provider} onChange={(event) => chooseProvider(event.target.value)}>{providers.map((item) => <option value={item.id} key={item.id}>{item.label} / {item.model}</option>)}</select></label>
             <span>{mode === "live" ? text.liveMode : text.syntheticMode}</span>
+            <button type="button" onClick={resetDemo}>{language === "it" ? "Ripristina demo" : "Reset demo"}</button>
           </div>
           <small>{disclosure(language)}</small>
         </section>
