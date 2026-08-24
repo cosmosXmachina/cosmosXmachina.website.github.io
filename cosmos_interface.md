@@ -278,9 +278,9 @@ Supporting glow palette:
 - `--blue: #3f86e8`
 - `--cyan: #70e4ff`
 
-The site deliberately avoids yellow/gold accents. Dark-section headings use gradient text based on the violet, purple and blue family, with darker purple accents rather than pastel purple. Light-section titles use solid deep navy with restrained violet edge/shadow support for reliable contrast. Dark sections use translucent dark panels; light sections use translucent pearl/ice-blue panels. Cards, accordions, contact panels, form fields and major text clusters use restrained hover glow/shine feedback plus a controlled panel-background color shift.
+The site deliberately avoids yellow/gold accents. Dark-section headings use gradient text based on the violet, purple and blue family, with darker purple accents rather than pastel purple, a `2px` near-black outline and subtle blue/cyan depth below the letters. Light-section titles use solid deep navy with restrained violet edge/shadow support for reliable contrast and reuse only the blue/cyan depth filter. Dark sections use translucent dark panels; light sections use translucent pearl/ice-blue panels. Cards, accordions, contact panels, form fields and major text clusters use restrained hover glow/shine feedback plus a controlled panel-background color shift.
 
-The 3D version adds a dark-blue heading stroke, layered text shadows and light drop shadows around text clusters so copy appears suspended above the background and 3D layers. Dark backgrounds retain the blue/purple/violet gradient; luminous sections use the high-contrast deep-navy title treatment described above.
+The 3D version adds the near-black heading outline, restrained internal shadows and downward blue/cyan drop shadows so copy appears suspended above the background and 3D layers. Dark backgrounds retain the blue/purple/violet gradient; luminous sections use the high-contrast deep-navy title treatment described above.
 
 Header branding and the `sizes="any"` browser favicon in `index.html` both use `assets/cxm-logo.svg`, a compact vector sacred-geometry mark with the `cXm` initials. The shared SVG keeps the tab icon crisp without adding a duplicate asset; keep it vector-based for easy future edits.
 
